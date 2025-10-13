@@ -41,3 +41,14 @@ An SAP Fiori application.
 
 
 # LAMPLAST---FatturazionePassivaUI5
+
+
+# Connessione ad HANA
+
+![alt text](img/image.png)
+
+
+-System name = Nome a scelta
+-URL = https://my428121.s4hana.cloud.sap
+
+Effettuare Test Connection => Salvare
