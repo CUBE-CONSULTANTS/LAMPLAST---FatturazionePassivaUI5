@@ -1,0 +1,398 @@
+<mvc:View
+    controllerName="com.zeim.fatturazionepassiva.controller.Home"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns:m="sap.m"
+    xmlns:f="sap.f"
+    xmlns:card="sap.f.cards"
+    xmlns:form="sap.ui.layout.form"
+    xmlns:mdc="sap.ui.mdc"
+    xmlns:core="sap.ui.core"
+    xmlns:smartFilterBar="sap.ui.comp.smartfilterbar"
+    xmlns:table="sap.ui.table"
+>
+    <m:Page
+        id="page"
+        title="{i18n>title}"
+    >
+        <!-- Pannello filtro -->
+        <m:Panel>
+            <m:VBox>
+                <mdc:FilterBar
+                    id="filterBar"
+                    showGoButton="true"
+                    search=".onSearch"
+                />
+            </m:VBox>
+        </m:Panel>
+
+        <!-- Elenco fatture -->
+        <m:Panel
+            headerText="Elenco Fatture"
+            width="100%"
+        >
+            <m:IconTabBar
+                id="idIconTabBar"
+                select=".onIconTabSelect"
+                expandable="false"
+                expanded="false"
+            >
+                <m:items>
+                    <m:IconTabFilter
+                        key="All"
+                        text="Fatture"
+                        count="{fattureModel>/Counts/All}"
+                    />
+                    <m:IconTabSeparator />
+                    <m:IconTabFilter
+                        key="registrate"
+                        text="Registrate"
+                        icon="sap-icon://accept"
+                        iconColor="Positive"
+                        count="{fattureModel>/Counts/Registrate}"
+                    />
+                    <m:IconTabFilter
+                        key="working"
+                        text="In lavorazione"
+                        icon="sap-icon://pending"
+                        iconColor="Critical"
+                        count="{fattureModel>/Counts/Working}"
+                    />
+                    <m:IconTabFilter
+                        key="error"
+                        text="Da registrare"
+                        icon="sap-icon://error"
+                        iconColor="Negative"
+                        count="{fattureModel>/Counts/Error}"
+                    />
+                </m:items>
+            </m:IconTabBar>
+
+            <table:TreeTable
+                id="idTreeTable"
+                rows="{path: '/Invoices'}"
+                selectionMode="MultiToggle"
+                enableColumnReordering="true"
+                fixedColumnCount="1"
+                rowActionCount="1"
+            >
+                <table:rowActionTemplate>
+                    <table:RowAction>
+                        <table:items>
+                            <table:RowActionItem
+                                icon="sap-icon://navigation-right-arrow"
+                                text="Apri Dettaglio"
+                                type="Navigation"
+                                press=".onVisualizzaDati"
+                            />
+                        </table:items>
+                    </table:RowAction>
+                </table:rowActionTemplate>
+                <table:rowSettingsTemplate>
+                    <table:RowSettings
+                        highlight="{path: 'status', formatter: '.getHighlight'}"
+                    />
+                </table:rowSettingsTemplate>
+                <!-- Colonne (lascia invariato) -->
+                <table:columns>
+                    <!-- N. doc. (presente su padre e figlio) -->
+                    <table:Column width="10rem">
+                        <table:label>
+                            <m:Label text="N. doc." />
+                        </table:label>
+                        <table:template>
+                            <m:Text text="{docNumber}" />
+                        </table:template>
+                    </table:Column>
+                    <!-- Anno (solo testata, le righe figlie non ce l’hanno) -->
+                    <table:Column width="5rem">
+                        <table:label>
+                            <m:Label text="Anno" />
+                        </table:label>
+                        <table:template>
+                            <m:Text text="{fiscalYear}" />
+                        </table:template>
+                    </table:Column>
+                    <!-- Eser St. (semaforo) -> visible solo se esiste 'status' (quindi solo padre) -->
+                    <!-- <table:Column width="6rem">
+                        <table:label>
+                            <m:Label text="Eser St." />
+                        </table:label>
+                        <table:template>
+                            <m:HBox
+                                alignItems="Center"
+                                justifyContent="Center"
+                                visible="{= ${status} ? true : false }"
+                            >
+                                <core:Icon
+                                    src="sap-icon://circle-task-2"
+                                    size="1rem"
+                                    color="{= ${status} === 'R' ? 'red' : 'lightgrey'}"
+                                    tooltip="{statusText}"
+                                />
+                                <core:Icon
+                                    src="sap-icon://circle-task-2"
+                                    size="1rem"
+                                    color="{= ${status} === 'Y' ? 'orange' : 'lightgrey'}"
+                                    tooltip="{statusText}"
+                                />
+                                <core:Icon
+                                    src="sap-icon://circle-task-2"
+                                    size="1rem"
+                                    color="{= ${status} === 'G' ? 'green' : 'lightgrey'}"
+                                    tooltip="{statusText}"
+                                />
+                            </m:HBox>
+                        </table:template>
+                    </table:Column> -->
+                    <!-- Doc. Soc. -->
+                    <table:Column width="6rem">
+                        <table:label>
+                            <m:Label text="Doc. Soc." />
+                        </table:label>
+                        <table:template>
+                            <m:Text text="{company}" />
+                        </table:template>
+                    </table:Column>
+                    <!-- S. Nome della ditta -->
+                    <table:Column width="14rem">
+                        <table:label>
+                            <m:Label text="S. Nome della ditta" />
+                        </table:label>
+                        <table:template>
+                            <m:Text text="{companyName}" />
+                        </table:template>
+                    </table:Column>
+                    <!-- S. Fornitore -->
+                    <table:Column width="8rem">
+                        <table:label>
+                            <m:Label text="S. Fornitore" />
+                        </table:label>
+                        <table:template>
+                            <m:Text text="{supplier}" />
+                        </table:template>
+                    </table:Column>
+                    <!-- Nome 1 -->
+                    <table:Column width="14rem">
+                        <table:label>
+                            <m:Label text="Nome 1" />
+                        </table:label>
+                        <table:template>
+                            <m:Text text="{supplierName}" />
+                        </table:template>
+                    </table:Column>
+                    <!-- Cod.Mat/Serv. (solo righe figlie: padre vuoto) -->
+                    <table:Column width="10rem">
+                        <table:label>
+                            <m:Label text="Cod.Mat/Serv." />
+                        </table:label>
+                        <table:template>
+                            <m:Text text="{materialCode}" />
+                        </table:template>
+                    </table:Column>
+                    <!-- Desc.Mat/Serv. (solo righe figlie) -->
+                    <table:Column width="28rem">
+                        <table:label>
+                            <m:Label text="Desc.Mat/Serv." />
+                        </table:label>
+                        <table:template>
+                            <m:Text text="{materialDesc}" />
+                        </table:template>
+                    </table:Column>
+                    <!-- Gr. (rombo/triangolo) -> visibile solo su padre (items non hanno hasWarning) -->
+                    <table:Column width="3rem">
+                        <table:label>
+                            <m:Label text=" " />
+                        </table:label>
+                        <table:template>
+                            <core:Icon
+                                src="sap-icon://status-critical"
+                                size="1rem"
+                                color="orange"
+                                visible="{= ${hasWarning} ? true : false }"
+                                tooltip="{warningText}"
+                                press=".onShowErrorDialog"
+                            />
+                        </table:template>
+                    </table:Column>
+                    <!-- Tipo documento (solo padre) -->
+                    <table:Column width="12rem">
+                        <table:label>
+                            <m:Label text="Tipo documento" />
+                        </table:label>
+                        <table:template>
+                            <m:Text text="{docType}" />
+                        </table:template>
+                    </table:Column>
+                    <!-- UdM XML (solo padre nella griglia SAP, ok lasciarlo così) -->
+                    <table:Column width="8rem">
+                        <table:label>
+                            <m:Label text="UdM XML" />
+                        </table:label>
+                        <table:template>
+                            <m:Text text="{uomXml}" />
+                        </table:template>
+                    </table:Column>
+                    <!-- Riferimento (padre) -->
+                    <table:Column width="10rem">
+                        <table:label>
+                            <m:Label text="Riferimento" />
+                        </table:label>
+                        <table:template>
+                            <m:Text text="{reference}" />
+                        </table:template>
+                    </table:Column>
+                    <!-- Quantità (figli) -->
+                    <table:Column width="9rem">
+                        <table:label>
+                            <m:Label text="Quantità" />
+                        </table:label>
+                        <table:template>
+                            <m:Text text="{quantity}" />
+                        </table:template>
+                    </table:Column>
+                    <!-- Divisa (padre) -->
+                    <table:Column width="6rem">
+                        <table:label>
+                            <m:Label text="Divisa" />
+                        </table:label>
+                        <table:template>
+                            <m:Text text="{currency}" />
+                        </table:template>
+                    </table:Column>
+                    <!-- Data (padre) -->
+                    <table:Column width="9rem">
+                        <table:label>
+                            <m:Label text="Data" />
+                        </table:label>
+                        <table:template>
+                            <m:Text text="{date}" />
+                        </table:template>
+                    </table:Column>
+                    <!-- Causale (padre) -->
+                    <table:Column width="22rem">
+                        <table:label>
+                            <m:Label text="Causale" />
+                        </table:label>
+                        <table:template>
+                            <m:Text text="{reason}" />
+                        </table:template>
+                    </table:Column>
+                    <!-- Prezzo Unitario (figlio) -->
+                    <table:Column width="10rem">
+                        <table:label>
+                            <m:Label text="Prezzo Unitario" />
+                        </table:label>
+                        <table:template>
+                            <m:Text text="{unitPrice}" />
+                        </table:template>
+                    </table:Column>
+                    <!-- Prezzo Totale (padre: totale documento | figlio: importo riga) -->
+                    <table:Column width="12rem">
+                        <table:label>
+                            <m:Label text="Prezzo Totale" />
+                        </table:label>
+                        <table:template>
+                            <m:Text text="{totalPrice}" />
+                        </table:template>
+                    </table:Column>
+                    <!-- Cod. IVA (solo figlio) -->
+                    <table:Column width="6rem">
+                        <table:label>
+                            <m:Label text="Cod. IVA" />
+                        </table:label>
+                        <table:template>
+                            <m:Text text="{vatCode}" />
+                        </table:template>
+                    </table:Column>
+                </table:columns>
+            </table:TreeTable>
+        </m:Panel>
+
+        <!-- FOOTER spostato qui -->
+        <m:footer>
+            <m:OverflowToolbar>
+                <m:ToolbarSpacer />
+
+                <!-- 1. OdA senza fattura -->
+                <m:Button
+                    text="OdA senza fattura"
+                    icon="sap-icon://add-document"
+                    press=".onOdaSenzaFattura"
+                    type="Emphasized"
+                />
+
+                <!-- 3. Partitario Fornitore -->
+                <m:Button
+                    text="Partitario Fornitore"
+                    icon="sap-icon://supplier"
+                    press=".onPartitarioFornitore"
+                    type="Emphasized"
+                />
+
+                <!-- 4. Fattura Logistica -->
+                <m:Button
+                    text="Fattura Logistica"
+                    icon="sap-icon://shipping-status"
+                    press=".onFatturaLogistica"
+                    type="Emphasized"
+                />
+
+                <!-- 5. Fattura Contabile -->
+                <m:Button
+                    text="Fattura Contabile"
+                    icon="sap-icon://expense-report"
+                    press=".onFatturaContabile"
+                    type="Emphasized"
+                />
+
+                <!-- 6. Lucchetto Blocco -->
+                <m:Button
+                    icon="sap-icon://locked"
+                    tooltip="Blocca"
+                    press=".onBlocca"
+                    type="Transparent"
+                />
+
+                <!-- 7. Lucchetto Sblocco -->
+                <m:Button
+                    icon="sap-icon://unlocked"
+                    tooltip="Sblocca"
+                    press=".onSblocca"
+                    type="Transparent"
+                />
+
+                <!-- 8. Archivia Fattura -->
+                <m:Button
+                    text="Archivia Fattura"
+                    icon="sap-icon://save"
+                    press=".onArchiviaFattura"
+                    type="Emphasized"
+                />
+
+                <!-- 9. Storno Fattura -->
+                <m:Button
+                    text="Storno Fattura"
+                    icon="sap-icon://reset"
+                    press=".onStornoFattura"
+                    type="Emphasized"
+                />
+
+                <!-- 10. Annulla Archiviazione -->
+                <m:Button
+                    text="Annulla Archiviazione"
+                    icon="sap-icon://sys-cancel-2"
+                    press=".onAnnullaArchiviazione"
+                    type="Emphasized"
+                />
+
+                <!-- 11. Fattura logistica MIRO -->
+                <m:Button
+                    text="Fattura logistica MIRO"
+                    icon="sap-icon://doc-attachment"
+                    press=".onFatturaLogisticaMiro"
+                    type="Emphasized"
+                />
+            </m:OverflowToolbar>
+        </m:footer>
+    </m:Page>
+</mvc:View>

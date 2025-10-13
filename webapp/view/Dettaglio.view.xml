@@ -1,0 +1,333 @@
+<mvc:View
+    controllerName="com.zeim.fatturazionepassiva.controller.Dettaglio"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns:m="sap.m"
+    xmlns:uxap="sap.uxap"
+    xmlns:layout="sap.ui.layout"
+    xmlns:core="sap.ui.core"
+>
+    <!-- Pagina principale con footer fisso -->
+    <m:Page
+        id="paginaDettaglio"
+        showFooter="true"
+        class="sapUiSizeCompact"
+    >
+        <!-- === CONTENUTO PRINCIPALE === -->
+        <m:content>
+            <uxap:ObjectPageLayout
+                id="objectPageLayout"
+                showTitleInHeaderContent="true"
+                alwaysShowContentHeader="false"
+                preserveHeaderStateOnScroll="false"
+                headerContentPinnable="true"
+                isChildPage="true"
+                upperCaseAnchorBar="false"
+            >
+                <!-- HEADER TITLE -->
+                <uxap:headerTitle>
+                    <uxap:ObjectPageDynamicHeaderTitle>
+                        <uxap:expandedHeading>
+                            <m:Title
+                                text="{= 'Fattura ' + (${/SelectedInvoice/docNumber} || '')}"
+                                wrapping="true"
+                            />
+                        </uxap:expandedHeading>
+
+                        <uxap:actions>
+                            <m:OverflowToolbar>
+                                <m:Button
+                                    text="Attribuisci Oda"
+                                    icon="sap-icon://attachment"
+                                    press=".onAttribuisciOda"
+                                    type="Emphasized"
+                                />
+                                <m:Button
+                                    text="Attribuisci DDT"
+                                    icon="sap-icon://chain-link"
+                                    press=".onAttribuisciDDT"
+                                    type="Emphasized"
+                                />
+                                <m:Button
+                                    text="PreAcquisire (Qta e Prz da file)"
+                                    icon="sap-icon://warning"
+                                    type="Emphasized"
+                                    press=".onPreAcquisireFile"
+                                />
+                                <m:Button
+                                    text="PreAcquisire dati da Oda Sap"
+                                    icon="sap-icon://download"
+                                    press=".onPreAcquisireOdaSap"
+                                    type="Emphasized"
+                                />
+                                <m:Button
+                                    text="PreAcquisire dati da DDT Sap"
+                                    icon="sap-icon://download"
+                                    press=".onPreAcquisireDdtSap"
+                                    type="Emphasized"
+                                />
+                            </m:OverflowToolbar>
+                        </uxap:actions>
+                    </uxap:ObjectPageDynamicHeaderTitle>
+                </uxap:headerTitle>
+
+                <!-- HEADER CONTENT -->
+                <uxap:headerContent>
+                    <m:FlexBox wrap="Wrap">
+                        <!-- <m:Avatar src="sap-icon://document-text" backgroundColor="Random" displaySize="L" class="sapUiTinyMarginEnd"/> -->
+
+                        <layout:VerticalLayout class="sapUiSmallMarginBeginEnd">
+                            <m:ObjectStatus
+                                title="Tipo Documento"
+                                text="{/SelectedInvoice/items/0/docType}"
+                            />
+                            <m:ObjectStatus
+                                title="Descrizione Tipo Doc."
+                                text="{/SelectedInvoice/items/0/DscTpDoc}"
+                            />
+                            <m:ObjectStatus
+                                title="Società"
+                                text="{/SelectedInvoice/items/0/soc}"
+                            />
+                        </layout:VerticalLayout>
+
+                        <layout:VerticalLayout class="sapUiSmallMarginBeginEnd">
+                            <m:ObjectStatus
+                                title="Fornitore"
+                                text="{/SelectedInvoice/items/0/fornitore}"
+                            />
+                            <m:ObjectStatus
+                                title="Nome"
+                                text="{/SelectedInvoice/items/0/nome1}"
+                            />
+                            <m:ObjectStatus
+                                title="Riferimento"
+                                text="{/SelectedInvoice/items/0/riferimento}"
+                            />
+                        </layout:VerticalLayout>
+                    </m:FlexBox>
+                </uxap:headerContent>
+
+                <!-- SEZIONI -->
+                <uxap:sections>
+                    <uxap:ObjectPageSection
+                        showTitle="false"
+                        title="Dettaglio Fattura"
+                    >
+                        <uxap:subSections>
+                            <uxap:ObjectPageSubSection>
+                                <uxap:blocks>
+                                    <m:ScrollContainer
+                                        horizontal="true"
+                                        vertical="false"
+                                        width="100%"
+                                        focusable="true"
+                                    >
+                                        <m:Table
+                                            id="detailTable"
+                                            items="{/SelectedInvoice/items}"
+                                            inset="false"
+                                            width="100%"
+                                        >
+                                            <m:columns>
+                                                <m:Column width="7rem">
+                                                    <m:Text text="Data" />
+                                                </m:Column>
+                                                <m:Column width="4rem">
+                                                    <m:Text text="Divisa" />
+                                                </m:Column>
+                                                <m:Column width="5rem">
+                                                    <m:Text text="Importo" />
+                                                </m:Column>
+                                                <m:Column width="3rem">
+                                                    <m:Text text="Pos." />
+                                                </m:Column>
+                                                <m:Column width="6rem">
+                                                    <m:Text text="M.For/CACC" />
+                                                </m:Column>
+                                                <m:Column width="7rem">
+                                                    <m:Text text="Cod. Mat." />
+                                                </m:Column>
+                                                <m:Column width="12rem">
+                                                    <m:Text
+                                                        text="Descrizione Materiale"
+                                                    />
+                                                </m:Column>
+                                                <m:Column width="5rem">
+                                                    <m:Text text="Unità" />
+                                                </m:Column>
+                                                <m:Column width="6rem">
+                                                    <m:Text text="Quantità" />
+                                                </m:Column>
+                                                <m:Column width="6rem">
+                                                    <m:Text
+                                                        text="Prezzo Unita"
+                                                    />
+                                                </m:Column>
+                                                <m:Column width="5rem">
+                                                    <m:Text text="Sc/Mag" />
+                                                </m:Column>
+                                                <m:Column width="7rem">
+                                                    <m:Text
+                                                        text="Prezzo Totale"
+                                                    />
+                                                    <m:footer>
+                                                        <m:Text
+                                                            text="{
+                                                                path: '/SelectedInvoice/totalSum',
+                                                                formatter: '.formatCurrency'
+                                                            }"
+                                                        />
+                                                    </m:footer>
+                                                </m:Column>
+                                                <m:Column width="5rem">
+                                                    <m:Text text="Cod. IVA" />
+                                                </m:Column>
+                                                <m:Column width="5rem">
+                                                    <m:Text text="OdA" />
+                                                </m:Column>
+                                                <m:Column width="7rem">
+                                                    <m:Text text="Doc. Acq." />
+                                                </m:Column>
+                                                <m:Column width="5rem">
+                                                    <m:Text text="Posizione" />
+                                                </m:Column>
+                                                <m:Column width="7rem">
+                                                    <m:Text text="Data Doc." />
+                                                </m:Column>
+                                                <m:Column width="5rem">
+                                                    <m:Text text="DDT" />
+                                                </m:Column>
+                                                <m:Column width="7rem">
+                                                    <m:Text text="Doc. Mat." />
+                                                </m:Column>
+                                                <m:Column width="5rem">
+                                                    <m:Text text="Posizione" />
+                                                </m:Column>
+                                                <m:Column width="7rem">
+                                                    <m:Text text="Es.doc.mat" />
+                                                </m:Column>
+                                                <m:Column width="4rem">
+                                                    <m:Text text="CUP" />
+                                                </m:Column>
+                                                <m:Column width="4rem">
+                                                    <m:Text text="CIG" />
+                                                </m:Column>
+                                                <m:Column width="6rem">
+                                                    <m:Text text="Commessa" />
+                                                </m:Column>
+                                                <m:Column width="5rem">
+                                                    <m:Text text="Bolla" />
+                                                </m:Column>
+                                            </m:columns>
+
+                                            <m:items>
+                                                <m:ColumnListItem>
+                                                    <m:cells>
+                                                        <m:Text text="{data}" />
+                                                        <m:Text
+                                                            text="{divisa}"
+                                                        />
+                                                        <m:Text
+                                                            text="{importo}"
+                                                        />
+                                                        <m:Text
+                                                            text="{posizione}"
+                                                        />
+                                                        <m:Text
+                                                            text="{matFornCcac}"
+                                                        />
+                                                        <m:Input
+                                                            value="{materialCode}"
+                                                            valueState="{= ${materialCode} ? 'Success' : 'Error' }"
+                                                        />
+                                                        <m:Text
+                                                            text="{materialDesc}"
+                                                        />
+                                                        <m:Input
+                                                            value="{unita}"
+                                                            valueState="{= ${unita} ? 'Success' : 'Error' }"
+                                                        />
+                                                        <m:Text
+                                                            text="{quantity}"
+                                                        />
+                                                        <m:Text
+                                                            text="{unitPrice}"
+                                                        />
+                                                        <m:Text
+                                                            text="{scMag}"
+                                                        />
+                                                        <m:Text
+                                                            text="{totalPrice}"
+                                                        />
+                                                        <m:Text
+                                                            text="{vatCode}"
+                                                        />
+                                                        <m:Button
+                                                            icon="sap-icon://action"
+                                                        />
+                                                        <m:Input
+                                                            value="{docAcq}"
+                                                            valueState="{= ${docAcq} ? 'Success' : 'Error' }"
+                                                        />
+                                                        <m:Input
+                                                            value="{posDocAcq}"
+                                                            valueState="{= ${posDocAcq} ? 'Success' : 'Error' }"
+                                                        />
+                                                        <m:Text
+                                                            text="{dataDocAcq}"
+                                                        />
+                                                        <m:Button
+                                                            icon="sap-icon://action"
+                                                        />
+                                                        <m:Input
+                                                            value="{docMat}"
+                                                            valueState="{= ${docMat} ? 'Success' : 'Error' }"
+                                                        />
+                                                        <m:Input
+                                                            value="{posDocMat}"
+                                                            valueState="{= ${posDocMat} ? 'Success' : 'Error' }"
+                                                        />
+                                                        <m:Input
+                                                            value="{esDocMat}"
+                                                            valueState="{= ${esDocMat} ? 'Success' : 'Error' }"
+                                                        />
+                                                        <m:Text text="{cup}" />
+                                                        <m:Text text="{cig}" />
+                                                        <m:Text
+                                                            text="{commessa}"
+                                                        />
+                                                        <m:Text
+                                                            text="{bolla}"
+                                                        />
+                                                    </m:cells>
+                                                </m:ColumnListItem>
+                                            </m:items>
+                                        </m:Table>
+                                    </m:ScrollContainer>
+                                </uxap:blocks>
+                            </uxap:ObjectPageSubSection>
+                        </uxap:subSections>
+                    </uxap:ObjectPageSection>
+                </uxap:sections>
+            </uxap:ObjectPageLayout>
+        </m:content>
+
+        <!-- === FOOTER FISSO === -->
+        <m:footer>
+            <m:OverflowToolbar>
+                <m:ToolbarSpacer />
+                <m:Button
+                    icon="sap-icon://accept"
+                    text="Esegui"
+                    type="Emphasized"
+                    press=".onEseguiPress"
+                />
+                <m:Button
+                    icon="sap-icon://decline"
+                    text="Annulla"
+                    press=".onAnnullaPress"
+                />
+            </m:OverflowToolbar>
+        </m:footer>
+    </m:Page>
+</mvc:View>

@@ -1,0 +1,79 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
+    <Dialog
+        id="selectSupplierDialog"
+        title="Seleziona Fornitore"
+        draggable="true"
+        resizable="true"
+        contentWidth="900px"
+        contentHeight="500px"
+    >
+        <VBox class="sapUiMediumMargin">
+            <Table
+                id="supplierTable"
+                mode="SingleSelectLeft"
+                inset="false"
+                items="{path: '/'}"
+                sticky="ColumnHeaders"
+                alternateRowColors="true"
+                width="100%"
+            >
+                <headerToolbar>
+                    <OverflowToolbar>
+                        <Title text="Elenco Fornitori" level="H5"/>
+                    </OverflowToolbar>
+                </headerToolbar>
+
+                <columns>
+                    <Column width="8rem">
+                        <Text text="Fornitore"/>
+                    </Column>
+                    <Column width="15rem">
+                        <Text text="Nome 1"/>
+                    </Column>
+                    <Column width="6rem">
+                        <Text text="Sr. conta"/>
+                    </Column>
+                    <Column width="7rem">
+                        <Text text="Codice Paese"/>
+                    </Column>
+                    <Column width="10rem">
+                        <Text text="Part. IVA"/>
+                    </Column>
+                    <Column width="10rem">
+                        <Text text="Partita IVA 1"/>
+                    </Column>
+                    <Column width="5rem">
+                        <Text text="Paese"/>
+                    </Column>
+                    <Column width="7rem">
+                        <Text text="Gruppo CM"/>
+                    </Column>
+                    <Column width="6rem">
+                        <Text text="Fisc. est."/>
+                    </Column>
+                </columns>
+
+                <items>
+                    <ColumnListItem type="Active">
+                        <cells>
+                            <Text text="{supplier}"/>
+                            <Text text="{supplierName}"/>
+                            <Text text="{srConta}"/>
+                            <Text text="{codicePaese}"/>
+                            <Text text="{partIva}"/>
+                            <Text text="{partitaIva1}"/>
+                            <Text text="{paese}"/>
+                            <Text text="{gruppoCm}"/>
+                            <Text text="{fiscEst}"/>
+                        </cells>
+                    </ColumnListItem>
+                </items>
+            </Table>
+        </VBox>
+
+        <buttons>
+            <Button text="Annulla" press=".onCancelSupplierSelect"/>
+            <Button text="Assegna Fornitore" type="Emphasized" press=".onConfirmSupplierSelect"/>
+        </buttons>
+    </Dialog>
+</core:FragmentDefinition>

@@ -1,0 +1,145 @@
+{
+    "_version": "1.65.0",
+    "sap.app": {
+        "id": "com.zeim.fatturazionepassiva",
+        "type": "application",
+        "i18n": "i18n/i18n.properties",
+        "applicationVersion": {
+            "version": "0.0.1"
+        },
+        "title": "{{appTitle}}",
+        "description": "{{appDescription}}",
+        "resources": "resources.json",
+        "sourceTemplate": {
+            "id": "@sap/generator-fiori:basic",
+            "version": "1.16.3",
+            "toolsId": "7f7f9775-d8e2-48fc-8b9b-4f3cc53a6fef"
+        },
+        "dataSources": {
+            "mainService": {
+                "uri": "/sap/opu/odata4/sap/zeim_crud/srvd/sap/zeim_crud/0001/",
+                "type": "OData",
+                "settings": {
+                    "annotations": [],
+                    "localUri": "localService/metadata.xml",
+                    "odataVersion": "4.0"
+                }
+            }
+        },
+        "crossNavigation": {
+            "inbounds": {
+                "zeimpassiva-display": {
+                "semanticObject": "ZEIMPASSIVA",
+                "action": "display",
+                "title": "{{flpTitle}}",
+                "subTitle": "{{flpSubtitle}}",
+                "signature": {
+                    "parameters": {},
+                    "additionalParameters": "allowed"
+                }
+                }
+            }
+        }
+    },
+    "sap.ui": {
+        "technology": "UI5",
+        "icons": {
+            "icon": "",
+            "favIcon": "",
+            "phone": "",
+            "phone@2": "",
+            "tablet": "",
+            "tablet@2": ""
+        },
+        "deviceTypes": {
+            "desktop": true,
+            "tablet": true,
+            "phone": true
+        }
+    },
+    "sap.ui5": {
+        "flexEnabled": false,
+        "config":{
+            "fullWidth": true
+        },
+        "dependencies": {
+            "minUI5Version": "1.136.8",
+            "libs": {
+                "sap.m": {},
+                "sap.ui.core": {}
+            }
+        },
+        "contentDensities": {
+            "compact": true,
+            "cozy": true
+        },
+        "models": {
+            "i18n": {
+                "type": "sap.ui.model.resource.ResourceModel",
+                "settings": {
+                    "bundleName": "com.zeim.fatturazionepassiva.i18n.i18n"
+                }
+            },
+            "": {
+                "dataSource": "mainService",
+                "preload": true,
+                "settings": {
+                    "operationMode": "Server",
+                    "autoExpandSelect": true,
+                    "earlyRequests": true
+                }
+            }
+        },
+        "resources": {
+            "css": [
+                {
+                    "uri": "css/style.css"
+                }
+            ]
+        },
+        "routing": {
+            "config": {
+                "routerClass": "sap.m.routing.Router",
+                "controlAggregation": "pages",
+                "controlId": "app",
+                "transition": "slide",
+                "type": "View",
+                "viewType": "XML",
+                "path": "com.zeim.fatturazionepassiva.view",
+                "async": true,
+                "viewPath": "com.zeim.fatturazionepassiva.view"
+            },
+            "routes": [
+                {
+                    "name": "RouteHome",
+                    "pattern": ":?query:",
+                    "target": [
+                        "TargetHome"
+                    ]
+                },
+                {
+                    "name": "Dettaglio",
+                    "pattern": "Dettaglio/{invoiceId}",
+                    "target": [
+                        "TargetDettaglio"
+                    ]
+                }
+            ],
+            "targets": {
+                "TargetHome": {
+                    "id": "Home",
+                    "name": "Home"
+                },
+                "TargetDettaglio": {
+                    "id": "Dettaglio",
+                    "name": "Dettaglio"
+                }
+            }
+        },
+        "rootView": {
+            "viewName": "com.zeim.fatturazionepassiva.view.App",
+            "type": "XML",
+            "id": "App"
+        }
+    }
+}
