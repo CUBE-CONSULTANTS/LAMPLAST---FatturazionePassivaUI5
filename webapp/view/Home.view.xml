@@ -40,6 +40,7 @@
                     <m:IconTabFilter
                         key="All"
                         text="Fatture"
+                        showAll="true"
                         count="{fattureModel>/Counts/All}"
                     />
                     <m:IconTabSeparator />
@@ -94,6 +95,24 @@
                 </table:rowSettingsTemplate>
                 <!-- Colonne (lascia invariato) -->
                 <table:columns>
+                    <table:Column width="10rem">
+                        <table:label>
+                            <m:VBox>
+                                <m:Label text="PDF" />
+                                <m:Label
+                                    design="Standard"
+                                    text="Riferimento"
+                                />
+                            </m:VBox>
+                        </table:label>
+                        <table:template>
+                            <m:VBox>
+                                <m:Text text="{pdf}" />
+                                <m:Text text="{riferimento}" />
+                            </m:VBox>
+                        </table:template>
+                    </table:Column>
+
                     <!-- N. doc. (presente su padre e figlio) -->
                     <table:Column width="10rem">
                         <table:label>
@@ -103,13 +122,46 @@
                             <m:Text text="{docNumber}" />
                         </table:template>
                     </table:Column>
-                    <!-- Anno (solo testata, le righe figlie non ce l’hanno) -->
-                    <table:Column width="5rem">
+                    <!-- Esercizio (solo testata, le righe figlie non ce l’hanno) -->
+                    <table:Column width="8rem">
                         <table:label>
-                            <m:Label text="Anno" />
+                            <m:Label text="Esercizio" />
                         </table:label>
                         <table:template>
                             <m:Text text="{fiscalYear}" />
+                        </table:template>
+                    </table:Column>
+                    <!-- Posizione (Figlio) -->
+                    <table:Column width="8rem">
+                        <table:label>
+                            <m:Label text="Posizione" />
+                        </table:label>
+                        <table:template>
+                            <m:Text text="{posizione}" />
+                        </table:template>
+                    </table:Column>
+                    <!-- Tp (Figlio) -->
+                    <table:Column width="8rem">
+                        <table:label>
+                            <m:Label
+                                text="TP"
+                                tooltip="Tipo cessione prestazione"
+                            />
+                        </table:label>
+                        <table:template>
+                            <m:Text text="{tp}" />
+                        </table:template>
+                    </table:Column>
+                    <!-- Codice (Figlio) -->
+                    <table:Column width="8rem">
+                        <table:label>
+                            <m:Label
+                                text="Codice"
+                                tooltip=""
+                            />
+                        </table:label>
+                        <table:template>
+                            <m:Text text="{codice}" />
                         </table:template>
                     </table:Column>
                     <!-- Eser St. (semaforo) -> visible solo se esiste 'status' (quindi solo padre) -->
@@ -145,63 +197,27 @@
                         </table:template>
                     </table:Column> -->
                     <!-- Doc. Soc. -->
-                    <table:Column width="6rem">
+                    <table:Column width="4rem">
                         <table:label>
-                            <m:Label text="Doc. Soc." />
+                            <m:Label text="Doc" />
                         </table:label>
                         <table:template>
                             <m:Text text="{company}" />
                         </table:template>
                     </table:Column>
                     <!-- S. Nome della ditta -->
-                    <table:Column width="14rem">
-                        <table:label>
-                            <m:Label text="S. Nome della ditta" />
-                        </table:label>
-                        <table:template>
-                            <m:Text text="{companyName}" />
-                        </table:template>
-                    </table:Column>
-                    <!-- S. Fornitore -->
-                    <table:Column width="8rem">
-                        <table:label>
-                            <m:Label text="S. Fornitore" />
-                        </table:label>
-                        <table:template>
-                            <m:Text text="{supplier}" />
-                        </table:template>
-                    </table:Column>
-                    <!-- Nome 1 -->
-                    <table:Column width="14rem">
-                        <table:label>
-                            <m:Label text="Nome 1" />
-                        </table:label>
-                        <table:template>
-                            <m:Text text="{supplierName}" />
-                        </table:template>
-                    </table:Column>
-                    <!-- Cod.Mat/Serv. (solo righe figlie: padre vuoto) -->
                     <table:Column width="10rem">
                         <table:label>
-                            <m:Label text="Cod.Mat/Serv." />
+                            <m:Label text="Società" />
                         </table:label>
                         <table:template>
-                            <m:Text text="{materialCode}" />
-                        </table:template>
-                    </table:Column>
-                    <!-- Desc.Mat/Serv. (solo righe figlie) -->
-                    <table:Column width="28rem">
-                        <table:label>
-                            <m:Label text="Desc.Mat/Serv." />
-                        </table:label>
-                        <table:template>
-                            <m:Text text="{materialDesc}" />
+                            <m:Text text="" />
                         </table:template>
                     </table:Column>
                     <!-- Gr. (rombo/triangolo) -> visibile solo su padre (items non hanno hasWarning) -->
-                    <table:Column width="3rem">
+                    <table:Column width="5rem">
                         <table:label>
-                            <m:Label text=" " />
+                            <m:Label text="St. Soc." />
                         </table:label>
                         <table:template>
                             <core:Icon
@@ -214,28 +230,98 @@
                             />
                         </table:template>
                     </table:Column>
-                    <!-- Tipo documento (solo padre) -->
-                    <table:Column width="12rem">
+                    <table:Column width="14rem">
                         <table:label>
-                            <m:Label text="Tipo documento" />
+                            <m:Label text="Nome della società" />
+                        </table:label>
+                        <table:template>
+                            <m:Text text="{companyName}" />
+                        </table:template>
+                    </table:Column>
+                    <!-- Cod.Mat/Serv. (solo righe figlie: padre vuoto) -->
+                    <table:Column width="10rem">
+                        <table:label>
+                            <m:Label text="Cod.Mat/Serv." />
+                        </table:label>
+                        <table:template>
+                            <m:Text text="{materialCode}" />
+                        </table:template>
+                    </table:Column>
+                    <!-- S. Fornitore -->
+                    <table:Column width="8rem">
+                        <table:label>
+                            <m:Label text="St. Forn." />
+                        </table:label>
+                        <table:template>
+                            <m:Text text="{supplier}" />
+                        </table:template>
+                    </table:Column>
+                    <!-- Nome 1 -->
+                    <table:Column width="14rem">
+                        <table:label>
+                            <m:Label text="Fornitore" />
+                        </table:label>
+                        <table:template>
+                            <m:Text text="{supplierName}" />
+                        </table:template>
+                    </table:Column>
+                    <!-- Desc.Mat/Serv. (solo righe figlie) -->
+                    <table:Column width="28rem">
+                        <table:label>
+                            <m:Label text="Desc.Mat/Serv." />
+                        </table:label>
+                        <table:template>
+                            <m:Text text="{materialDesc}" />
+                        </table:template>
+                    </table:Column>
+                    <table:Column width="14rem">
+                        <table:label>
+                            <m:Label text="Ragione sociale" />
+                        </table:label>
+                        <table:template>
+                            <m:Text text="{ragioneSociale}" />
+                        </table:template>
+                    </table:Column>
+                    <table:Column width="14rem">
+                        <table:label>
+                            <m:Label text="Gruppo Conti" />
+                        </table:label>
+                        <table:template>
+                            <m:Text text="{gruppoConti}" />
+                        </table:template>
+                    </table:Column>
+                    <table:Column width="14rem">
+                        <table:label>
+                            <m:Label text="Tipo Documento" />
                         </table:label>
                         <table:template>
                             <m:Text text="{docType}" />
                         </table:template>
                     </table:Column>
-                    <!-- UdM XML (solo padre nella griglia SAP, ok lasciarlo così) -->
+                    <!-- UdM XML (Figlio) -->
                     <table:Column width="8rem">
                         <table:label>
                             <m:Label text="UdM XML" />
                         </table:label>
                         <table:template>
-                            <m:Text text="{uomXml}" />
+                            <m:Text text="{udmXml}" />
+                        </table:template>
+                    </table:Column>
+                    <table:Column width="14rem">
+                        <table:label>
+                            <m:Label text="Descrizione Tipo" />
+                        </table:label>
+                        <table:template>
+                            <m:Text text="{descrizioneTipo}" />
                         </table:template>
                     </table:Column>
                     <!-- Riferimento (padre) -->
                     <table:Column width="10rem">
                         <table:label>
-                            <m:Label text="Riferimento" />
+                            <m:Label
+                                text="Riferimento"
+                                tooltip="Riferimento (N° fattura del fornitore) XBLNR"
+                            />
                         </table:label>
                         <table:template>
                             <m:Text text="{reference}" />
@@ -262,19 +348,10 @@
                     <!-- Data (padre) -->
                     <table:Column width="9rem">
                         <table:label>
-                            <m:Label text="Data" />
+                            <m:Label text="Data Fattura" />
                         </table:label>
                         <table:template>
                             <m:Text text="{date}" />
-                        </table:template>
-                    </table:Column>
-                    <!-- Causale (padre) -->
-                    <table:Column width="22rem">
-                        <table:label>
-                            <m:Label text="Causale" />
-                        </table:label>
-                        <table:template>
-                            <m:Text text="{reason}" />
                         </table:template>
                     </table:Column>
                     <!-- Prezzo Unitario (figlio) -->
@@ -286,10 +363,114 @@
                             <m:Text text="{unitPrice}" />
                         </table:template>
                     </table:Column>
+                    <!-- Causale (padre) -->
+                    <table:Column width="22rem">
+                        <table:label>
+                            <m:Label text="Causale" />
+                        </table:label>
+                        <table:template>
+                            <m:Text text="{reason}" />
+                        </table:template>
+                    </table:Column>
+                    <!-- Sc (figlio) -->
+                    <table:Column width="5rem">
+                        <table:label>
+                            <m:Label text="Sc" />
+                        </table:label>
+                        <table:template>
+                            <m:Text text="{sc}" />
+                        </table:template>
+                    </table:Column>
+                    <table:Column width="22rem">
+                        <table:label>
+                            <m:Label text="Importo Tot. Descrizione" />
+                        </table:label>
+                        <table:template>
+                            <m:Text text="{reason}" />
+                        </table:template>
+                    </table:Column>
+                    <table:Column width="22rem">
+                        <table:label>
+                            <m:Label text="Doc. Contabile" />
+                        </table:label>
+                        <table:template>
+                            <m:Text text="{reason}" />
+                        </table:template>
+                    </table:Column>
+                    <table:Column width="22rem">
+                        <table:label>
+                            <m:Label text="Data di registrazione" />
+                        </table:label>
+                        <table:template>
+                            <m:Text text="{dataRegistrazione}" />
+                        </table:template>
+                    </table:Column>
+                    <table:Column width="22rem">
+                        <table:label>
+                            <m:Label text="Data ricevimento" />
+                        </table:label>
+                        <table:template>
+                            <m:Text text="{dataRicevimento}" />
+                        </table:template>
+                    </table:Column>
+                    <table:Column width="22rem">
+                        <table:label>
+                            <m:Label text="Partita IVA" />
+                        </table:label>
+                        <table:template>
+                            <m:Text text="{partitaIva}" />
+                        </table:template>
+                    </table:Column>
+                    <table:Column width="22rem">
+                        <table:label>
+                            <m:Label text="Gruppo CM" />
+                        </table:label>
+                        <table:template>
+                            <m:Text text="{gruppoCM}" />
+                        </table:template>
+                    </table:Column>
+                    <table:Column width="22rem">
+                        <table:label>
+                            <m:Label text="Definizione" />
+                        </table:label>
+                        <table:template>
+                            <m:Text text="{definizione}" />
+                        </table:template>
+                    </table:Column>
+                    <table:Column width="22rem">
+                        <table:label>
+                            <m:Label text="Paese" />
+                        </table:label>
+                        <table:template>
+                            <m:Text text="{paese}" />
+                        </table:template>
+                    </table:Column>
+                    <table:Column width="22rem">
+                        <table:label>
+                            <m:Label text="Scad. Pag." />
+                        </table:label>
+                        <table:template>
+                            <m:Text text="{paese}" />
+                        </table:template>
+                    </table:Column>
+
+                    <!-- Tipo documento (solo padre) -->
+                    <table:Column width="12rem">
+                        <table:label>
+                            <m:Label text="Tipo documento" />
+                        </table:label>
+                        <table:template>
+                            <m:Text text="{docType}" />
+                        </table:template>
+                    </table:Column>
+
                     <!-- Prezzo Totale (padre: totale documento | figlio: importo riga) -->
                     <table:Column width="12rem">
                         <table:label>
-                            <m:Label text="Prezzo Totale" />
+                            <m:VBox>
+                                <m:Label text="" />
+                                <m:Label text="(Totale Doc / Importo Riga)" />
+                            </m:VBox>
                         </table:label>
                         <table:template>
                             <m:Text text="{totalPrice}" />

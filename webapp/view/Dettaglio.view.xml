@@ -129,23 +129,16 @@
                                             width="100%"
                                         >
                                             <m:columns>
-                                                <m:Column width="7rem">
-                                                    <m:Text text="Data" />
-                                                </m:Column>
-                                                <m:Column width="4rem">
-                                                    <m:Text text="Divisa" />
-                                                </m:Column>
-                                                <m:Column width="5rem">
-                                                    <m:Text text="Importo" />
-                                                </m:Column>
-                                                <m:Column width="3rem">
-                                                    <m:Text text="Pos." />
+                                                <m:Column width="6rem">
+                                                    <m:Text text="Posizione" />
                                                 </m:Column>
                                                 <m:Column width="6rem">
                                                     <m:Text text="M.For/CACC" />
                                                 </m:Column>
                                                 <m:Column width="7rem">
-                                                    <m:Text text="Cod. Mat." />
+                                                    <m:Text
+                                                        text="Codice Materiale SAP"
+                                                    />
                                                 </m:Column>
                                                 <m:Column width="12rem">
                                                     <m:Text
@@ -153,18 +146,17 @@
                                                     />
                                                 </m:Column>
                                                 <m:Column width="5rem">
-                                                    <m:Text text="Unità" />
+                                                    <m:Text
+                                                        text="Unità di misura"
+                                                    />
                                                 </m:Column>
                                                 <m:Column width="6rem">
                                                     <m:Text text="Quantità" />
                                                 </m:Column>
                                                 <m:Column width="6rem">
                                                     <m:Text
-                                                        text="Prezzo Unita"
+                                                        text="Prezzo Unitario"
                                                     />
-                                                </m:Column>
-                                                <m:Column width="5rem">
-                                                    <m:Text text="Sc/Mag" />
                                                 </m:Column>
                                                 <m:Column width="7rem">
                                                     <m:Text
@@ -180,16 +172,22 @@
                                                     </m:footer>
                                                 </m:Column>
                                                 <m:Column width="5rem">
-                                                    <m:Text text="Cod. IVA" />
+                                                    <m:Text
+                                                        text="Cod. IVA (%)"
+                                                    />
                                                 </m:Column>
                                                 <m:Column width="5rem">
                                                     <m:Text text="OdA" />
                                                 </m:Column>
                                                 <m:Column width="7rem">
-                                                    <m:Text text="Doc. Acq." />
+                                                    <m:Text
+                                                        text="Doc. Acquisto"
+                                                    />
                                                 </m:Column>
-                                                <m:Column width="5rem">
-                                                    <m:Text text="Posizione" />
+                                                <m:Column width="7rem">
+                                                    <m:Text
+                                                        text="Posizione Oda"
+                                                    />
                                                 </m:Column>
                                                 <m:Column width="7rem">
                                                     <m:Text text="Data Doc." />
@@ -198,7 +196,9 @@
                                                     <m:Text text="DDT" />
                                                 </m:Column>
                                                 <m:Column width="7rem">
-                                                    <m:Text text="Doc. Mat." />
+                                                    <m:Text
+                                                        text="Doc. Materiale"
+                                                    />
                                                 </m:Column>
                                                 <m:Column width="5rem">
                                                     <m:Text text="Posizione" />
@@ -215,21 +215,24 @@
                                                 <m:Column width="6rem">
                                                     <m:Text text="Commessa" />
                                                 </m:Column>
-                                                <m:Column width="5rem">
-                                                    <m:Text text="Bolla" />
+                                                <m:Column width="7rem">
+                                                    <m:Text
+                                                        text="Bolla consegna"
+                                                    />
+                                                </m:Column>
+                                                <m:Column width="7rem">
+                                                    <m:Text
+                                                        text="Data di registrazione"
+                                                    />
+                                                </m:Column>
+                                                <m:Column width="7rem">
+                                                    <m:Text text="N. Doc" />
                                                 </m:Column>
                                             </m:columns>
 
                                             <m:items>
                                                 <m:ColumnListItem>
                                                     <m:cells>
-                                                        <m:Text text="{data}" />
-                                                        <m:Text
-                                                            text="{divisa}"
-                                                        />
-                                                        <m:Text
-                                                            text="{importo}"
-                                                        />
                                                         <m:Text
                                                             text="{posizione}"
                                                         />
@@ -254,9 +257,6 @@
                                                             text="{unitPrice}"
                                                         />
                                                         <m:Text
-                                                            text="{scMag}"
-                                                        />
-                                                        <m:Text
                                                             text="{totalPrice}"
                                                         />
                                                         <m:Text
@@ -265,9 +265,9 @@
                                                         <m:Button
                                                             icon="sap-icon://action"
                                                         />
-                                                        <m:Input
-                                                            value="{docAcq}"
-                                                            valueState="{= ${docAcq} ? 'Success' : 'Error' }"
+                                                        <m:Link
+                                                            text="{docAcq}"
+                                                            href="https://example.com/docAcq/{docAcq}"
                                                         />
                                                         <m:Input
                                                             value="{posDocAcq}"
