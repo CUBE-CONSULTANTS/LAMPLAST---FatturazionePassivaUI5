@@ -1,0 +1,39 @@
+<core:FragmentDefinition
+    xmlns="sap.ui.comp.valuehelpdialog"
+    xmlns:m="sap.m"
+    xmlns:fb="sap.ui.comp.filterbar"
+    xmlns:core="sap.ui.core">
+
+    <!-- Dialog senza handler, key e desc -->
+    <ValueHelpDialog title="Tipo Documento">
+
+        <filterBar>
+            <fb:FilterBar advancedMode="true" isRunningInValueHelpDialog="true">
+                <fb:filterGroupItems>
+
+                    <fb:FilterGroupItem
+                        groupName="__$INTERNAL$"
+                        name="BlartAde"
+                        label="Tipo Documento"
+                        visibleInFilterBar="true">
+                        <fb:control>
+                            <m:Input name="BlartAde"/>
+                        </fb:control>
+                    </fb:FilterGroupItem>
+
+                    <fb:FilterGroupItem
+                        groupName="__$INTERNAL$"
+                        name="Descrizione"
+                        label="Descrizione"
+                        visibleInFilterBar="true">
+                        <fb:control>
+                            <m:Input name="Descrizione"/>
+                        </fb:control>
+                    </fb:FilterGroupItem>
+
+                </fb:filterGroupItems>
+            </fb:FilterBar>
+        </filterBar>
+
+    </ValueHelpDialog>
+</core:FragmentDefinition>

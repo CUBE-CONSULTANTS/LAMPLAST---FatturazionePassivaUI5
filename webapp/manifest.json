@@ -17,26 +17,27 @@
         },
         "dataSources": {
             "mainService": {
-                "uri": "/sap/opu/odata4/sap/zeim_crud/srvd/sap/zeim_crud/0001/",
+                "uri": "/sap/opu/odata/sap/ZEIM_PASSIVO/",
                 "type": "OData",
                 "settings": {
                     "annotations": [],
                     "localUri": "localService/metadata.xml",
-                    "odataVersion": "4.0"
+                    "odataVersion": "2.0"
                 }
             }
         },
         "crossNavigation": {
             "inbounds": {
                 "zeimpassiva-display": {
-                "semanticObject": "ZEIMPASSIVA",
-                "action": "display",
-                "title": "{{flpTitle}}",
-                "subTitle": "{{flpSubtitle}}",
-                "signature": {
-                    "parameters": {},
-                    "additionalParameters": "allowed"
-                }
+                    "semanticObject": "ZEIMPASSIVA",
+                    "action": "display",
+                    "title": "{{flpTitle}}",
+                    "subTitle": "{{flpSubtitle}}",
+                    "icon": "sap-icon://download-from-cloud",
+                    "signature": {
+                        "parameters": {},
+                        "additionalParameters": "allowed"
+                    }
                 }
             }
         }
@@ -59,7 +60,7 @@
     },
     "sap.ui5": {
         "flexEnabled": false,
-        "config":{
+        "config": {
             "fullWidth": true
         },
         "dependencies": {
@@ -80,13 +81,45 @@
                     "bundleName": "com.zeim.fatturazionepassiva.i18n.i18n"
                 }
             },
-            "": {
+            "mainService": {
                 "dataSource": "mainService",
                 "preload": true,
                 "settings": {
                     "operationMode": "Server",
                     "autoExpandSelect": true,
                     "earlyRequests": true
+                }
+            },
+            "Clienti": {
+                "dataSource": "mainService",
+                "preload": true,
+                "settings": {
+                    "operationMode": "Server",
+                    "autoExpandSelect": true
+                }
+            },
+            "Fornitore": {
+                "dataSource": "mainService",
+                "preload": true,
+                "settings": {
+                    "operationMode": "Server",
+                    "autoExpandSelect": true
+                }
+            },
+            "TipoDocAde": {
+                "dataSource": "mainService",
+                "preload": true,
+                "settings": {
+                    "operationMode": "Server",
+                    "autoExpandSelect": true
+                }
+            },
+            "MCSocieta": {
+                "dataSource": "mainService",
+                "preload": true,
+                "settings": {
+                    "operationMode": "Server",
+                    "autoExpandSelect": true
                 }
             }
         },

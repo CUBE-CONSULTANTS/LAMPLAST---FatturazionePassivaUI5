@@ -1,0 +1,49 @@
+<core:FragmentDefinition
+    xmlns="sap.ui.comp.valuehelpdialog"
+    xmlns:m="sap.m"
+    xmlns:fb="sap.ui.comp.filterbar"
+    xmlns:core="sap.ui.core">
+
+    <!-- Dialog senza handler, key e desc -->
+    <ValueHelpDialog title="Fornitore">
+
+        <filterBar>
+            <fb:FilterBar advancedMode="true" isRunningInValueHelpDialog="true">
+                <fb:filterGroupItems>
+
+                    <fb:FilterGroupItem
+                        groupName="__$INTERNAL$"
+                        name="Supplier"
+                        label="Fornitore"
+                        visibleInFilterBar="true">
+                        <fb:control>
+                            <m:Input name="Supplier"/>
+                        </fb:control>
+                    </fb:FilterGroupItem>
+
+                    <fb:FilterGroupItem
+                        groupName="__$INTERNAL$"
+                        name="OrganizationBPName1"
+                        label="Descrizione"
+                        visibleInFilterBar="true">
+                        <fb:control>
+                            <m:Input name="OrganizationBPName1"/>
+                        </fb:control>
+                    </fb:FilterGroupItem>
+
+                    <fb:FilterGroupItem
+                        groupName="__$INTERNAL$"
+                        name="CityName"
+                        label="Città"
+                        visibleInFilterBar="true">
+                        <fb:control>
+                            <m:Input name="CityName"/>
+                        </fb:control>
+                    </fb:FilterGroupItem>
+
+                </fb:filterGroupItems>
+            </fb:FilterBar>
+        </filterBar>
+
+    </ValueHelpDialog>
+</core:FragmentDefinition>
