@@ -78,7 +78,7 @@
                         <layout:VerticalLayout class="sapUiSmallMarginBeginEnd">
                             <m:ObjectStatus
                                 title="Tipo Documento"
-                                text="{/SelectedInvoice/items/0/docType}"
+                                text="{fattura>/FatturaElettronicaBody/DatiGenerali/DatiGeneraliDocumento/TipoDocumento}"
                             />
                             <m:ObjectStatus
                                 title="Descrizione Tipo Doc."
@@ -124,7 +124,7 @@
                                     >
                                         <m:Table
                                             id="detailTable"
-                                            items="{/SelectedInvoice/items}"
+                                            items="{path: 'fattura>/FatturaElettronicaBody/DatiBeniServizi/DettaglioLinee'}"
                                             inset="false"
                                             width="100%"
                                         >
@@ -145,7 +145,7 @@
                                                         text="Descrizione Materiale"
                                                     />
                                                 </m:Column>
-                                                <m:Column width="5rem">
+                                                <m:Column width="8rem">
                                                     <m:Text
                                                         text="Unità di misura"
                                                     />
@@ -234,7 +234,7 @@
                                                 <m:ColumnListItem>
                                                     <m:cells>
                                                         <m:Text
-                                                            text="{posizione}"
+                                                            text="{fattura>NumeroLinea}"
                                                         />
                                                         <m:Text
                                                             text="{matFornCcac}"
@@ -244,23 +244,23 @@
                                                             valueState="{= ${materialCode} ? 'Success' : 'Error' }"
                                                         />
                                                         <m:Text
-                                                            text="{materialDesc}"
+                                                            text="{fattura>Descrizione}"
                                                         />
                                                         <m:Input
-                                                            value="{unita}"
-                                                            valueState="{= ${unita} ? 'Success' : 'Error' }"
+                                                            value="{fattura>UnitaMisura}"
+                                                            valueState="{= ${fattura>UnitaMisura} ? 'Success' : 'Error' }"
                                                         />
                                                         <m:Text
-                                                            text="{quantity}"
+                                                            text="{fattura>Quantita}"
                                                         />
                                                         <m:Text
-                                                            text="{unitPrice}"
+                                                            text="{fattura>PrezzoUnitario}"
                                                         />
                                                         <m:Text
-                                                            text="{totalPrice}"
+                                                            text="{fattura>PrezzoTotale}"
                                                         />
                                                         <m:Text
-                                                            text="{vatCode}"
+                                                            text="{fattura>AliquotaIVA}"
                                                         />
                                                         <m:Button
                                                             icon="sap-icon://action"

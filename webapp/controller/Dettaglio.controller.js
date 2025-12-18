@@ -24,19 +24,65 @@ sap.ui.define([
 
             const oSelected = oModel.getProperty("/SelectedInvoice");
 
-            if (!oSelected || oSelected.docNumber !== sInvoiceId) {
+            if (!oSelected || oSelected.Id !== sInvoiceId) {
                 sap.m.MessageToast.show("La fattura selezionata non è valida.");
                 this.oRouter.navTo("RouteHome");
                 return;
             }
 
             this.getView().setModel(oModel);
-            this.getView().bindElement({
-                path: "/SelectedInvoice"
-            });
+            this.getView().bindElement({ path: "/SelectedInvoice" });
+
+            this._loadDettaglioFattura(oSelected.FileName);
 
             this._updateTotal();
         },
+        _loadDettaglioFattura: function (sFileName) {
+            if (!sFileName) {
+                MessageToast.show("FileName fattura mancante");
+                return;
+            }
+
+            const oODataModel = this.getOwnerComponent().getModel("mainService");
+
+            const sPath = oODataModel.createKey("/ZEIM_DettaglioFattura", {
+                FileName: sFileName
+            });
+
+            oODataModel.read(sPath, {
+                success: (oData) => {
+                    this._bindFatturaData(oData.Data);
+                },
+                error: () => {
+                    MessageToast.show("Errore nel caricamento del dettaglio fattura");
+                }
+            });
+        },
+
+        _bindFatturaData: function (sData) {
+            let oFattura;
+
+            try {
+                oFattura = JSON.parse(sData);
+            } catch (e) {
+                MessageToast.show("Formato fattura non valido");
+                return;
+            }
+
+            // === NORMALIZZAZIONE DETTAGLIO LINEE ===
+            const oBody = oFattura.FatturaElettronicaBody;
+            const oBeniServizi = oBody?.DatiBeniServizi;
+
+            if (oBeniServizi?.DettaglioLinee) {
+                oBeniServizi.DettaglioLinee = Array.isArray(oBeniServizi.DettaglioLinee)
+                    ? oBeniServizi.DettaglioLinee
+                    : [oBeniServizi.DettaglioLinee];
+            }
+
+            const oJsonModel = new sap.ui.model.json.JSONModel(oFattura);
+            this.getView().setModel(oJsonModel, "fattura");
+        },
+
 
         _updateTotal: function () {
             const oModel = this.getView().getModel();

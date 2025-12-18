@@ -215,99 +215,33 @@ sap.ui.define([
             this._oSelectedInvoiceForSupplier = oInvoice;
         },
 
-        onConfirmSupplierSelect() {
-            const oTable = sap.ui.core.Fragment.byId(this.getView().getId(), "supplierTable");
-            const aSelected = oTable.getSelectedItems();
-
-            if (aSelected.length === 0) {
-                sap.m.MessageToast.show("Seleziona un fornitore prima di assegnare.");
-                return;
-            }
-
-            const oSelected = aSelected[0].getBindingContext().getObject();
-            const oInvoice = this._oSelectedInvoiceForSupplier;
-
-            oInvoice.supplier = oSelected.supplier;
-            oInvoice.supplierName = oSelected.supplierName;
-
-            // Rimuovo warning
-            oInvoice.hasWarning = false;
-            oInvoice.warningText = "";
-
-            sap.m.MessageToast.show(`Fornitore assegnato: ${oSelected.supplierName}`);
-            this._oSupplierDialog.close();
-
-            this.getView().getModel().refresh(true);
-        },
-
-
-        onCancelSupplierSelect() {
-            this._oSupplierDialog.close();
-        },
 
 
 
         onVisualizzaDati: function (oEvent) {
-            // var oTable = this.byId("idTreeTable");
-            // var aSelected = oTable.getSelectedIndices();
+            const oRow = oEvent.getParameter("row");
+            const oContext = oRow.getBindingContext("fattureModel");
 
-            // if (aSelected.length === 0) {
-            //     sap.m.MessageToast.show("Seleziona una fattura per visualizzare i dettagli.");
-            //     return;
-            // }
-
-            // if (aSelected.length > 1) {
-            //     sap.m.MessageBox.warning("Puoi visualizzare i dati di una sola fattura alla volta.");
-            //     return;
-            // }
-
-
-            // var oContext = oTable.getContextByIndex(aSelected[0]);
-            // var oSelected = oContext.getObject();
-
-
-            // if (!oSelected.items) {
-            //     sap.m.MessageToast.show("Puoi visualizzare i dati solo delle fatture principali.");
-            //     return;
-            // }
-
-
-            // var oGlobalModel = new sap.ui.model.json.JSONModel({
-            //     SelectedInvoice: oSelected
-            // });
-            // sap.ui.getCore().setModel(oGlobalModel, "SelectedInvoiceModel");
-
-
-            // var oRouter = sap.ui.core.UIComponent.getRouterFor(this);
-            // oRouter.navTo("Dettaglio", {
-            //     invoiceId: oSelected.docNumber
-            // });
-
-            const oContext = oEvent.getSource().getParent().getBindingContext();
-            const oSelected = oContext.getObject();
-            const oModel = oContext.getModel();
-
-            // 🔹 Risali al padre se la riga è un figlio
-            let oParent = oSelected;
-            if (!oSelected.items) {
-                const aInvoices = oModel.getProperty("/Invoices");
-                oParent = aInvoices.find(inv =>
-                    inv.items?.some(item => item.docNumber === oSelected.docNumber)
-                ) || oSelected; // fallback in caso di anomalia
+            if (!oContext) {
+                sap.m.MessageToast.show("Context non trovato");
+                return;
             }
 
-            // 🔹 Imposta il modello globale come in onVisualizzaDati
-            const oGlobalModel = new sap.ui.model.json.JSONModel({
-                SelectedInvoice: oParent
-            });
-            sap.ui.getCore().setModel(oGlobalModel, "SelectedInvoiceModel");
+            const oSelected = oContext.getObject();
 
-            // 🔹 Navigazione verso la pagina di dettaglio
+            sap.ui.getCore().setModel(
+                new sap.ui.model.json.JSONModel({
+                    SelectedInvoice: oSelected
+                }),
+                "SelectedInvoiceModel"
+            );
+
             const oRouter = sap.ui.core.UIComponent.getRouterFor(this);
             oRouter.navTo("Dettaglio", {
-                invoiceId: oParent.docNumber
+                invoiceId: oSelected.Id
             });
         },
+
 
         onValueHelpSocieta: function () {
             sap.ui.require([
