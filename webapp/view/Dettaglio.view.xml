@@ -73,35 +73,39 @@
                 <!-- HEADER CONTENT -->
                 <uxap:headerContent>
                     <m:FlexBox wrap="Wrap">
-                        <!-- <m:Avatar src="sap-icon://document-text" backgroundColor="Random" displaySize="L" class="sapUiTinyMarginEnd"/> -->
-
+                        <!-- COLONNA SINISTRA -->
                         <layout:VerticalLayout class="sapUiSmallMarginBeginEnd">
                             <m:ObjectStatus
                                 title="Tipo Documento"
-                                text="{fattura>/FatturaElettronicaBody/DatiGenerali/DatiGeneraliDocumento/TipoDocumento}"
+                                text="{TipoDocAdE}"
                             />
                             <m:ObjectStatus
                                 title="Descrizione Tipo Doc."
-                                text="{/SelectedInvoice/items/0/DscTpDoc}"
+                                text="{TipoDocText}"
                             />
                             <m:ObjectStatus
                                 title="Società"
-                                text="{/SelectedInvoice/items/0/soc}"
+                                text="{CompanyCode}"
+                            />
+                            <m:ObjectStatus
+                                title="Data Fattura"
+                                text="{path: 'DataFattura', formatter: '.formatter.formatDate'}"
                             />
                         </layout:VerticalLayout>
 
+                        <!-- COLONNA DESTRA -->
                         <layout:VerticalLayout class="sapUiSmallMarginBeginEnd">
                             <m:ObjectStatus
                                 title="Fornitore"
-                                text="{/SelectedInvoice/items/0/fornitore}"
+                                text="{SupplierCode}"
                             />
                             <m:ObjectStatus
                                 title="Nome"
-                                text="{/SelectedInvoice/items/0/nome1}"
+                                text="{SupplierName}"
                             />
                             <m:ObjectStatus
                                 title="Riferimento"
-                                text="{/SelectedInvoice/items/0/riferimento}"
+                                text="{NumeroFattura}"
                             />
                         </layout:VerticalLayout>
                     </m:FlexBox>

@@ -81,6 +81,7 @@ sap.ui.define([
 
             const oJsonModel = new sap.ui.model.json.JSONModel(oFattura);
             this.getView().setModel(oJsonModel, "fattura");
+            console.log(oJsonModel);
         },
 
 
@@ -102,6 +103,15 @@ sap.ui.define([
                 .format(Number(v) || 0);
         },
 
+
+        formatter: {
+            formatDate: function (sDate) {
+                if (!sDate) return "";
+                const oDate = new Date(sDate);
+                const oFormat = sap.ui.core.format.DateFormat.getDateInstance({ pattern: "dd/MM/yyyy" });
+                return oFormat.format(oDate);
+            }
+        },
 
         onBackToHome: function () {
             const oModel = this.getOwnerComponent().getModel();
