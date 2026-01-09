@@ -270,15 +270,15 @@
                                                             icon="sap-icon://action"
                                                         />
                                                         <m:Link
-                                                            text="{docAcq}"
+                                                            text="{fattura>odaIdDocumento}"
                                                             href="https://example.com/docAcq/{docAcq}"
                                                         />
                                                         <m:Input
-                                                            value="{posDocAcq}"
-                                                            valueState="{= ${posDocAcq} ? 'Success' : 'Error' }"
+                                                            value="{fattura>odaPosOda}"
+                                                            valueState="{= ${fattura>odaPosOda} ? 'Success' : 'Error' }"
                                                         />
                                                         <m:Text
-                                                            text="{dataDocAcq}"
+                                                            text="{fattura>odaDataDoc}"
                                                         />
                                                         <m:Button
                                                             icon="sap-icon://action"

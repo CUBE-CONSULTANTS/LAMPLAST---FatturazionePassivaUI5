@@ -79,9 +79,52 @@ sap.ui.define([
                     : [oBeniServizi.DettaglioLinee];
             }
 
+            this._mapOrdineAcquisto(oFattura);
+
             const oJsonModel = new sap.ui.model.json.JSONModel(oFattura);
             this.getView().setModel(oJsonModel, "fattura");
-            console.log(oJsonModel);
+            console.log('Modello:', oJsonModel);
+        },
+
+        _mapOrdineAcquisto: function (oFattura) {
+            const oBody = oFattura?.FatturaElettronicaBody;
+            if (!oBody) return;
+
+            const oGenerali = oBody.DatiGenerali;
+            const oBeni = oBody.DatiBeniServizi;
+
+            if (!oGenerali?.DatiOrdineAcquisto || !oBeni?.DettaglioLinee) return;
+
+            const aLinee = Array.isArray(oBeni.DettaglioLinee)
+                ? oBeni.DettaglioLinee
+                : [oBeni.DettaglioLinee];
+
+            const aOrdini = Array.isArray(oGenerali.DatiOrdineAcquisto)
+                ? oGenerali.DatiOrdineAcquisto
+                : [oGenerali.DatiOrdineAcquisto];
+
+            // Caso 1: per numero linea
+            if (aOrdini[0].RiferimentoNumeroLinea) {
+                aLinee.forEach(l => {
+                    const oMatch = aOrdini.find(o =>
+                        String(o.RiferimentoNumeroLinea) === String(l.NumeroLinea)
+                    );
+
+                    if (oMatch) {
+                        l.odaIdDocumento = oMatch.IdDocumento || "";
+                        l.odaDataDoc = oMatch.Data || "";
+                    }
+                });
+                return;
+            }
+
+            // Caso 2: globale
+            const o = aOrdini[0];
+            aLinee.forEach(l => {
+                l.odaIdDocumento = o.IdDocumento || "";
+                l.odaDataDoc = o.Data || "";
+                l.odaPosOda = o.NumItem || ""; 
+            });
         },
 
 

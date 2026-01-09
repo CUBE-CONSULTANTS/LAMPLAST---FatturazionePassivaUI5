@@ -355,6 +355,105 @@ sap.ui.define([
             oBinding.filter(aFilters);
         },
 
+        onVisualizzaAllegato: function (oEvent) {
+            const oCtx = oEvent.getSource().getBindingContext("fattureModel");
+            if (!oCtx) {
+                MessageToast.show("Context non trovato");
+                return;
+            }
+
+            const oRow = oCtx.getObject();
+
+            const aItems = this._getMockAllegatiForRow(oRow);
+            this._openAllegatiDialogMock(aItems);
+        },
+
+        _getMockAllegatiForRow: function (oRow) {
+            const sDoc = oRow?.DocumentNumber || oRow?.NumeroFattura || "SenzaNumero";
+
+            return [
+                {
+                    NomeAttachment: `Fattura_${sDoc}.pdf`,
+                    FormatoAttachment: "PDF",
+                    DescrizioneAttachment: "Fattura di cortesia",
+                    Attachment: ""
+                },
+                {
+                    NomeAttachment: `Dettaglio_${sDoc}.pdf`,
+                    FormatoAttachment: "PDF",
+                    DescrizioneAttachment: "Dettaglio righe fattura",
+                    Attachment: ""
+                }
+            ];
+        },
+
+        _openAllegatiDialogMock: function (aItems) {
+            if (!this._oAllegatiDialog) {
+                this._oAllegatiModel = new JSONModel({ items: [] });
+
+                const oList = new sap.m.List({
+                    items: {
+                        path: "/items",
+                        template: new sap.m.StandardListItem({
+                            title: "{NomeAttachment}",
+                            description: "{DescrizioneAttachment}",
+                            info: "{FormatoAttachment}",
+                            type: "Active",
+                            press: function () {
+                                MessageToast.show("Mock: apertura allegato");
+                            }
+                        })
+                    }
+                });
+
+                oList.setModel(this._oAllegatiModel);
+
+                this._oAllegatiDialog = new sap.m.Dialog({
+                    title: "Allegati",
+                    contentWidth: "650px",
+                    contentHeight: "420px",
+                    resizable: true,
+                    draggable: true,
+                    content: [oList],
+                    endButton: new sap.m.Button({
+                        text: "Chiudi",
+                        press: () => this._oAllegatiDialog.close()
+                    })
+                });
+
+                this.getView().addDependent(this._oAllegatiDialog);
+            }
+
+            this._oAllegatiModel.setData({ items: aItems || [] });
+            this._oAllegatiDialog.open();
+        },
+
+
+        _onOpenAttachment: function (oEvent) {
+            const oItem = oEvent.getSource();
+            const oCtx = oItem.getBindingContext();
+            const oAtt = oCtx.getObject();
+            
+            const sBase64 = oAtt && oAtt.Attachment;
+            if (!sBase64) {
+                MessageToast.show("Attachment vuoto");
+                return;
+            }
+
+            const sFmt = (oAtt.FormatoAttachment || "").toUpperCase();
+            const sMime = sFmt === "PDF" ? "application/pdf" : "application/octet-stream";
+
+            const sBinary = atob(sBase64);
+            const aBytes = new Uint8Array(sBinary.length);
+            for (let i = 0; i < sBinary.length; i++) aBytes[i] = sBinary.charCodeAt(i);
+
+            const oBlob = new Blob([aBytes], { type: sMime });
+            const sUrl = URL.createObjectURL(oBlob);
+
+            window.open(sUrl, "_blank");
+            setTimeout(() => URL.revokeObjectURL(sUrl), 30000);
+        },
+
 
         formatter: {
             statusState: function (sEsito) {

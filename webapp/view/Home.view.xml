@@ -299,8 +299,9 @@
                             <Label text="Allegato" />
                         </table:label>
                         <table:template>
-                            <Text
+                            <Link
                                 text="{path: 'fattureModel>TipoAllegato', formatter: '.formatter.allegatoText'}"
+                                press=".onVisualizzaAllegato"
                             />
                         </table:template>
                     </table:Column>
