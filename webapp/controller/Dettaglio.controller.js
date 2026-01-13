@@ -123,22 +123,40 @@ sap.ui.define([
             aLinee.forEach(l => {
                 l.odaIdDocumento = o.IdDocumento || "";
                 l.odaDataDoc = o.Data || "";
-                l.odaPosOda = o.NumItem || ""; 
+                l.odaPosOda = o.NumItem || "";
             });
         },
 
 
         _updateTotal: function () {
             const oModel = this.getView().getModel();
-            const aItems = oModel.getProperty("/SelectedInvoice/items") || [];
+            const oInvoice = oModel.getProperty("/SelectedInvoice") || {};
 
-            const fTotale = aItems.reduce((sum, item) => {
-                const val = parseFloat(item.totalPrice?.toString().replace(",", ".")) || 0;
-                return sum + val;
-            }, 0);
+            const aItems = this._getInvoiceLines(oInvoice);
+
+            const fTotale = aItems.length
+                ? aItems.reduce((sum, item) => {
+                    const val = parseFloat((item?.Totale ?? "0").toString().replace(",", ".")) || 0;
+                    return sum + val;
+                }, 0)
+                : (parseFloat((oInvoice?.Totale ?? "0").toString().replace(",", ".")) || 0);
 
             oModel.setProperty("/SelectedInvoice/totalSum", fTotale);
         },
+
+        _getInvoiceLines: function (oInvoice) {
+            const v =
+                oInvoice.items ||
+                oInvoice.Items ||
+                oInvoice.DettaglioLinee ||
+                oInvoice.Lines ||
+                oInvoice.Righe;
+
+            if (!v) return [];
+            return Array.isArray(v) ? v : [v];
+        },
+
+
 
 
         formatCurrency: function (v) {

@@ -355,6 +355,17 @@ sap.ui.define([
             oBinding.filter(aFilters);
         },
 
+
+        _getFileNameFromRow: function (oRow) {
+            return oRow?.FileName
+                || oRow?.Filename
+                || oRow?.fileName
+                || oRow?.FILE_NAME
+                || oRow?.FILENAME
+                || oRow?.NomeFile
+                || oRow?.NOMEFILE
+                || "";
+        },
         onVisualizzaAllegato: function (oEvent) {
             const oCtx = oEvent.getSource().getBindingContext("fattureModel");
             if (!oCtx) {
@@ -363,58 +374,103 @@ sap.ui.define([
             }
 
             const oRow = oCtx.getObject();
+            const sFileName = this._getFileNameFromRow(oRow);
 
-            const aItems = this._getMockAllegatiForRow(oRow);
-            this._openAllegatiDialogMock(aItems);
-        },
+            if (!sFileName) {
+                MessageToast.show("FileName non presente sulla riga");
+                return;
+            }
 
-        _getMockAllegatiForRow: function (oRow) {
-            const sDoc = oRow?.DocumentNumber || oRow?.NumeroFattura || "SenzaNumero";
+            sap.ui.core.BusyIndicator.show(0);
 
-            return [
-                {
-                    NomeAttachment: `Fattura_${sDoc}.pdf`,
-                    FormatoAttachment: "PDF",
-                    DescrizioneAttachment: "Fattura di cortesia",
-                    Attachment: ""
+            const oODataModel = this.getOwnerComponent().getModel("mainService");
+            const aFilters = [new sap.ui.model.Filter("FileName", sap.ui.model.FilterOperator.EQ, sFileName)];
+
+            oODataModel.read("/ZEIM_AllegatiFattura", {
+                filters: aFilters,
+                success: (oData) => {
+                    sap.ui.core.BusyIndicator.hide();
+                    const aItems = oData?.results || [];
+                    this._openAllegatiDialog(aItems, sFileName);
                 },
-                {
-                    NomeAttachment: `Dettaglio_${sDoc}.pdf`,
-                    FormatoAttachment: "PDF",
-                    DescrizioneAttachment: "Dettaglio righe fattura",
-                    Attachment: ""
+                error: (err) => {
+                    sap.ui.core.BusyIndicator.hide();
+                    console.error(err);
+                    MessageBox.error("Errore nel recupero allegati");
                 }
-            ];
+            });
         },
 
-        _openAllegatiDialogMock: function (aItems) {
+        _openAllegatiDialog: function (aItems, sFileName) {
             if (!this._oAllegatiDialog) {
                 this._oAllegatiModel = new JSONModel({ items: [] });
 
-                const oList = new sap.m.List({
+                const oTable = new sap.m.Table({
+                    width: "100%",
+                    inset: false,
+                    columns: [
+                        new sap.m.Column({
+                            header: new sap.m.Label({ text: "Nome file" })
+                        }),
+                        new sap.m.Column({
+                            width: "10rem",
+                            hAlign: "End",
+                            header: new sap.m.Label({ text: "" })
+                        })
+                    ],
                     items: {
                         path: "/items",
-                        template: new sap.m.StandardListItem({
-                            title: "{NomeAttachment}",
-                            description: "{DescrizioneAttachment}",
-                            info: "{FormatoAttachment}",
-                            type: "Active",
-                            press: function () {
-                                MessageToast.show("Mock: apertura allegato");
-                            }
+                        template: new sap.m.ColumnListItem({
+                            cells: [
+                                new sap.m.VBox({
+                                    items: [
+                                        new sap.m.Text({ text: "{NomeAttachment}" }),
+                                        new sap.m.Text({
+                                            text: "{DescrizioneAttachment}",
+                                            wrapping: false
+                                        }).addStyleClass("sapUiTinyMarginTop")
+                                    ]
+                                }),
+                                new sap.m.HBox({
+                                    justifyContent: "End",
+                                    items: [
+                                        new sap.m.Button({
+                                            text: {
+                                                parts: [
+                                                    { path: "FormatoAttachment" },
+                                                    { path: "NomeAttachment" }
+                                                ],
+                                                formatter: function (sFmt, sName) {
+                                                    const fmt = (sFmt || "").toUpperCase();
+                                                    const name = (sName || "").toUpperCase();
+                                                    const isPdf = fmt === "PDF" || name.endsWith(".PDF");
+                                                    return isPdf ? "Visualizza" : "Scarica";
+                                                }
+                                            },
+                                            type: "Emphasized",
+                                            press: this._onAttachmentAction.bind(this)
+                                        })
+                                    ]
+                                })
+                            ]
                         })
                     }
                 });
 
-                oList.setModel(this._oAllegatiModel);
+                oTable.setModel(this._oAllegatiModel);
+
+                const oContent = new sap.m.VBox({
+                    width: "100%",
+                    items: [oTable]
+                }).addStyleClass("sapUiContentPadding");
 
                 this._oAllegatiDialog = new sap.m.Dialog({
                     title: "Allegati",
-                    contentWidth: "650px",
+                    contentWidth: "700px",
                     contentHeight: "420px",
                     resizable: true,
                     draggable: true,
-                    content: [oList],
+                    content: [oContent],
                     endButton: new sap.m.Button({
                         text: "Chiudi",
                         press: () => this._oAllegatiDialog.close()
@@ -424,16 +480,95 @@ sap.ui.define([
                 this.getView().addDependent(this._oAllegatiDialog);
             }
 
+            this._oAllegatiDialog.setTitle(`Allegati - ${sFileName || ""}`);
             this._oAllegatiModel.setData({ items: aItems || [] });
             this._oAllegatiDialog.open();
         },
+
+
+        _onAttachmentAction: function (oEvent) {
+            const oBtn = oEvent.getSource();
+            const oCtx = oBtn.getBindingContext();
+            const oAtt = oCtx && oCtx.getObject();
+
+            const sBase64 = oAtt && oAtt.Attachment;
+            if (!sBase64) {
+                sap.m.MessageToast.show("Attachment vuoto");
+                return;
+            }
+
+            const sFmt = (oAtt.FormatoAttachment || "").trim();
+            const sName = (oAtt.NomeAttachment || "allegato").trim();
+
+            const fmtUpper = sFmt.toUpperCase();
+            const nameUpper = sName.toUpperCase();
+
+            const isPdf = fmtUpper === "PDF" || nameUpper.endsWith(".PDF");
+
+            if (isPdf) {
+                this._openPdfInApp(sBase64, sName);
+                return;
+            }
+
+            this._downloadAttachment(sBase64, sName);
+        },
+
+
+        _openPdfInApp: function (sBase64, sFileName) {
+            const sClean = (sBase64 || "").replace(/\s/g, "");
+            const sDataUrl = "data:application/pdf;base64," + sClean;
+
+            const oIframe = new sap.ui.core.HTML({
+                content: `<iframe src="${sDataUrl}" width="100%" height="700px" style="border:none;"></iframe>`
+            });
+
+            const oDialog = new sap.m.Dialog({
+                title: `Anteprima - ${sFileName}`,
+                contentWidth: "90%",
+                contentHeight: "100%",
+                resizable: true,
+                draggable: true,
+                content: [oIframe],
+                beginButton: new sap.m.Button({
+                    text: "Chiudi",
+                    press: function () { oDialog.close(); }
+                }),
+                afterClose: function () { oDialog.destroy(); }
+            });
+
+            oDialog.open();
+        },
+
+
+
+        _base64ToObjectUrl: function (sBase64, sMime) {
+            const sBinary = atob(sBase64);
+            const aBytes = new Uint8Array(sBinary.length);
+            for (let i = 0; i < sBinary.length; i++) aBytes[i] = sBinary.charCodeAt(i);
+            const oBlob = new Blob([aBytes], { type: sMime });
+            return URL.createObjectURL(oBlob);
+        },
+        _downloadAttachment: function (sBase64, sFileName) {
+            const sMime = "application/octet-stream";
+            const sUrl = this._base64ToObjectUrl(sBase64, sMime);
+
+            const oLink = document.createElement("a");
+            oLink.href = sUrl;
+            oLink.download = sFileName;
+            document.body.appendChild(oLink);
+            oLink.click();
+            document.body.removeChild(oLink);
+
+            setTimeout(() => URL.revokeObjectURL(sUrl), 30000);
+        },
+
 
 
         _onOpenAttachment: function (oEvent) {
             const oItem = oEvent.getSource();
             const oCtx = oItem.getBindingContext();
             const oAtt = oCtx.getObject();
-            
+
             const sBase64 = oAtt && oAtt.Attachment;
             if (!sBase64) {
                 MessageToast.show("Attachment vuoto");
