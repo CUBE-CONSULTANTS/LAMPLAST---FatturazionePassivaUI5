@@ -294,7 +294,7 @@
                 </table:rowSettingsTemplate>
                 <!-- Colonne (lascia invariato) -->
                 <table:columns>
-                    <table:Column width="10rem">
+                    <table:Column width="5rem">
                         <table:label>
                             <Label text="Allegato" />
                         </table:label>
@@ -305,6 +305,18 @@
                                 enabled="{= ${fattureModel>TipoAllegato} &amp;&amp; ${fattureModel>TipoAllegato} !== '0' }"
                                 tooltip="{path: 'fattureModel>TipoAllegato', formatter: '.formatter.allegatoText'}"
                                 press=".onVisualizzaAllegato"
+                            />
+                        </table:template>
+                    </table:Column>
+                                        <table:Column width="5rem">
+                        <table:label>
+                            <Label text="XML" />
+                        </table:label>
+                        <table:template>
+                            <Button
+                                type="Transparent"
+                                icon="sap-icon://show"
+                                press=".onVisualizzaXML"
                             />
                         </table:template>
                     </table:Column>
@@ -692,17 +704,19 @@
                 />
                 <!-- 6. Lucchetto Blocco -->
                 <Button
+                    text="Blocca"
                     icon="sap-icon://locked"
                     tooltip="Blocca"
-                    press=".onBlocca"
-                    type="Transparent"
+                    press=".onBloccaFattura"
+                    type="Emphasized"
                 />
                 <!-- 7. Lucchetto Sblocco -->
                 <Button
+                    text="Sblocca"
                     icon="sap-icon://unlocked"
                     tooltip="Sblocca"
                     press=".onSblocca"
-                    type="Transparent"
+                    type="Emphasized"
                 />
                 <!-- 8. Archivia Fattura -->
                 <Button

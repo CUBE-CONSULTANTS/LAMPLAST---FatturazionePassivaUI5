@@ -180,6 +180,10 @@ sap.ui.define([
             oModel.setProperty("/SelectedInvoice", null);
 
             this.oRouter.navTo("RouteHome");
-        }
+        },
+
+
+
+        
     });
 });

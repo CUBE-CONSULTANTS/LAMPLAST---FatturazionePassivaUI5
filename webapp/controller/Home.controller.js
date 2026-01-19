@@ -1,11 +1,15 @@
 sap.ui.define([
     "sap/ui/core/mvc/Controller",
     "sap/ui/model/json/JSONModel",
-    "../model/mockData",
     "sap/ui/core/Fragment",
     "sap/m/MessageBox",
-    "sap/m/MessageToast"
-], (Controller, JSONModel, mockData, Fragment, MessageBox, MessageToast) => {
+    "sap/m/MessageToast",
+    "sap/ui/codeeditor/CodeEditor",
+    "sap/m/Dialog",
+    "sap/m/Button",
+    "sap/m/VBox"
+
+], (Controller, JSONModel, Fragment, MessageBox, MessageToast, CodeEditor, Dialog, Button, VBox) => {
     "use strict";
 
     return Controller.extend("com.zeim.fatturazionepassiva.controller.Home", {
@@ -357,14 +361,7 @@ sap.ui.define([
 
 
         _getFileNameFromRow: function (oRow) {
-            return oRow?.FileName
-                || oRow?.Filename
-                || oRow?.fileName
-                || oRow?.FILE_NAME
-                || oRow?.FILENAME
-                || oRow?.NomeFile
-                || oRow?.NOMEFILE
-                || "";
+            return oRow?.FileName || "";
         },
         onVisualizzaAllegato: function (oEvent) {
             const oCtx = oEvent.getSource().getBindingContext("fattureModel");
@@ -473,7 +470,8 @@ sap.ui.define([
                     content: [oContent],
                     endButton: new sap.m.Button({
                         text: "Chiudi",
-                        press: () => this._oAllegatiDialog.close()
+                        press: () => this._oAllegatiDialog.close(),
+                        type: "Emphasized"
                     })
                 });
 
@@ -487,36 +485,39 @@ sap.ui.define([
 
 
         _onAttachmentAction: function (oEvent) {
-            const oBtn = oEvent.getSource();
-            const oCtx = oBtn.getBindingContext();
+            const oCtx = oEvent.getSource().getBindingContext();
             const oAtt = oCtx && oCtx.getObject();
 
-            const sBase64 = oAtt && oAtt.Attachment;
-            if (!sBase64) {
-                sap.m.MessageToast.show("Attachment vuoto");
+            const sBase64Raw = oAtt && oAtt.Attachment;
+            if (!sBase64Raw) {
+                MessageToast.show("Attachment vuoto");
                 return;
             }
 
-            const sFmt = (oAtt.FormatoAttachment || "").trim();
             const sName = (oAtt.NomeAttachment || "allegato").trim();
 
-            const fmtUpper = sFmt.toUpperCase();
-            const nameUpper = sName.toUpperCase();
-
-            const isPdf = fmtUpper === "PDF" || nameUpper.endsWith(".PDF");
-
-            if (isPdf) {
-                this._openPdfInApp(sBase64, sName);
-                return;
+            if (this._isPdfBase64(sBase64Raw)) {
+                this._openPdfInApp(sBase64Raw, sName);
+            } else {
+                this._downloadAttachment(sBase64Raw, sName);
             }
+        },
+        _isPdfBase64: function (sBase64) {
+            const clean = String(sBase64 || "").trim().split(",").pop().replace(/\s/g, "");
+            if (!clean) return false;
 
-            this._downloadAttachment(sBase64, sName);
+            try {
+                const head = atob(clean.slice(0, 80)).slice(0, 5);
+                return head === "%PDF-";
+            } catch (e) {
+                return false;
+            }
         },
 
 
         _openPdfInApp: function (sBase64, sFileName) {
-            const sClean = (sBase64 || "").replace(/\s/g, "");
-            const sDataUrl = "data:application/pdf;base64," + sClean;
+            const clean = String(sBase64 || "").trim().split(",").pop().replace(/\s/g, "");
+            const sDataUrl = "data:application/pdf;base64," + clean;
 
             const oIframe = new sap.ui.core.HTML({
                 content: `<iframe src="${sDataUrl}" width="100%" height="700px" style="border:none;"></iframe>`
@@ -529,11 +530,8 @@ sap.ui.define([
                 resizable: true,
                 draggable: true,
                 content: [oIframe],
-                beginButton: new sap.m.Button({
-                    text: "Chiudi",
-                    press: function () { oDialog.close(); }
-                }),
-                afterClose: function () { oDialog.destroy(); }
+                beginButton: new sap.m.Button({ text: "Chiudi", press: () => oDialog.close(), type: "Emphasized" }),
+                afterClose: () => oDialog.destroy()
             });
 
             oDialog.open();
@@ -541,52 +539,28 @@ sap.ui.define([
 
 
 
+
         _base64ToObjectUrl: function (sBase64, sMime) {
-            const sBinary = atob(sBase64);
-            const aBytes = new Uint8Array(sBinary.length);
-            for (let i = 0; i < sBinary.length; i++) aBytes[i] = sBinary.charCodeAt(i);
-            const oBlob = new Blob([aBytes], { type: sMime });
-            return URL.createObjectURL(oBlob);
+            const clean = String(sBase64 || "").trim().split(",").pop().replace(/\s/g, "");
+            const bin = atob(clean);
+
+            const bytes = new Uint8Array(bin.length);
+            for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+
+            return URL.createObjectURL(new Blob([bytes], { type: sMime }));
         },
+
         _downloadAttachment: function (sBase64, sFileName) {
-            const sMime = "application/octet-stream";
-            const sUrl = this._base64ToObjectUrl(sBase64, sMime);
+            const url = this._base64ToObjectUrl(sBase64, "application/octet-stream");
 
-            const oLink = document.createElement("a");
-            oLink.href = sUrl;
-            oLink.download = sFileName;
-            document.body.appendChild(oLink);
-            oLink.click();
-            document.body.removeChild(oLink);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = sFileName || "allegato";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
 
-            setTimeout(() => URL.revokeObjectURL(sUrl), 30000);
-        },
-
-
-
-        _onOpenAttachment: function (oEvent) {
-            const oItem = oEvent.getSource();
-            const oCtx = oItem.getBindingContext();
-            const oAtt = oCtx.getObject();
-
-            const sBase64 = oAtt && oAtt.Attachment;
-            if (!sBase64) {
-                MessageToast.show("Attachment vuoto");
-                return;
-            }
-
-            const sFmt = (oAtt.FormatoAttachment || "").toUpperCase();
-            const sMime = sFmt === "PDF" ? "application/pdf" : "application/octet-stream";
-
-            const sBinary = atob(sBase64);
-            const aBytes = new Uint8Array(sBinary.length);
-            for (let i = 0; i < sBinary.length; i++) aBytes[i] = sBinary.charCodeAt(i);
-
-            const oBlob = new Blob([aBytes], { type: sMime });
-            const sUrl = URL.createObjectURL(oBlob);
-
-            window.open(sUrl, "_blank");
-            setTimeout(() => URL.revokeObjectURL(sUrl), 30000);
+            setTimeout(() => URL.revokeObjectURL(url), 30000);
         },
 
 
@@ -648,6 +622,293 @@ sap.ui.define([
                 }
             }
         },
+
+
+        onVisualizzaXML: function (oEvent) {
+            const oCtx = oEvent.getSource().getBindingContext("fattureModel");
+            if (!oCtx) {
+                MessageToast.show("Impossibile determinare la riga selezionata.");
+                return;
+            }
+
+            const oRow = oCtx.getObject() || {};
+            const sFileName = oRow.FileName;
+
+            if (!sFileName) {
+                MessageToast.show("FileName mancante sulla riga.");
+                return;
+            }
+
+            this._openXmlDialog();
+            this._loadXmlIntoDialog(sFileName);
+        },
+
+        _openXmlDialog: function () {
+            if (this._oXmlDialog) {
+                this._oXmlDialog.open();
+                return;
+            }
+
+            this._oXmlEditor = new CodeEditor({
+                type: "xml",
+                height: "70vh",
+                width: "100%",
+                editable: false,
+                showLineNumbers: true,
+                value: ""
+            });
+
+            this._oXmlDialog = new Dialog({
+                title: "XML Fattura",
+                contentWidth: "80vw",
+                contentHeight: "80vh",
+                resizable: true,
+                draggable: true,
+                content: [
+                    new VBox({
+                        width: "100%",
+                        height: "100%",
+                        items: [this._oXmlEditor]
+                    })
+                ],
+                beginButton: new Button({
+                    text: "Chiudi",
+                    press: () => this._oXmlDialog.close(),
+                    type: "Emphasized"
+                })
+            });
+
+            this.getView().addDependent(this._oXmlDialog);
+            this._oXmlDialog.open();
+        },
+
+        _loadXmlIntoDialog: function (sFileName) {
+            const oModel = this.getOwnerComponent().getModel("mainService");
+
+            const sPath = oModel.createKey("/ZEIM_DettaglioFattura", { FileName: sFileName });
+
+            this._oXmlEditor.setValue("Caricamento...");
+
+            oModel.read(sPath, {
+                success: (oData) => this._setDialogXmlFromJsonString(oData.Data),
+                error: () => {
+                    this._oXmlEditor.setValue("");
+                    MessageToast.show("Errore nel caricamento XML fattura");
+                }
+            });
+        },
+
+        _setDialogXmlFromJsonString: function (sData) {
+            let oJson;
+            try {
+                oJson = JSON.parse(sData);
+            } catch (e) {
+                this._oXmlEditor.setValue("");
+                MessageToast.show("Formato fattura non valido");
+                return;
+            }
+
+            const sXml = this._jsonToPrettyXml(oJson);
+            this._oXmlEditor.setValue(sXml);
+        },
+
+        _jsonToPrettyXml: function (oJson) {
+            const escapeXml = (v) => String(v)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&apos;");
+
+            const indentStr = (n) => "  ".repeat(n);
+
+            const nodeToXml = (name, value, level) => {
+                if (value === null || value === undefined) return `${indentStr(level)}<${name}/>\n`;
+                if (Array.isArray(value)) return value.map(v => nodeToXml(name, v, level)).join("");
+                if (typeof value !== "object") return `${indentStr(level)}<${name}>${escapeXml(value)}</${name}>\n`;
+
+                const attrsObj = value.$ || null;
+                const attrText = attrsObj
+                    ? " " + Object.keys(attrsObj).map(k => `${k}="${escapeXml(attrsObj[k])}"`).join(" ")
+                    : "";
+
+                const keys = Object.keys(value).filter(k => k !== "$");
+                if (keys.length === 0) return `${indentStr(level)}<${name}${attrText}/>\n`;
+
+                let inner = "";
+                for (const k of keys) inner += nodeToXml(k, value[k], level + 1);
+
+                return `${indentStr(level)}<${name}${attrText}>\n${inner}${indentStr(level)}</${name}>\n`;
+            };
+
+            const versione = oJson["@versione"];
+            const payload = { ...oJson };
+            delete payload["@versione"];
+
+            const root = {};
+            if (versione) root.$ = { versione };
+            Object.keys(payload).forEach(k => root[k] = payload[k]);
+
+            return nodeToXml("FatturaElettronica", root, 0).trim() + "\n";
+        },
+
+        onBloccaFattura: function () {
+            const oTable = this.byId("idTreeTable");
+            const aSelectedIndices = oTable.getSelectedIndices();
+
+            if (aSelectedIndices.length === 0) {
+                sap.m.MessageToast.show("Seleziona una fattura da bloccare.");
+                return;
+            }
+
+            if (aSelectedIndices.length > 1) {
+                sap.m.MessageToast.show("Puoi bloccare una sola fattura alla volta.");
+                return;
+            }
+
+            const oModel = this.getView().getModel("fattureModel");
+            const oRow = oModel.getProperty(`/results/${aSelectedIndices[0]}`);
+
+            const sId = oRow && oRow.Id;
+            if (!sId) {
+                sap.m.MessageToast.show("ID mancante sulla riga selezionata.");
+                return;
+            }
+
+            this._openBloccaDialogSingle(sId);
+        },
+
+        _openBloccaDialogSingle: function (sId) {
+            if (!this._oBloccaDialog) {
+
+                this._oMotivoInput = new sap.m.TextArea({
+                    width: "100%",
+                    rows: 4,
+                    maxLength: 60,
+                    placeholder: "Inserisci la motivazione del blocco...",
+                    liveChange: (oEvent) => {
+                        const sValRaw = oEvent.getParameter("value") || "";
+
+                        // Il bottone si abilita solo se c'è contenuto reale (non solo spazi)
+                        this._oBloccaConfirmBtn.setEnabled(sValRaw.trim().length > 0);
+                    }
+                });
+
+                this._oBloccaConfirmBtn = new sap.m.Button({
+                    text: "Conferma blocco",
+                    type: "Emphasized",
+                    enabled: false,
+                    press: async () => {
+                        const sValRaw = this._oMotivoInput.getValue() || ""; // NO trim (spazi inclusi)
+                        const sMotivoToSave = sValRaw.trim();                // trim solo per salvataggio
+
+                        if (!sMotivoToSave) {
+                            sap.m.MessageToast.show("Inserisci una motivazione.");
+                            return;
+                        }
+
+                        // Anche se maxLength blocca già, manteniamo comunque la validazione (difensivo)
+                        if (sValRaw.length > 60) {
+                            sap.m.MessageBox.warning("Motivo troppo lungo (max 60 caratteri, spazi inclusi).");
+                            return;
+                        }
+
+                        this._oBloccaDialog.close();
+                        await this._bloccaFatturaSingola(this._sBloccaId, sMotivoToSave);
+                    }
+                });
+
+                this._oBloccaDialog = new sap.m.Dialog({
+                    title: "Blocca fattura",
+                    contentWidth: "560px",
+                    resizable: true,
+                    draggable: true,
+                    horizontalScrolling: false,
+                    content: [
+                        new sap.m.VBox({
+                            width: "100%",
+                            items: [
+                                new sap.m.Text({ text: "Motivazione blocco (max 60 caratteri)" })
+                                    .addStyleClass("sapUiTinyMarginBottom"),
+                                this._oMotivoInput
+                            ]
+                        })
+                    ],
+                    beginButton: this._oBloccaConfirmBtn,
+                    endButton: new sap.m.Button({
+                        text: "Annulla",
+                        press: () => this._oBloccaDialog.close()
+                    }),
+                    afterClose: () => {
+                        this._oMotivoInput.setValue("");
+                        this._oBloccaConfirmBtn.setEnabled(false);
+                    }
+                });
+
+                // Padding vero (come da test)
+                this._oBloccaDialog.addStyleClass("sapUiContentPadding");
+
+                this.getView().addDependent(this._oBloccaDialog);
+            }
+
+            this._sBloccaId = sId;
+            this._oBloccaDialog.open();
+        },
+
+
+        _bloccaFatturaSingola: async function (sId, sMotivo) {
+            const oODataModel = this.getOwnerComponent().getModel("mainService");
+
+            sap.ui.core.BusyIndicator.show(0);
+
+            try {
+                await this._putBloccoMotivo(oODataModel, sId, sMotivo);
+                sap.m.MessageToast.show("Fattura bloccata con successo.");
+
+                this.byId("idTreeTable").clearSelection();
+                this._bindTable(true);
+            } catch (e) {
+                console.error(e);
+                sap.m.MessageBox.error("Errore nel blocco fattura.");
+            } finally {
+                sap.ui.core.BusyIndicator.hide();
+            }
+        },
+
+        _putBloccoMotivo: function (oODataModel, sId, sMotivo) {
+            const sPath = oODataModel.createKey("/ZC_EIM_FPXML", { ID: sId });
+
+            const oPayload = {
+                Blocco: true,
+                Motivo: sMotivo
+            };
+
+            return new Promise((resolve, reject) => {
+                oODataModel.update(sPath, oPayload, {
+                    merge: true,
+                    success: resolve,
+                    error: reject
+                });
+            });
+        },
+
+
+        onExit: function () {
+            if (this._oXmlDialog) {
+                this._oXmlDialog.destroy();
+                this._oXmlDialog = null;
+                this._oXmlEditor = null;
+            }
+            if (this._oBloccaDialog) {
+                this._oBloccaDialog.destroy();
+                this._oBloccaDialog = null;
+                this._oMotivoInput = null;
+                this._oBloccaConfirmBtn = null;
+                this._sBloccaId = null;
+            }
+        },
+
+
 
 
     });
