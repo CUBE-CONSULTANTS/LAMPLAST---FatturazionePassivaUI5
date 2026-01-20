@@ -770,12 +770,12 @@ sap.ui.define([
             this._sBloccaRowPath = `/results/${iIndex}`;
 
             const oRow = oJson.getProperty(this._sBloccaRowPath);
-            if (!oRow || !oRow.ID) {
+            if (!oRow || !oRow.Id) {
                 sap.m.MessageToast.show("ID mancante sulla riga selezionata.");
                 return;
             }
 
-            this._openBloccaDialogSingle(oRow.ID);
+            this._openBloccaDialogSingle(oRow.Id);
         },
 
         _openBloccaDialogSingle: function (sId) {
@@ -807,7 +807,7 @@ sap.ui.define([
                             return;
                         }
 
-                        // Anche se maxLength blocca già, manteniamo comunque la validazione (difensivo)
+                        // Anche se maxLength blocca già, manteniamo comunque la validazione
                         if (sValRaw.length > 60) {
                             sap.m.MessageBox.warning("Motivo troppo lungo (max 60 caratteri, spazi inclusi).");
                             return;
@@ -862,22 +862,29 @@ sap.ui.define([
 
             try {
                 await this._putBloccoMotivo(oODataModel, sId, sMotivo);
+            } catch (e) {
+                sap.m.MessageBox.error("Errore nel blocco fattura (PUT).");
+                return;
+            } finally {
+                sap.ui.core.BusyIndicator.hide();
+            }
 
-                // update locale
+            try {
+
                 const oJson = this.getView().getModel("fattureModel");
                 if (this._sBloccaRowPath) {
                     oJson.setProperty(this._sBloccaRowPath + "/CodBlocco", true);
+
                     oJson.setProperty(this._sBloccaRowPath + "/MotivoBlocco", sMotivo);
+
                     oJson.refresh(true);
                 }
 
                 this.byId("idTreeTable").clearSelection();
+
                 sap.m.MessageToast.show("Fattura bloccata con successo.");
-            } catch (e) {
-                console.error(e);
-                sap.m.MessageBox.error("Errore nel blocco fattura.");
-            } finally {
-                sap.ui.core.BusyIndicator.hide();
+            } catch {
+                sap.m.MessageToast.show("Blocco eseguito, ma aggiornamento UI parziale.");
             }
         },
 
@@ -898,6 +905,122 @@ sap.ui.define([
             });
         },
 
+        onSbloccaFattura: function () {
+            const oTable = this.byId("idTreeTable");
+            const aSelectedIndices = oTable.getSelectedIndices();
+
+            if (aSelectedIndices.length === 0) {
+                sap.m.MessageToast.show("Seleziona una fattura da sbloccare.");
+                return;
+            }
+            if (aSelectedIndices.length > 1) {
+                sap.m.MessageToast.show("Puoi sbloccare una sola fattura alla volta.");
+                return;
+            }
+
+            const iIndex = aSelectedIndices[0];
+            const oJson = this.getView().getModel("fattureModel");
+            this._sSbloccaRowPath = `/results/${iIndex}`;
+
+            const oRow = oJson.getProperty(this._sSbloccaRowPath);
+            console.log(oRow);
+            if (!oRow || !oRow.Id) {
+                sap.m.MessageToast.show("ID mancante sulla riga selezionata.");
+                return;
+            }
+
+            if (!oRow.CodBlocco) {
+                sap.m.MessageToast.show("La fattura selezionata non risulta bloccata.");
+                return;
+            }
+
+            this._openSbloccaDialogSingle(oRow.Id);
+        },
+
+        _openSbloccaDialogSingle: function (sId) {
+            if (!this._oSbloccaDialog) {
+                this._oSbloccaConfirmBtn = new sap.m.Button({
+                    text: "Conferma sblocco",
+                    type: "Emphasized",
+                    press: async () => {
+                        this._oSbloccaDialog.close();
+                        await this._sbloccaFatturaSingola(this._sSbloccaId);
+                    }
+                });
+
+                this._oSbloccaDialog = new sap.m.Dialog({
+                    title: "Sblocca fattura",
+                    contentWidth: "560px",
+                    resizable: true,
+                    draggable: true,
+                    horizontalScrolling: false,
+                    content: [
+                        new sap.m.VBox({
+                            width: "100%",
+                            items: [
+                                new sap.m.Text({
+                                    text: "Confermi lo sblocco della fattura selezionata?"
+                                })
+                            ]
+                        })
+                    ],
+                    beginButton: this._oSbloccaConfirmBtn,
+                    endButton: new sap.m.Button({
+                        text: "Annulla",
+                        press: () => this._oSbloccaDialog.close()
+                    })
+                });
+
+                this._oSbloccaDialog.addStyleClass("sapUiContentPadding");
+                this.getView().addDependent(this._oSbloccaDialog);
+            }
+
+            this._sSbloccaId = sId;
+            this._oSbloccaDialog.open();
+        },
+
+        _sbloccaFatturaSingola: async function (sId) {
+            const oODataModel = this.getOwnerComponent().getModel("mainService");
+            sap.ui.core.BusyIndicator.show(0);
+
+            try {
+                await this._putSblocca(oODataModel, sId);
+
+                const oJson = this.getView().getModel("fattureModel");
+                if (this._sSbloccaRowPath) {
+                    oJson.setProperty(this._sSbloccaRowPath + "/CodBlocco", false);
+                    oJson.setProperty(this._sSbloccaRowPath + "/MotivoBlocco", "");
+                    oJson.refresh(true);
+                }
+
+                this.byId("idTreeTable").clearSelection();
+                sap.m.MessageToast.show("Fattura sbloccata con successo.");
+            } catch (e) {
+                console.error(e);
+                sap.m.MessageBox.error("Errore nello sblocco fattura.");
+            } finally {
+                sap.ui.core.BusyIndicator.hide();
+            }
+        },
+
+        _putSblocca: function (oODataModel, sId) {
+            const sPath = oODataModel.createKey("/ZC_EIM_FPXML", { ID: sId });
+
+            const oPayload = {
+                Blocco: false,
+                Motivo: ""
+            };
+
+            return new Promise((resolve, reject) => {
+                oODataModel.update(sPath, oPayload, {
+                    merge: true,
+                    success: resolve,
+                    error: reject
+                });
+            });
+        },
+
+
 
         onExit: function () {
             if (this._oXmlDialog) {
@@ -912,7 +1035,131 @@ sap.ui.define([
                 this._oBloccaConfirmBtn = null;
                 this._sBloccaId = null;
             }
+
+            if (this._oSbloccaDialog) {
+                this._oSbloccaDialog.destroy();
+                this._oSbloccaDialog = null;
+                this._oSbloccaConfirmBtn = null;
+                this._sSbloccaId = null;
+            }
         },
+
+        //Aprire una dialog per popolare i dati di logistica della fattura
+        onFatturaLogistica: function () {
+            const oTable = this.byId("idTreeTable");
+            const aSelectedIndices = oTable.getSelectedIndices();
+
+            if (aSelectedIndices.length === 0) {
+                sap.m.MessageToast.show("Seleziona una fattura.");
+                return;
+            }
+            if (aSelectedIndices.length > 1) {
+                sap.m.MessageToast.show("Puoi compilare i dati di logistica di una sola fattura alla volta.");
+                return;
+            }
+
+            const iIndex = aSelectedIndices[0];
+            const oJson = this.getView().getModel("fattureModel");
+
+            const oRow = oJson.getProperty(`/results/${iIndex}`);
+            if (!oRow || !oRow.Id) {
+                sap.m.MessageToast.show("ID mancante sulla riga selezionata.");
+                return;
+            }
+
+            this._openFatturaLogisticaDialog(oRow.Id);
+
+        },
+
+        _openFatturaLogisticaDialog: function (sId) {
+
+            if (!this._oFatturaLogisticaDialog) {
+
+                this._oFatturaLogisticaModel = new sap.ui.model.json.JSONModel({
+                    GruppoCM: "",
+                    DescrizioneGruppoCM: "",
+                    Campo3: "",
+                    Campo4: ""
+                });
+
+                this._oFatturaLogisticaDialog = new sap.m.Dialog({
+                    title: "Dati Fattura Logistica",
+                    contentWidth: "600px",
+                    resizable: true,
+                    draggable: true,
+                    horizontalScrolling: false,
+                    content: [
+                        new sap.m.VBox({
+                            width: "100%",
+                            items: [
+                                new sap.m.Label({ text: "Gruppo CM" }),
+                                new sap.m.Input({
+                                    width: "100%",
+                                    value: "{logModel>/GruppoCM}"
+                                }).addStyleClass("sapUiSmallMarginBottom"),
+
+                                new sap.m.Label({ text: "Descrizione Gruppo CM" }),
+                                new sap.m.Input({
+                                    width: "100%",
+                                    value: "{logModel>/DescrizioneGruppoCM}"
+                                }).addStyleClass("sapUiSmallMarginBottom"),
+
+                                new sap.m.Label({ text: "Campo 3" }),
+                                new sap.m.Input({
+                                    width: "100%",
+                                    value: "{logModel>/Campo3}"
+                                }).addStyleClass("sapUiSmallMarginBottom"),
+
+                                new sap.m.Label({ text: "Campo 4" }),
+                                new sap.m.Input({
+                                    width: "100%",
+                                    value: "{logModel>/Campo4}"
+                                }).addStyleClass("sapUiSmallMarginBottom")
+                            ]
+                        })
+                    ],
+                    beginButton: new sap.m.Button({
+                        text: "Salva",
+                        type: "Emphasized",
+                        press: () => {
+                            const oPayload = this._oFatturaLogisticaModel.getData();
+
+
+                            sap.m.MessageToast.show("Dati di logistica salvati con successo.");
+                            this._oFatturaLogisticaDialog.close();
+                        }
+                    }),
+                    endButton: new sap.m.Button({
+                        text: "Chiudi",
+                        type: "Emphasized",
+                        press: () => this._oFatturaLogisticaDialog.close()
+                    }),
+                    afterClose: () => {
+
+
+                        this._oFatturaLogisticaModel.setData({
+                            GruppoCM: "",
+                            DescrizioneGruppoCM: "",
+                            Campo3: "",
+                            Campo4: ""
+                        }, true);
+
+
+                        const oTable = this.byId("idTreeTable");
+                        if (oTable) oTable.clearSelection();
+                    }
+                });
+
+                this._oFatturaLogisticaDialog.addStyleClass("sapUiContentPadding");
+                this._oFatturaLogisticaDialog.setModel(this._oFatturaLogisticaModel, "logModel");
+
+                this.getView().addDependent(this._oFatturaLogisticaDialog);
+            }
+
+            //Chiamata per salvare...
+
+            this._oFatturaLogisticaDialog.open();
+        }
 
 
 

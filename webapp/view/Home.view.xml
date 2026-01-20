@@ -302,13 +302,13 @@
                             <Button
                                 type="Transparent"
                                 icon="sap-icon://attachment"
-                                enabled="{= ${fattureModel>TipoAllegato} &amp;&amp; ${fattureModel>TipoAllegato} !== '0' }"
+                                enabled="{= Boolean(${fattureModel>TipoAllegato}) &amp;&amp; ${fattureModel>TipoAllegato} !== '0' }"
                                 tooltip="{path: 'fattureModel>TipoAllegato', formatter: '.formatter.allegatoText'}"
                                 press=".onVisualizzaAllegato"
                             />
                         </table:template>
                     </table:Column>
-                                        <table:Column width="5rem">
+                    <table:Column width="5rem">
                         <table:label>
                             <Label text="XML" />
                         </table:label>
@@ -715,7 +715,7 @@
                     text="Sblocca"
                     icon="sap-icon://unlocked"
                     tooltip="Sblocca"
-                    press=".onSblocca"
+                    press=".onSbloccaFattura"
                     type="Emphasized"
                 />
                 <!-- 8. Archivia Fattura -->
