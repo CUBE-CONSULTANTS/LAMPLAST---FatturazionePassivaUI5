@@ -18,7 +18,6 @@ sap.ui.define([
 
             // ViewModel (flow + contatori)
             var oViewModel = new sap.ui.model.json.JSONModel({
-                currentFlow: "sd",
                 counts: {
                     All: 0,
                     NotAllowed: 0,   // stato 0
@@ -760,22 +759,23 @@ sap.ui.define([
                 sap.m.MessageToast.show("Seleziona una fattura da bloccare.");
                 return;
             }
-
             if (aSelectedIndices.length > 1) {
                 sap.m.MessageToast.show("Puoi bloccare una sola fattura alla volta.");
                 return;
             }
 
-            const oModel = this.getView().getModel("fattureModel");
-            const oRow = oModel.getProperty(`/results/${aSelectedIndices[0]}`);
+            const iIndex = aSelectedIndices[0];
+            const oJson = this.getView().getModel("fattureModel");
 
-            const sId = oRow && oRow.Id;
-            if (!sId) {
+            this._sBloccaRowPath = `/results/${iIndex}`;
+
+            const oRow = oJson.getProperty(this._sBloccaRowPath);
+            if (!oRow || !oRow.ID) {
                 sap.m.MessageToast.show("ID mancante sulla riga selezionata.");
                 return;
             }
 
-            this._openBloccaDialogSingle(sId);
+            this._openBloccaDialogSingle(oRow.ID);
         },
 
         _openBloccaDialogSingle: function (sId) {
@@ -858,15 +858,21 @@ sap.ui.define([
 
         _bloccaFatturaSingola: async function (sId, sMotivo) {
             const oODataModel = this.getOwnerComponent().getModel("mainService");
-
             sap.ui.core.BusyIndicator.show(0);
 
             try {
                 await this._putBloccoMotivo(oODataModel, sId, sMotivo);
-                sap.m.MessageToast.show("Fattura bloccata con successo.");
+
+                // update locale
+                const oJson = this.getView().getModel("fattureModel");
+                if (this._sBloccaRowPath) {
+                    oJson.setProperty(this._sBloccaRowPath + "/CodBlocco", true);
+                    oJson.setProperty(this._sBloccaRowPath + "/MotivoBlocco", sMotivo);
+                    oJson.refresh(true);
+                }
 
                 this.byId("idTreeTable").clearSelection();
-                this._bindTable(true);
+                sap.m.MessageToast.show("Fattura bloccata con successo.");
             } catch (e) {
                 console.error(e);
                 sap.m.MessageBox.error("Errore nel blocco fattura.");
