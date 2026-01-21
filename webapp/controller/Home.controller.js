@@ -1159,8 +1159,126 @@ sap.ui.define([
             //Chiamata per salvare...
 
             this._oFatturaLogisticaDialog.open();
-        }
+        },
 
+        onNavToFornitore: async function (oEvent) {
+            try {
+                const oContext = oEvent.getSource().getBindingContext("fattureModel");
+                if (!oContext) {
+                    sap.m.MessageToast.show("Impossibile determinare il cliente selezionato.");
+                    return;
+                }
+
+                const oData = oContext.getObject();
+                const SupplierCode = oData.SupplierCode;
+                if (!SupplierCode) {
+                    sap.m.MessageToast.show("Cliente (SupplierCode) non disponibile.");
+                    return;
+                }
+
+                const oCrossAppNav = await sap.ushell.Container.getServiceAsync("CrossApplicationNavigation");
+
+                const sHash = oCrossAppNav.hrefForExternal({
+                    target: {
+                        semanticObject: "Customer",
+                        action: "manage"
+                    },
+                    params: {
+                        Customer: SupplierCode
+                    }
+                });
+
+                const sEntityPath = `/C_BusinessPartnerCustomer(BusinessPartner='${SupplierCode}',DraftUUID=guid'00000000-0000-0000-0000-000000000000',IsActiveEntity=true)`;
+
+                const sFullUrl = window.location.origin + "/ui" + sHash + "&sap-app-origin-hint=&" + sEntityPath;
+
+                window.open(sFullUrl, "_blank");
+
+            } catch (err) {
+                console.error("Errore nella navigazione Cross-App:", err);
+                sap.m.MessageBox.error("Impossibile aprire l'app Customer - Manage.");
+            }
+        },
+
+        onFinanceDocumentLinkPress: async function (oEvent) {
+            try {
+                const oContext = oEvent.getSource().getBindingContext("fattureModel");
+                if (!oContext) {
+                    sap.m.MessageToast.show("Impossibile determinare il cliente selezionato.");
+                    return;
+                }
+
+                const oData = oContext.getObject();
+                const belnr = oData.FinanceDocument;
+                const bukrs = oData.CompanyCode;
+                const gjahr = oData.FiscalYear;
+
+                const Navigation = await sap.ushell.Container.getServiceAsync("Navigation");
+
+                const sHref = await Navigation.getHref({
+                    target: {
+                        semanticObject: "AccountingDocument",
+                        action: "displayV2"
+                    },
+                    params: {
+                        AccountingDocument: belnr,
+                        CompanyCode: bukrs,
+                        FiscalYear: gjahr
+
+                    }
+                });
+
+                console.log(" Navigazione FLP:", sHref);
+
+                window.open(sHref, "_blank");
+            } catch (err) {
+                console.error("Errore nella navigazione Cross-App:", err);
+            }
+        },
+
+        onDocumentNumberLinkPress: async function (oEvent) {
+            try {
+                const oContext = oEvent.getSource().getBindingContext("fattureModel");
+                if (!oContext) {
+                    sap.m.MessageToast.show("Impossibile determinare la riga selezionata.");
+                    return;
+                }
+
+                const oData = oContext.getObject();
+
+                const belnr = oData.DocumentNumber;
+                const gjahr = oData.FiscalYear;
+
+                if (!belnr || !gjahr) {
+                    sap.m.MessageToast.show("Dati mancanti: FinanceDocument o FiscalYear.");
+                    return;
+                }
+
+                const oCrossAppNav = await sap.ushell.Container.getServiceAsync("CrossApplicationNavigation");
+
+                const sHash = oCrossAppNav.hrefForExternal({
+                    target: {
+                        semanticObject: "SupplierInvoice",
+                        action: "displayAdvanced"
+                    },
+                    params: {
+                        SupplierInvoice: belnr,
+                        FiscalYear: gjahr
+                    }
+                });
+
+                if (!sHash) {
+                    sap.m.MessageToast.show("Impossibile generare la navigazione (inbound mancante).");
+                    return;
+                }
+
+                window.open(sHash, "_blank");
+
+            } catch (err) {
+                console.error("Errore nella navigazione Cross-App:", err);
+                sap.m.MessageToast.show("Errore nella navigazione verso app standard.");
+            }
+        }
 
 
 

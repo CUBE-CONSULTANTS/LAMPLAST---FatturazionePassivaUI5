@@ -327,7 +327,7 @@
                             <Label text="N. doc." />
                         </table:label>
                         <table:template>
-                            <Text text="{fattureModel>DocumentNumber}" />
+                            <Link text="{fattureModel>DocumentNumber}" press="onDocumentNumberLinkPress"/>
                         </table:template>
                     </table:Column>
                     <!-- Esercizio (solo testata, le righe figlie non ce l’hanno) -->
@@ -431,7 +431,7 @@
                             <Label text="Codice Fornitore" />
                         </table:label>
                         <table:template>
-                            <Text text="{fattureModel>SupplierCode}" />
+                            <Link text="{fattureModel>SupplierCode}" press="onNavToFornitore"/>
                         </table:template>
                     </table:Column>
                     <!-- Nome Fornitore -->
@@ -532,7 +532,7 @@
                             <Label text="Doc Contabile" />
                         </table:label>
                         <table:template>
-                            <Text text="{fattureModel>FinanceDocument}" />
+                            <Link text="{fattureModel>FinanceDocument}" press="onFinanceDocumentLinkPress"/>
                         </table:template>
                     </table:Column>
                     <!-- Data registrazione -->
