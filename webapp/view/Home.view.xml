@@ -326,10 +326,22 @@
                         <table:label>
                             <Label text="N. doc." />
                         </table:label>
+
                         <table:template>
-                            <Link text="{fattureModel>DocumentNumber}" press="onDocumentNumberLinkPress"/>
+                            <VBox renderType="Bare">
+                                <Link
+                                    text="{fattureModel>DocumentNumber}"
+                                    press=".onDocumentNumberLinkPress"
+                                    visible="{= ${fattureModel>TipoFattura} === 'M' }"
+                                />
+                                <Text
+                                    text="{fattureModel>DocumentNumber}"
+                                    visible="{= ${fattureModel>TipoFattura} !== 'M' }"
+                                />
+                            </VBox>
                         </table:template>
                     </table:Column>
+
                     <!-- Esercizio (solo testata, le righe figlie non ce l’hanno) -->
                     <table:Column width="6rem">
                         <table:label>
@@ -431,7 +443,10 @@
                             <Label text="Codice Fornitore" />
                         </table:label>
                         <table:template>
-                            <Link text="{fattureModel>SupplierCode}" press="onNavToFornitore"/>
+                            <Link
+                                text="{fattureModel>SupplierCode}"
+                                press="onNavToFornitore"
+                            />
                         </table:template>
                     </table:Column>
                     <!-- Nome Fornitore -->
@@ -531,10 +546,22 @@
                         <table:label>
                             <Label text="Doc Contabile" />
                         </table:label>
+
                         <table:template>
-                            <Link text="{fattureModel>FinanceDocument}" press="onFinanceDocumentLinkPress"/>
+                            <VBox renderType="Bare">
+                                <Link
+                                    text="{fattureModel>FinanceDocument}"
+                                    press=".onFinanceDocumentLinkPress"
+                                    visible="{= ${fattureModel>TipoFattura} !== 'M' }"
+                                />
+                                <Text
+                                    text="{fattureModel>FinanceDocument}"
+                                    visible="{= ${fattureModel>TipoFattura} === 'M' }"
+                                />
+                            </VBox>
                         </table:template>
                     </table:Column>
+
                     <!-- Data registrazione -->
                     <table:Column width="10rem">
                         <table:label>

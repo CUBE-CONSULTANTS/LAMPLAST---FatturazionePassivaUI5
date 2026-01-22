@@ -1180,15 +1180,15 @@ sap.ui.define([
 
                 const sHash = oCrossAppNav.hrefForExternal({
                     target: {
-                        semanticObject: "Customer",
-                        action: "manage"
+                        semanticObject: "Supplier",
+                        action: "displayFactSheet"
                     },
                     params: {
                         Customer: SupplierCode
                     }
                 });
 
-                const sEntityPath = `/C_BusinessPartnerCustomer(BusinessPartner='${SupplierCode}',DraftUUID=guid'00000000-0000-0000-0000-000000000000',IsActiveEntity=true)`;
+                const sEntityPath = `/C_SupplierFs('${SupplierCode}')`;
 
                 const sFullUrl = window.location.origin + "/ui" + sHash + "&sap-app-origin-hint=&" + sEntityPath;
 
