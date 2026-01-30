@@ -308,7 +308,7 @@
                             />
                         </table:template>
                     </table:Column>
-                    <table:Column width="5rem">
+                    <table:Column width="4rem">
                         <table:label>
                             <Label text="XML" />
                         </table:label>
@@ -321,8 +321,22 @@
                         </table:template>
                     </table:Column>
 
+                    <table:Column width="4rem">
+                        <table:label>
+                            <Label text="Fattura" />
+                        </table:label>
+                        <table:template>
+                            <Button
+                                type="Transparent"
+                                icon="sap-icon://pdf-attachment"
+                                tooltip="Visualizza Fattura"
+                                press=".onVisualizzaPDF"
+                            />
+                        </table:template>
+                    </table:Column>
+
                     <!-- N. doc. (presente su padre e figlio) -->
-                    <table:Column width="10rem">
+                    <table:Column width="7rem">
                         <table:label>
                             <Label text="N. doc." />
                         </table:label>
@@ -331,12 +345,7 @@
                             <VBox renderType="Bare">
                                 <Link
                                     text="{fattureModel>DocumentNumber}"
-                                    press=".onDocumentNumberLinkPress"
-                                    visible="{= ${fattureModel>TipoFattura} === 'M' }"
-                                />
-                                <Text
-                                    text="{fattureModel>DocumentNumber}"
-                                    visible="{= ${fattureModel>TipoFattura} !== 'M' }"
+                                    press=".onDocumentNumberLinkPressConditional"
                                 />
                             </VBox>
                         </table:template>
@@ -459,27 +468,27 @@
                         </table:template>
                     </table:Column>
                     <!-- Gruppo Conti -->
-                    <table:Column width="14rem">
+                    <!-- <table:Column width="14rem">
                         <table:label>
                             <Label text="Gruppo Conti" />
                         </table:label>
                         <table:template>
                             <Text text="{fattureModel>SupplAcctGroup}" />
                         </table:template>
-                    </table:Column>
+                    </table:Column> -->
                     <!-- Tipo Documento Cod. -->
-                    <table:Column width="14rem">
+                    <table:Column width="6rem">
                         <table:label>
-                            <Label text="Tipo Documento Cod." />
+                            <Label text="Tipo Fatt" />
                         </table:label>
                         <table:template>
                             <Text text="{fattureModel>TipoDocAdE}" />
                         </table:template>
                     </table:Column>
                     <!-- Tipo Documento Descr. -->
-                    <table:Column width="14rem">
+                    <table:Column width="6rem">
                         <table:label>
-                            <Label text="Tipo Documento Descr." />
+                            <Label text="Descrizione" />
                         </table:label>
                         <table:template>
                             <Text text="{fattureModel>TipoDocText}" />
@@ -488,10 +497,21 @@
                     <!-- numero fattura fornitore. -->
                     <table:Column width="14rem">
                         <table:label>
-                            <Label text="N. Fattura Fornitore" />
+                            <Label text="N. Fat Fornitore" />
                         </table:label>
                         <table:template>
                             <Text text="{fattureModel>NumeroFattura}" />
+                        </table:template>
+                    </table:Column>
+                    <!-- Data Fattura -->
+                    <table:Column width="6rem">
+                        <table:label>
+                            <Label text="Data Fat" />
+                        </table:label>
+                        <table:template>
+                            <Text
+                                text="{path: 'fattureModel>DataFattura', formatter: '.formatter.formatDate'}"
+                            />
                         </table:template>
                     </table:Column>
                     <!-- Divisa -->
@@ -503,17 +523,7 @@
                             <Text text="{fattureModel>Divisa}" />
                         </table:template>
                     </table:Column>
-                    <!-- Data Fattura -->
-                    <table:Column width="6rem">
-                        <table:label>
-                            <Label text="Data Fattura" />
-                        </table:label>
-                        <table:template>
-                            <Text
-                                text="{path: 'fattureModel>DataFattura', formatter: '.formatter.formatDate'}"
-                            />
-                        </table:template>
-                    </table:Column>
+
                     <!-- Causale -->
                     <table:Column width="14rem">
                         <table:label>
@@ -551,21 +561,16 @@
                             <VBox renderType="Bare">
                                 <Link
                                     text="{fattureModel>FinanceDocument}"
-                                    press=".onFinanceDocumentLinkPress"
-                                    visible="{= ${fattureModel>TipoFattura} !== 'M' }"
-                                />
-                                <Text
-                                    text="{fattureModel>FinanceDocument}"
-                                    visible="{= ${fattureModel>TipoFattura} === 'M' }"
+                                    press="onFinanceDocumentLinkPress"
                                 />
                             </VBox>
                         </table:template>
                     </table:Column>
 
                     <!-- Data registrazione -->
-                    <table:Column width="10rem">
+                    <table:Column width="8rem">
                         <table:label>
-                            <Label text="Data registrazione" />
+                            <Label text="Data registr." />
                         </table:label>
                         <table:template>
                             <Text
@@ -583,25 +588,25 @@
                         </table:template>
                     </table:Column>
                     <!-- Codice Destinatario SDI-->
-                    <table:Column width="14rem">
+                    <!-- <table:Column width="14rem">
                         <table:label>
                             <Label text="Codice Destinatario SDI" />
                         </table:label>
                         <table:template>
                             <Text text="{fattureModel>CodDestinatario}" />
                         </table:template>
-                    </table:Column>
+                    </table:Column> -->
                     <!-- Numerdo SDI-->
-                    <table:Column width="14rem">
+                    <!-- <table:Column width="14rem">
                         <table:label>
                             <Label text="Numero SDI" />
                         </table:label>
                         <table:template>
                             <Text text="{fattureModel>NumeroSDI}" />
                         </table:template>
-                    </table:Column>
+                    </table:Column> -->
                     <!-- Data ricevimento -->
-                    <table:Column width="10rem">
+                    <!-- <table:Column width="10rem">
                         <table:label>
                             <Label text="Data ricevimento" />
                         </table:label>
@@ -610,52 +615,52 @@
                                 text="{path: 'fattureModel>DataSDI', formatter: '.formatter.formatDate'}"
                             />
                         </table:template>
-                    </table:Column>
+                    </table:Column> -->
                     <!-- PIVA -->
-                    <table:Column width="10rem">
+                    <!-- <table:Column width="10rem">
                         <table:label>
                             <Label text="Partita IVA" />
                         </table:label>
                         <table:template>
                             <Text text="{fattureModel>PartitaIVAcee}" />
                         </table:template>
-                    </table:Column>
+                    </table:Column> -->
                     <!-- Codice Fiscale-->
-                    <table:Column width="10rem">
+                    <!-- <table:Column width="10rem">
                         <table:label>
                             <Label text="Codice Fiscale" />
                         </table:label>
                         <table:template>
                             <Text text="{fattureModel>CodiceFiscale}" />
                         </table:template>
-                    </table:Column>
+                    </table:Column> -->
                     <!-- Gruppo CM -->
-                    <table:Column width="14rem">
+                    <!-- <table:Column width="14rem">
                         <table:label>
                             <Label text="Gruppo CM" />
                         </table:label>
                         <table:template>
                             <Text text="{fattureModel>CashPlanGroup}" />
                         </table:template>
-                    </table:Column>
+                    </table:Column> -->
                     <!-- Descrizione Gruppo CM -->
-                    <table:Column width="14rem">
+                    <!-- <table:Column width="14rem">
                         <table:label>
                             <Label text="Descrizione Gruppo CM" />
                         </table:label>
                         <table:template>
                             <Text text="{fattureModel>CashPlanGrpDescr}" />
                         </table:template>
-                    </table:Column>
+                    </table:Column> -->
                     <!-- Paese -->
-                    <table:Column width="8rem">
+                    <!-- <table:Column width="8rem">
                         <table:label>
                             <Label text="Paese" />
                         </table:label>
                         <table:template>
                             <Text text="{fattureModel>Paese}" />
                         </table:template>
-                    </table:Column>
+                    </table:Column> -->
                     <!-- Scadenza Pagamento -->
                     <table:Column width="10rem">
                         <table:label>
@@ -686,14 +691,14 @@
                         </table:template>
                     </table:Column>
                     <!-- Archiviato -->
-                    <table:Column width="6rem">
+                    <!-- <table:Column width="6rem">
                         <table:label>
                             <Label text="Archiviato" />
                         </table:label>
                         <table:template>
                             <Text text="{fattureModel>Archiviato}" />
                         </table:template>
-                    </table:Column>
+                    </table:Column> -->
                 </table:columns>
             </table:Table>
         </Panel>

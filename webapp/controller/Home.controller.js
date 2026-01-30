@@ -1045,7 +1045,7 @@ sap.ui.define([
         },
 
         //Aprire una dialog per popolare i dati di logistica della fattura
-        onFatturaLogistica: function () {
+        onFatturaContabile: function () {
             const oTable = this.byId("idTreeTable");
             const aSelectedIndices = oTable.getSelectedIndices();
 
@@ -1067,23 +1067,27 @@ sap.ui.define([
                 return;
             }
 
-            this._openFatturaLogisticaDialog(oRow.Id);
+
+
+            this._openFatturaContabileDialog(oRow);
 
         },
 
-        _openFatturaLogisticaDialog: function (sId) {
+        _openFatturaContabileDialog: function (oRow) {
 
-            if (!this._oFatturaLogisticaDialog) {
+            if (!this._oFatturaContabileDialog) {
 
-                this._oFatturaLogisticaModel = new sap.ui.model.json.JSONModel({
-                    GruppoCM: "",
-                    DescrizioneGruppoCM: "",
-                    Campo3: "",
-                    Campo4: ""
+                this._oFatturaContabileModel = new sap.ui.model.json.JSONModel({
+                    Blart: "",
+                    PostingDate: ""
                 });
 
-                this._oFatturaLogisticaDialog = new sap.m.Dialog({
-                    title: "Dati Fattura Logistica",
+                this._oTpdopModel = new sap.ui.model.json.JSONModel({
+                    value: []
+                });
+
+                this._oFatturaContabileDialog = new sap.m.Dialog({
+                    title: "Dati Fattura Contabile",
                     contentWidth: "600px",
                     resizable: true,
                     draggable: true,
@@ -1092,28 +1096,48 @@ sap.ui.define([
                         new sap.m.VBox({
                             width: "100%",
                             items: [
-                                new sap.m.Label({ text: "Gruppo CM" }),
-                                new sap.m.Input({
+                                new sap.m.Label({ text: "Tipo documento (BLART)" }),
+                                new sap.m.Select({
                                     width: "100%",
-                                    value: "{logModel>/GruppoCM}"
+                                    selectedKey: "{logModel>/Blart}",
+                                    items: {
+                                        path: "tpdopModel>/value",
+                                        template: new sap.ui.core.Item({
+                                            key: "{tpdopModel>Blart}",
+                                            text: "{tpdopModel>Blart}"
+                                        })
+                                    }
                                 }).addStyleClass("sapUiSmallMarginBottom"),
 
-                                new sap.m.Label({ text: "Descrizione Gruppo CM" }),
-                                new sap.m.Input({
+                                new sap.m.Label({ text: "Data registrazione" }),
+                                new sap.m.DatePicker({
+                                    id: this.createId("dpPostingDate"),
                                     width: "100%",
-                                    value: "{logModel>/DescrizioneGruppoCM}"
-                                }).addStyleClass("sapUiSmallMarginBottom"),
+                                    displayFormat: "dd/MM/yyyy",
+                                    valueFormat: "yyyy-MM-dd",
+                                    value: "{logModel>/PostingDate}",
+                                    change: (oEvent) => {
+                                        const oDP = oEvent.getSource();
+                                        const bValid = oEvent.getParameter("valid");
 
-                                new sap.m.Label({ text: "Campo 3" }),
-                                new sap.m.Input({
-                                    width: "100%",
-                                    value: "{logModel>/Campo3}"
-                                }).addStyleClass("sapUiSmallMarginBottom"),
+                                        if (!bValid) {
+                                            oDP.setValueState("Error");
+                                            oDP.setValueStateText("Data non valida.");
+                                            return;
+                                        }
 
-                                new sap.m.Label({ text: "Campo 4" }),
-                                new sap.m.Input({
-                                    width: "100%",
-                                    value: "{logModel>/Campo4}"
+                                        const dVal = oDP.getDateValue();
+                                        const dMin = oDP.getMinDate();
+                                        const dMax = oDP.getMaxDate();
+
+                                        if (dVal && ((dMin && dVal < dMin) || (dMax && dVal > dMax))) {
+                                            oDP.setValueState("Error");
+                                            oDP.setValueStateText("La data deve essere compresa tra Data Fattura e la data odierna.");
+                                        } else {
+                                            oDP.setValueState("None");
+                                            oDP.setValueStateText("");
+                                        }
+                                    }
                                 }).addStyleClass("sapUiSmallMarginBottom")
                             ]
                         })
@@ -1122,44 +1146,142 @@ sap.ui.define([
                         text: "Salva",
                         type: "Emphasized",
                         press: () => {
-                            const oPayload = this._oFatturaLogisticaModel.getData();
-
-
-                            sap.m.MessageToast.show("Dati di logistica salvati con successo.");
-                            this._oFatturaLogisticaDialog.close();
+                            const oPayload = this._oFatturaContabileModel.getData();
+                            sap.m.MessageToast.show("Dati salvati con successo.");
+                            this._oFatturaContabileDialog.close();
                         }
                     }),
                     endButton: new sap.m.Button({
                         text: "Chiudi",
                         type: "Emphasized",
-                        press: () => this._oFatturaLogisticaDialog.close()
+                        press: () => this._oFatturaContabileDialog.close()
                     }),
                     afterClose: () => {
-
-
-                        this._oFatturaLogisticaModel.setData({
-                            GruppoCM: "",
-                            DescrizioneGruppoCM: "",
-                            Campo3: "",
-                            Campo4: ""
+                        this._oFatturaContabileModel.setData({
+                            Blart: "",
+                            PostingDate: ""
                         }, true);
 
+                        this._oTpdopModel.setProperty("/value", []);
+
+                        const oDP = this.byId("dpPostingDate");
+                        if (oDP) {
+                            oDP.setValueState("None");
+                            oDP.setValueStateText("");
+                            oDP.setMinDate(null);
+                            oDP.setMaxDate(null);
+                        }
 
                         const oTable = this.byId("idTreeTable");
                         if (oTable) oTable.clearSelection();
                     }
                 });
 
-                this._oFatturaLogisticaDialog.addStyleClass("sapUiContentPadding");
-                this._oFatturaLogisticaDialog.setModel(this._oFatturaLogisticaModel, "logModel");
-
-                this.getView().addDependent(this._oFatturaLogisticaDialog);
+                this._oFatturaContabileDialog.addStyleClass("sapUiContentPadding");
+                this._oFatturaContabileDialog.setModel(this._oFatturaContabileModel, "logModel");
+                this._oFatturaContabileDialog.setModel(this._oTpdopModel, "tpdopModel");
+                this.getView().addDependent(this._oFatturaContabileDialog);
             }
 
-            //Chiamata per salvare...
+            const sBukrs = oRow?.CompanyCode;
+            const sBlartAde = oRow?.TipoDocAdE;
 
-            this._oFatturaLogisticaDialog.open();
+            if (!sBukrs || !sBlartAde) {
+                sap.m.MessageToast.show("Dati mancanti: CompanyCode / TipoDocAdE sulla riga.");
+                this._oFatturaContabileDialog.open();
+                return;
+            }
+
+            // Sempre vuoto di default quando si apre
+            this._oFatturaContabileModel.setData({
+                Blart: "",
+                PostingDate: ""
+            }, true);
+
+            // Imposta solo il range DatePicker: >= DataFattura e <= oggi
+            const oDP = this.byId("dpPostingDate");
+            if (oDP) {
+                const dToday = new Date();
+                dToday.setHours(0, 0, 0, 0);
+
+                const dInvoice = this._toDate(oRow?.DataFattura);
+                if (dInvoice) oDP.setMinDate(dInvoice);
+                oDP.setMaxDate(dToday);
+
+                oDP.setValueState("None");
+                oDP.setValueStateText("");
+            }
+
+            const oV2 = this.getOwnerComponent().getModel("mainService");
+            const aFilters = [
+                new sap.ui.model.Filter("Bukrs", sap.ui.model.FilterOperator.EQ, sBukrs),
+                new sap.ui.model.Filter("BlartAde", sap.ui.model.FilterOperator.EQ, sBlartAde),
+                new sap.ui.model.Filter("IsActiveEntity", sap.ui.model.FilterOperator.EQ, true)
+            ];
+
+            sap.ui.core.BusyIndicator.show(0);
+
+            oV2.read("/ZC_EIM_TPDOP", {
+                filters: aFilters,
+                success: (oData) => {
+                    sap.ui.core.BusyIndicator.hide();
+
+                    let aResults = (oData && oData.results) ? oData.results : [];
+                    aResults = [{
+                        Blart: ""
+                    }].concat(aResults);
+
+                    this._oTpdopModel.setProperty("/value", aResults);
+
+                    if (aResults.length === 0) {
+                        sap.m.MessageToast.show("Nessun tipo documento trovato per i filtri indicati.");
+                    }
+
+                    this._oFatturaContabileDialog.open();
+                },
+                error: () => {
+                    sap.ui.core.BusyIndicator.hide();
+                    this._oTpdopModel.setProperty("/value", []);
+                    sap.m.MessageToast.show("Errore nel recupero da ZC_EIM_TPDOP.");
+                    this._oFatturaContabileDialog.open();
+                }
+            });
         },
+
+
+        _toDate: function (v) {
+            if (!v) return null;
+            if (v instanceof Date) {
+                const d = new Date(v.getTime());
+                d.setHours(0, 0, 0, 0);
+                return d;
+            }
+            if (typeof v === "string") {
+                if (/^\d{4}-\d{2}-\d{2}/.test(v)) {
+                    const y = Number(v.slice(0, 4));
+                    const m = Number(v.slice(5, 7));
+                    const d = Number(v.slice(8, 10));
+                    const dt = new Date(y, m - 1, d);
+                    dt.setHours(0, 0, 0, 0);
+                    return dt;
+                }
+                const dt2 = new Date(v);
+                if (!isNaN(dt2.getTime())) {
+                    dt2.setHours(0, 0, 0, 0);
+                    return dt2;
+                }
+            }
+            return null;
+        },
+
+        _toYMD: function (d) {
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, "0");
+            const day = String(d.getDate()).padStart(2, "0");
+            return `${y}-${m}-${day}`;
+        },
+
+
 
         onNavToFornitore: async function (oEvent) {
             try {
@@ -1200,6 +1322,103 @@ sap.ui.define([
             }
         },
 
+        onDocumentNumberLinkPressConditional: function (oEvent) {
+            const oCtx = oEvent.getSource().getBindingContext("fattureModel");
+            if (!oCtx) {
+                sap.m.MessageToast.show("Impossibile determinare la riga selezionata.");
+                return;
+            }
+
+            const oRow = oCtx.getObject() || {};
+            const sTipo = oRow.TipoFattura; // 'M' = logistica, altrimenti contabile
+            const sDocNumber = oRow.DocumentNumber;
+
+            if (!sDocNumber) {
+                sap.m.MessageToast.show("DocumentNumber mancante.");
+                return;
+            }
+
+            if (sTipo === "M") {
+                this._onApriDocumentoLogistico(sDocNumber, oRow);
+                return;
+            }
+
+            this._onApriDocumentoContabile(sDocNumber, oRow);
+        },
+
+
+        _onApriDocumentoLogistico: async function (sDocNumber, oRow) {
+            try {
+                const belnr = sDocNumber;
+                const gjahr = oRow?.FiscalYear;
+
+                if (!belnr || !gjahr) {
+                    sap.m.MessageToast.show("Dati mancanti: DocumentNumber o FiscalYear.");
+                    return;
+                }
+
+                const oCrossAppNav = await sap.ushell.Container.getServiceAsync("CrossApplicationNavigation");
+
+                const sHash = oCrossAppNav.hrefForExternal({
+                    target: {
+                        semanticObject: "SupplierInvoice",
+                        action: "displayAdvanced"
+                    },
+                    params: {
+                        SupplierInvoice: belnr,
+                        FiscalYear: gjahr
+                    }
+                });
+
+                if (!sHash) {
+                    sap.m.MessageToast.show("Impossibile generare la navigazione (inbound mancante).");
+                    return;
+                }
+
+                window.open(sHash, "_blank");
+            } catch (err) {
+                console.error("Errore navigazione logistica:", err);
+                sap.m.MessageToast.show("Errore nella navigazione verso app standard (logistica).");
+            }
+        },
+
+        _onApriDocumentoContabile: async function (sDocNumber, oRow) {
+            try {
+                const belnr = oRow?.FinanceDocument || sDocNumber;
+                const bukrs = oRow?.CompanyCode;
+                const gjahr = oRow?.FiscalYear;
+
+                if (!belnr || !bukrs || !gjahr) {
+                    sap.m.MessageToast.show("Dati mancanti: FinanceDocument, CompanyCode o FiscalYear.");
+                    return;
+                }
+
+                const Navigation = await sap.ushell.Container.getServiceAsync("Navigation");
+
+                const sHref = await Navigation.getHref({
+                    target: {
+                        semanticObject: "AccountingDocument",
+                        action: "displayV2"
+                    },
+                    params: {
+                        AccountingDocument: belnr,
+                        CompanyCode: bukrs,
+                        FiscalYear: gjahr
+                    }
+                });
+
+                if (!sHref) {
+                    sap.m.MessageToast.show("Impossibile generare la navigazione contabile.");
+                    return;
+                }
+
+                window.open(sHref, "_blank");
+            } catch (err) {
+                console.error("Errore navigazione contabile:", err);
+                sap.m.MessageToast.show("Errore nella navigazione verso app standard (contabile).");
+            }
+        },
+
         onFinanceDocumentLinkPress: async function (oEvent) {
             try {
                 const oContext = oEvent.getSource().getBindingContext("fattureModel");
@@ -1236,47 +1455,71 @@ sap.ui.define([
             }
         },
 
-        onDocumentNumberLinkPress: async function (oEvent) {
+
+        onVisualizzaPDF: async function (oEvent) {
+            const oCtx = oEvent.getSource().getBindingContext("fattureModel");
+            const oDataModel = this.getOwnerComponent().getModel("mainService");
+
+            if (!oCtx) {
+                sap.m.MessageToast.show("Impossibile determinare la riga selezionata.");
+                return;
+            }
+
+            const oRow = oCtx.getObject() || {};
+            const sFileName = oRow.FileName;
+
+            if (!sFileName) {
+                sap.m.MessageToast.show("FileName mancante sulla riga.");
+                return;
+            }
+
+            const sPath = oDataModel.createKey("/ZEIM_PDFFATTURA", { FileName: sFileName });
+
+            sap.ui.core.BusyIndicator.show(0);
+
             try {
-                const oContext = oEvent.getSource().getBindingContext("fattureModel");
-                if (!oContext) {
-                    sap.m.MessageToast.show("Impossibile determinare la riga selezionata.");
-                    return;
-                }
-
-                const oData = oContext.getObject();
-
-                const belnr = oData.DocumentNumber;
-                const gjahr = oData.FiscalYear;
-
-                if (!belnr || !gjahr) {
-                    sap.m.MessageToast.show("Dati mancanti: FinanceDocument o FiscalYear.");
-                    return;
-                }
-
-                const oCrossAppNav = await sap.ushell.Container.getServiceAsync("CrossApplicationNavigation");
-
-                const sHash = oCrossAppNav.hrefForExternal({
-                    target: {
-                        semanticObject: "SupplierInvoice",
-                        action: "displayAdvanced"
-                    },
-                    params: {
-                        SupplierInvoice: belnr,
-                        FiscalYear: gjahr
-                    }
+                const oResponse = await new Promise((resolve, reject) => {
+                    oDataModel.read(sPath, {
+                        success: resolve,
+                        error: reject
+                    });
                 });
 
-                if (!sHash) {
-                    sap.m.MessageToast.show("Impossibile generare la navigazione (inbound mancante).");
+                sap.ui.core.BusyIndicator.hide();
+
+                if (!oResponse || !oResponse.Data) {
+                    sap.m.MessageToast.show("Nessun PDF disponibile per questo documento");
                     return;
                 }
 
-                window.open(sHash, "_blank");
+                const pdfDataUrl = "data:application/pdf;base64," + oResponse.Data;
+
+                const oIframe = new sap.ui.core.HTML({
+                    content: `<iframe src="${pdfDataUrl}" width="100%" height="700px" style="border:none;"></iframe>`
+                });
+
+                const oDialog = new sap.m.Dialog({
+                    title: "Visualizza Fattura (PDF)",
+                    contentWidth: "90%",
+                    contentHeight: "100%",
+                    resizable: true,
+                    draggable: true,
+                    content: [oIframe],
+                    beginButton: new sap.m.Button({
+                        text: "Chiudi",
+                        press: function () { oDialog.close(); }
+                    }),
+                    afterClose: function () { oDialog.destroy(); }
+                });
+
+                oDialog.open();
 
             } catch (err) {
-                console.error("Errore nella navigazione Cross-App:", err);
-                sap.m.MessageToast.show("Errore nella navigazione verso app standard.");
+                sap.ui.core.BusyIndicator.hide();
+                console.error("Errore durante la lettura del PDF:", err);
+
+                const sMsg = err?.message || err?.responseText || "Errore nel recupero del PDF dal backend.";
+                sap.m.MessageBox.error(sMsg);
             }
         }
 
