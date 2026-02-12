@@ -274,7 +274,8 @@
                 enableColumnReordering="true"
                 fixedColumnCount="1"
                 rowActionCount="1"
-            >
+                rowSelectionChange="onRowSelectionChange"
+            >   
                 <table:rowActionTemplate>
                     <table:RowAction>
                         <table:items>
@@ -436,20 +437,21 @@
                         </table:template>
                     </table:Column>
                     <!-- S. Fornitore -->
-                    <table:Column width="8rem">
+                    <table:Column width="4rem">
                         <table:label>
-                            <Label text="Stato Fornitore" />
+                            <Label text="Stato" />
                         </table:label>
                         <table:template>
-                            <Text
-                                text="{path:'fattureModel>SupplierStatus', formatter: '.formatter.supplierStatusText'}"
+                            <core:Icon
+                                src="{ path: 'fattureModel>SupplierStatus', formatter: '.formatter.supplierStatusIconSrc' }"
+                                tooltip="{ path: 'fattureModel>SupplierStatus', formatter: '.formatter.supplierStatusTooltip' }"
                             />
                         </table:template>
                     </table:Column>
                     <!-- Codice Fornitore -->
-                    <table:Column width="8rem">
+                    <table:Column width="6rem">
                         <table:label>
-                            <Label text="Codice Fornitore" />
+                            <Label text="Fornitore" />
                         </table:label>
                         <table:template>
                             <Link
@@ -552,7 +554,7 @@
                         </table:template>
                     </table:Column>
                     <!-- Doc Contabile -->
-                    <table:Column width="14rem">
+                    <table:Column width="7rem">
                         <table:label>
                             <Label text="Doc Contabile" />
                         </table:label>
@@ -579,9 +581,9 @@
                         </table:template>
                     </table:Column>
                     <!-- Tipo Documento SAP -->
-                    <table:Column width="14rem">
+                    <table:Column width="5rem">
                         <table:label>
-                            <Label text="Tipo Documento SAP" />
+                            <Label text="Tipo SAP" />
                         </table:label>
                         <table:template>
                             <Text text="{path: 'fattureModel>DocumentType'}" />
@@ -662,9 +664,9 @@
                         </table:template>
                     </table:Column> -->
                     <!-- Scadenza Pagamento -->
-                    <table:Column width="10rem">
+                    <table:Column width="8rem">
                         <table:label>
-                            <Label text="Scadenza Pagamento" />
+                            <Label text="Data Pagamento" />
                         </table:label>
                         <table:template>
                             <Text
@@ -682,12 +684,15 @@
                         </table:template>
                     </table:Column>
                     <!-- Blocco -->
-                    <table:Column width="6rem">
+                    <table:Column width="4rem">
                         <table:label>
                             <Label text="Blocco" />
                         </table:label>
                         <table:template>
-                            <Text text="{fattureModel>CodBlocco}" />
+                            <core:Icon
+                                src="{= ${fattureModel>CodBlocco} ? 'sap-icon://locked' : 'sap-icon://unlocked' }"
+                                tooltip="{= ${fattureModel>CodBlocco} ? 'Bloccato' : 'Sbloccato' }"
+                            />
                         </table:template>
                     </table:Column>
                     <!-- Archiviato -->
@@ -724,8 +729,9 @@
                 <Button
                     text="Fattura Logistica"
                     icon="sap-icon://shipping-status"
-                    press=".onFatturaLogistica"
+                    press=".onVisualizzaDati"
                     type="Emphasized"
+                    enabled="{viewModel>/ui/canOpenCreateApps}"
                 />
                 <!-- 5. Fattura Contabile -->
                 <Button
@@ -733,6 +739,7 @@
                     icon="sap-icon://expense-report"
                     press=".onFatturaContabile"
                     type="Emphasized"
+                    enabled="{viewModel>/ui/canOpenCreateApps}"
                 />
                 <!-- 6. Lucchetto Blocco -->
                 <Button
@@ -777,6 +784,7 @@
                     icon="sap-icon://doc-attachment"
                     press=".onFatturaLogisticaMiro"
                     type="Emphasized"
+                    enabled="{viewModel>/ui/canOpenCreateApps}"
                 />
             </OverflowToolbar>
         </footer>

@@ -9,10 +9,26 @@ sap.ui.define([
         onInit: function () {
             this.oRouter = sap.ui.core.UIComponent.getRouterFor(this);
 
-            this.oRouter.getRoute("Dettaglio").attachPatternMatched(this._onObjectMatched, this);
+            const oVM = new sap.ui.model.json.JSONModel({
+                ui: { mode: "edit" } // default
+            });
+            this.getView().setModel(oVM, "viewModel");
+
+            this.oRouter.getRoute("Dettaglio").attachPatternMatched(this._onObjectMatchedEdit, this);
+            this.oRouter.getRoute("DettaglioDisplay").attachPatternMatched(this._onObjectMatchedDisplay, this);
         },
 
-        _onObjectMatched: function (oEvent) {
+        _onObjectMatchedEdit: function (oEvent) {
+            this.getView().getModel("viewModel").setProperty("/ui/mode", "edit");
+            this._handleRoute(oEvent);
+        },
+
+        _onObjectMatchedDisplay: function (oEvent) {
+            this.getView().getModel("viewModel").setProperty("/ui/mode", "display");
+            this._handleRoute(oEvent);
+        },
+
+        _handleRoute: function (oEvent) {
             const sInvoiceId = oEvent.getParameter("arguments").invoiceId;
             const oModel = sap.ui.getCore().getModel("SelectedInvoiceModel");
 
@@ -23,7 +39,6 @@ sap.ui.define([
             }
 
             const oSelected = oModel.getProperty("/SelectedInvoice");
-
             if (!oSelected || oSelected.Id !== sInvoiceId) {
                 sap.m.MessageToast.show("La fattura selezionata non è valida.");
                 this.oRouter.navTo("RouteHome");
@@ -34,9 +49,9 @@ sap.ui.define([
             this.getView().bindElement({ path: "/SelectedInvoice" });
 
             this._loadDettaglioFattura(oSelected.FileName);
-
             this._updateTotal();
         },
+
         _loadDettaglioFattura: function (sFileName) {
             if (!sFileName) {
                 MessageToast.show("FileName fattura mancante");
@@ -175,15 +190,21 @@ sap.ui.define([
         },
 
         onBackToHome: function () {
-            const oModel = this.getOwnerComponent().getModel();
 
-            oModel.setProperty("/SelectedInvoice", null);
+            sap.ui.getCore().getEventBus().publish("fatture", "clearSelection");
 
-            this.oRouter.navTo("RouteHome");
+            const oHistory = sap.ui.core.routing.History.getInstance();
+            const sPreviousHash = oHistory.getPreviousHash();
+
+            if (sPreviousHash !== undefined) {
+                window.history.go(-1);
+            } else {
+                this.oRouter.navTo("RouteHome", {}, true);
+            }
         },
 
 
 
-        
+
     });
 });

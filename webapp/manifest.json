@@ -67,7 +67,8 @@
             "minUI5Version": "1.136.8",
             "libs": {
                 "sap.m": {},
-                "sap.ui.core": {}
+                "sap.ui.core": {},
+                "sap.ui.codeeditor": {}
             }
         },
         "contentDensities": {
@@ -153,6 +154,13 @@
                 {
                     "name": "Dettaglio",
                     "pattern": "Dettaglio/{invoiceId}",
+                    "target": [
+                        "TargetDettaglio"
+                    ]
+                },
+                {
+                    "name": "DettaglioDisplay",
+                    "pattern": "DettaglioDisplay/{invoiceId}",
                     "target": [
                         "TargetDettaglio"
                     ]

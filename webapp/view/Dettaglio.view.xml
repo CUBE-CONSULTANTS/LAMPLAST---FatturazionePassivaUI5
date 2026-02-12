@@ -4,15 +4,14 @@
     xmlns:m="sap.m"
     xmlns:uxap="sap.uxap"
     xmlns:layout="sap.ui.layout"
-    xmlns:core="sap.ui.core"
+    
 >
-    <!-- Pagina principale con footer fisso -->
     <m:Page
         id="paginaDettaglio"
         showFooter="true"
         class="sapUiSizeCompact"
+        title="Fattura"
     >
-        <!-- === CONTENUTO PRINCIPALE === -->
         <m:content>
             <uxap:ObjectPageLayout
                 id="objectPageLayout"
@@ -23,12 +22,11 @@
                 isChildPage="true"
                 upperCaseAnchorBar="false"
             >
-                <!-- HEADER TITLE -->
                 <uxap:headerTitle>
                     <uxap:ObjectPageDynamicHeaderTitle>
                         <uxap:expandedHeading>
                             <m:Title
-                                text="{= 'Fattura ' + (${/SelectedInvoice/docNumber} || '')}"
+                                text="{= 'Fattura ' + (${DocumentNumber} || '')}"
                                 wrapping="true"
                             />
                         </uxap:expandedHeading>
@@ -40,40 +38,22 @@
                                     icon="sap-icon://attachment"
                                     press=".onAttribuisciOda"
                                     type="Emphasized"
+                                    visible="{= ${viewModel>/ui/mode} === 'edit' }"
                                 />
                                 <m:Button
                                     text="Attribuisci DDT"
                                     icon="sap-icon://chain-link"
                                     press=".onAttribuisciDDT"
                                     type="Emphasized"
-                                />
-                                <m:Button
-                                    text="PreAcquisire (Qta e Prz da file)"
-                                    icon="sap-icon://warning"
-                                    type="Emphasized"
-                                    press=".onPreAcquisireFile"
-                                />
-                                <m:Button
-                                    text="PreAcquisire dati da Oda Sap"
-                                    icon="sap-icon://download"
-                                    press=".onPreAcquisireOdaSap"
-                                    type="Emphasized"
-                                />
-                                <m:Button
-                                    text="PreAcquisire dati da DDT Sap"
-                                    icon="sap-icon://download"
-                                    press=".onPreAcquisireDdtSap"
-                                    type="Emphasized"
+                                    visible="{= ${viewModel>/ui/mode} === 'edit' }"
                                 />
                             </m:OverflowToolbar>
                         </uxap:actions>
                     </uxap:ObjectPageDynamicHeaderTitle>
                 </uxap:headerTitle>
 
-                <!-- HEADER CONTENT -->
                 <uxap:headerContent>
                     <m:FlexBox wrap="Wrap">
-                        <!-- COLONNA SINISTRA -->
                         <layout:VerticalLayout class="sapUiSmallMarginBeginEnd">
                             <m:ObjectStatus
                                 title="Tipo Documento"
@@ -93,7 +73,6 @@
                             />
                         </layout:VerticalLayout>
 
-                        <!-- COLONNA DESTRA -->
                         <layout:VerticalLayout class="sapUiSmallMarginBeginEnd">
                             <m:ObjectStatus
                                 title="Fornitore"
@@ -111,7 +90,6 @@
                     </m:FlexBox>
                 </uxap:headerContent>
 
-                <!-- SEZIONI -->
                 <uxap:sections>
                     <uxap:ObjectPageSection
                         showTitle="false"
@@ -162,19 +140,13 @@
                                                         text="Prezzo Unitario"
                                                     />
                                                 </m:Column>
+
                                                 <m:Column width="7rem">
                                                     <m:Text
                                                         text="Prezzo Totale"
                                                     />
-                                                    <m:footer>
-                                                        <m:Text
-                                                            text="{
-                                                                path: '/SelectedInvoice/totalSum',
-                                                                formatter: '.formatCurrency'
-                                                            }"
-                                                        />
-                                                    </m:footer>
                                                 </m:Column>
+
                                                 <m:Column width="5rem">
                                                     <m:Text
                                                         text="Cod. IVA (%)"
@@ -243,17 +215,45 @@
                                                         <m:Text
                                                             text="{matFornCcac}"
                                                         />
-                                                        <m:Input
-                                                            value="{materialCode}"
-                                                            valueState="{= ${materialCode} ? 'Success' : 'Error' }"
-                                                        />
+
+                                                        <!-- Codice Materiale SAP (1 cella, edit/display dentro VBox) -->
+                                                        <m:VBox
+                                                            renderType="Bare"
+                                                        >
+                                                            <m:Input
+                                                                value="{materialCode}"
+                                                                valueState="{= ${materialCode} ? 'Success' : 'Error' }"
+                                                                visible="{= ${viewModel>/ui/mode} === 'edit' }"
+                                                                width="100%"
+                                                            />
+                                                            <m:Text
+                                                                text="{= ${materialCode} ? ${materialCode} : '' }"
+                                                                visible="{= ${viewModel>/ui/mode} !== 'edit' }"
+                                                                wrapping="false"
+                                                            />
+                                                        </m:VBox>
+
                                                         <m:Text
                                                             text="{fattura>Descrizione}"
                                                         />
-                                                        <m:Input
-                                                            value="{fattura>UnitaMisura}"
-                                                            valueState="{= ${fattura>UnitaMisura} ? 'Success' : 'Error' }"
-                                                        />
+
+                                                        <!-- Unità di misura -->
+                                                        <m:VBox
+                                                            renderType="Bare"
+                                                        >
+                                                            <m:Input
+                                                                value="{fattura>UnitaMisura}"
+                                                                valueState="{= ${fattura>UnitaMisura} ? 'Success' : 'Error' }"
+                                                                visible="{= ${viewModel>/ui/mode} === 'edit' }"
+                                                                width="100%"
+                                                            />
+                                                            <m:Text
+                                                                text="{= ${fattura>UnitaMisura} ? ${fattura>UnitaMisura} : '' }"
+                                                                visible="{= ${viewModel>/ui/mode} !== 'edit' }"
+                                                                wrapping="false"
+                                                            />
+                                                        </m:VBox>
+
                                                         <m:Text
                                                             text="{fattura>Quantita}"
                                                         />
@@ -266,43 +266,110 @@
                                                         <m:Text
                                                             text="{fattura>AliquotaIVA}"
                                                         />
+
+                                                        <!-- OdA action -->
                                                         <m:Button
                                                             icon="sap-icon://action"
+                                                            enabled="{= ${viewModel>/ui/mode} === 'edit' }"
                                                         />
+
                                                         <m:Link
                                                             text="{fattura>odaIdDocumento}"
                                                             href="https://example.com/docAcq/{docAcq}"
                                                         />
-                                                        <m:Input
-                                                            value="{fattura>odaPosOda}"
-                                                            valueState="{= ${fattura>odaPosOda} ? 'Success' : 'Error' }"
-                                                        />
+
+                                                        <!-- Posizione Oda -->
+                                                        <m:VBox
+                                                            renderType="Bare"
+                                                        >
+                                                            <m:Input
+                                                                value="{fattura>odaPosOda}"
+                                                                valueState="{= ${fattura>odaPosOda} ? 'Success' : 'Error' }"
+                                                                visible="{= ${viewModel>/ui/mode} === 'edit' }"
+                                                                width="100%"
+                                                            />
+                                                            <m:Text
+                                                                text="{= ${fattura>odaPosOda} ? ${fattura>odaPosOda} : '' }"
+                                                                visible="{= ${viewModel>/ui/mode} !== 'edit' }"
+                                                                wrapping="false"
+                                                            />
+                                                        </m:VBox>
+
                                                         <m:Text
                                                             text="{fattura>odaDataDoc}"
                                                         />
+
+                                                        <!-- DDT action -->
                                                         <m:Button
                                                             icon="sap-icon://action"
+                                                            enabled="{= ${viewModel>/ui/mode} === 'edit' }"
                                                         />
-                                                        <m:Input
-                                                            value="{docMat}"
-                                                            valueState="{= ${docMat} ? 'Success' : 'Error' }"
-                                                        />
-                                                        <m:Input
-                                                            value="{posDocMat}"
-                                                            valueState="{= ${posDocMat} ? 'Success' : 'Error' }"
-                                                        />
-                                                        <m:Input
-                                                            value="{esDocMat}"
-                                                            valueState="{= ${esDocMat} ? 'Success' : 'Error' }"
-                                                        />
-                                                        <m:Text text="{cup}" />
-                                                        <m:Text text="{cig}" />
+
+                                                        <!-- Doc. Materiale -->
+                                                        <m:VBox
+                                                            renderType="Bare"
+                                                        >
+                                                            <m:Input
+                                                                value="{docMat}"
+                                                                valueState="{= ${docMat} ? 'Success' : 'Error' }"
+                                                                visible="{= ${viewModel>/ui/mode} === 'edit' }"
+                                                                width="100%"
+                                                            />
+                                                            <m:Text
+                                                                text="{= ${docMat} ? ${docMat} : '' }"
+                                                                visible="{= ${viewModel>/ui/mode} !== 'edit' }"
+                                                                wrapping="false"
+                                                            />
+                                                        </m:VBox>
+
+                                                        <!-- Posizione -->
+                                                        <m:VBox
+                                                            renderType="Bare"
+                                                        >
+                                                            <m:Input
+                                                                value="{posDocMat}"
+                                                                valueState="{= ${posDocMat} ? 'Success' : 'Error' }"
+                                                                visible="{= ${viewModel>/ui/mode} === 'edit' }"
+                                                                width="100%"
+                                                            />
+                                                            <m:Text
+                                                                text="{= ${posDocMat} ? ${posDocMat} : '' }"
+                                                                visible="{= ${viewModel>/ui/mode} !== 'edit' }"
+                                                                wrapping="false"
+                                                            />
+                                                        </m:VBox>
+
+                                                        <!-- Es.doc.mat -->
+                                                        <m:VBox
+                                                            renderType="Bare"
+                                                        >
+                                                            <m:Input
+                                                                value="{esDocMat}"
+                                                                valueState="{= ${esDocMat} ? 'Success' : 'Error' }"
+                                                                visible="{= ${viewModel>/ui/mode} === 'edit' }"
+                                                                width="100%"
+                                                            />
+                                                            <m:Text
+                                                                text="{= ${esDocMat} ? ${esDocMat} : '' }"
+                                                                visible="{= ${viewModel>/ui/mode} !== 'edit' }"
+                                                                wrapping="false"
+                                                            />
+                                                        </m:VBox>
+
                                                         <m:Text
-                                                            text="{commessa}"
+                                                            text="{= ${cup} ? ${cup} : '' }"
                                                         />
                                                         <m:Text
-                                                            text="{bolla}"
+                                                            text="{= ${cig} ? ${cig} : '' }"
                                                         />
+                                                        <m:Text
+                                                            text="{= ${commessa} ? ${commessa} : '' }"
+                                                        />
+                                                        <m:Text
+                                                            text="{= ${bolla} ? ${bolla} : '' }"
+                                                        />
+                                                        <m:Text text="-" />
+                                                        <m:Text text="-" />
                                                     </m:cells>
                                                 </m:ColumnListItem>
                                             </m:items>
@@ -316,20 +383,36 @@
             </uxap:ObjectPageLayout>
         </m:content>
 
-        <!-- === FOOTER FISSO === -->
         <m:footer>
             <m:OverflowToolbar>
                 <m:ToolbarSpacer />
+
                 <m:Button
-                    icon="sap-icon://accept"
-                    text="Esegui"
+                    text="PreAcquisire (Qta e Prz da file)"
+                    icon="sap-icon://warning"
                     type="Emphasized"
-                    press=".onEseguiPress"
+                    press=".onPreAcquisireFile"
+                    visible="{= ${viewModel>/ui/mode} === 'edit' }"
                 />
                 <m:Button
+                    text="PreAcquisire dati da Oda Sap"
+                    icon="sap-icon://download"
+                    press=".onPreAcquisireOdaSap"
+                    type="Emphasized"
+                    visible="{= ${viewModel>/ui/mode} === 'edit' }"
+                />
+                <m:Button
+                    text="PreAcquisire dati da DDT Sap"
+                    icon="sap-icon://download"
+                    press=".onPreAcquisireDdtSap"
+                    type="Emphasized"
+                    visible="{= ${viewModel>/ui/mode} === 'edit' }"
+                />
+
+                <m:Button
                     icon="sap-icon://decline"
-                    text="Annulla"
-                    press=".onAnnullaPress"
+                    text="Annulla / Esci"
+                    press="onBackToHome"
                 />
             </m:OverflowToolbar>
         </m:footer>
