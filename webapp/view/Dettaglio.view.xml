@@ -4,13 +4,13 @@
     xmlns:m="sap.m"
     xmlns:uxap="sap.uxap"
     xmlns:layout="sap.ui.layout"
-    
+    xmlns:form="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
 >
     <m:Page
         id="paginaDettaglio"
         showFooter="true"
         class="sapUiSizeCompact"
-        title="Fattura"
     >
         <m:content>
             <uxap:ObjectPageLayout
@@ -25,10 +25,16 @@
                 <uxap:headerTitle>
                     <uxap:ObjectPageDynamicHeaderTitle>
                         <uxap:expandedHeading>
-                            <m:Title
-                                text="{= 'Fattura ' + (${DocumentNumber} || '')}"
-                                wrapping="true"
-                            />
+                            <m:HBox
+                                width="100%"
+                                justifyContent="SpaceBetween"
+                                alignItems="Center"
+                            >
+                                <m:Title
+                                    text="{= 'Fattura ' + (${DocumentNumber} || '')}"
+                                    wrapping="true"
+                                />
+                            </m:HBox>
                         </uxap:expandedHeading>
 
                         <uxap:actions>
@@ -52,48 +58,149 @@
                     </uxap:ObjectPageDynamicHeaderTitle>
                 </uxap:headerTitle>
 
-                <uxap:headerContent>
-                    <m:FlexBox wrap="Wrap">
-                        <layout:VerticalLayout class="sapUiSmallMarginBeginEnd">
-                            <m:ObjectStatus
-                                title="Tipo Documento"
-                                text="{TipoDocAdE}"
-                            />
-                            <m:ObjectStatus
-                                title="Descrizione Tipo Doc."
-                                text="{TipoDocText}"
-                            />
-                            <m:ObjectStatus
-                                title="Società"
-                                text="{CompanyCode}"
-                            />
-                            <m:ObjectStatus
-                                title="Data Fattura"
-                                text="{path: 'DataFattura', formatter: '.formatter.formatDate'}"
-                            />
-                        </layout:VerticalLayout>
-
-                        <layout:VerticalLayout class="sapUiSmallMarginBeginEnd">
-                            <m:ObjectStatus
-                                title="Fornitore"
-                                text="{SupplierCode}"
-                            />
-                            <m:ObjectStatus
-                                title="Nome"
-                                text="{SupplierName}"
-                            />
-                            <m:ObjectStatus
-                                title="Riferimento"
-                                text="{NumeroFattura}"
-                            />
-                        </layout:VerticalLayout>
-                    </m:FlexBox>
-                </uxap:headerContent>
-
                 <uxap:sections>
+                    <!-- SEZIONE DATI TESTATA -->
                     <uxap:ObjectPageSection
-                        showTitle="false"
-                        title="Dettaglio Fattura"
+                        id="datiTestataSection"
+                        title="Dati testata"
+                    >
+                        <uxap:subSections>
+                            <uxap:ObjectPageSubSection>
+                                <uxap:blocks>
+                                    <form:SimpleForm
+                                        editable="false"
+                                        labelSpanXL="4"
+                                        labelSpanL="4"
+                                        labelSpanM="4"
+                                        labelSpanS="12"
+                                        adjustLabelSpan="false"
+                                        emptySpanXL="0"
+                                        emptySpanL="0"
+                                        emptySpanM="0"
+                                        emptySpanS="0"
+                                        columnsXL="4"
+                                        columnsL="3"
+                                        columnsM="2"
+                                        columnsS="1"
+                                        width="100%"
+                                    >
+                                        <!-- DOCUMENTO -->
+                                        <core:Title text="Documento" />
+
+                                        <m:Label text="Tipo fattura" />
+                                        <m:Text
+                                            text="{= ${TipoFattura} === 'M' ? 'Fattura Logistica' : 'Fattura Contabile' }"
+                                        />
+
+                                        <m:Label text="Società" />
+                                        <m:Text text="{CompanyCode}" />
+
+                                        <m:Label text="Nome società" />
+                                        <m:Text text="{CompanyName}" />
+
+                                        <m:Label text="Tipo Doc. AdE" />
+                                        <m:Text text="{TipoDocAdE}" />
+
+                                        <m:Label text="Descrizione Tipo Doc." />
+                                        <m:Text text="{TipoDocText}" />
+
+                                        <m:Label text="Data fattura" />
+                                        <m:Text
+                                            text="{path: 'DataFattura', formatter: '.formatter.formatDate'}"
+                                        />
+
+                                        <m:Label text="Esercizio" />
+                                        <m:Text text="{FiscalYear}" />
+
+                                        <m:Label text="Tipo documento SAP" />
+                                        <m:Text text="{DocumentType}" />
+
+                                        <m:Label text="Doc. contabile" />
+                                        <m:Link
+                                            text="{FinanceDocument}"
+                                            press="onFinanceDocumentLinkPress"
+                                        />
+
+                                        <m:Label text="Data registrazione" />
+                                        <m:Text
+                                            text="{path: 'PostingDate', formatter: '.formatter.formatDate'}"
+                                        />
+
+                                        <!-- FORNITORE -->
+                                        <core:Title text="Fornitore" />
+
+                                        <m:Label text="Codice" />
+                                        <m:Link
+                                            text="{SupplierCode}"
+                                            press="onNavToFornitore"
+                                        />
+
+                                        <m:Label text="Nome" />
+                                        <m:Text text="{SupplierName}" />
+
+                                        <m:Label text="Partita IVA" />
+                                        <m:Text text="{PartitaIVAcee}" />
+
+                                        <m:Label text="Codice fiscale" />
+                                        <m:Text text="{CodiceFiscale}" />
+
+                                        <m:Label text="N. fattura fornitore" />
+                                        <m:Text text="{NumeroFattura}" />
+
+                                        <m:Label text="Divisa" />
+                                        <m:Text text="{Divisa}" />
+
+                                        <m:Label text="Causale" />
+                                        <m:Text text="{Causale}" />
+
+                                        <!-- SDI E STATO -->
+                                        <core:Title text="SDI e Stato" />
+
+                                        <m:Label text="Codice destinatario" />
+                                        <m:Text text="{CodDestinatario}" />
+
+                                        <m:Label text="Numero SDI" />
+                                        <m:Text text="{NumeroSDI}" />
+
+                                        <m:Label text="Data ricezione SDI" />
+                                        <m:Text
+                                            text="{path: 'DataSDI', formatter: '.formatter.formatDate'}"
+                                        />
+
+                                        <m:Label text="Paese" />
+                                        <m:Text text="{Paese}" />
+
+                                        <m:Label text="Data pagamento" />
+                                        <m:Text
+                                            text="{path: 'DataPagamento', formatter: '.formatter.formatDate'}"
+                                        />
+
+                                        <m:Label text="Blocco" />
+                                        <m:Text
+                                            text="{= ${CodBlocco} ? 'Bloccato' : 'Sbloccato' }"
+                                        />
+
+                                        <m:Label text="Motivo blocco" />
+                                        <m:Text text="{MotivoBlocco}" />
+
+                                        <!-- IMPORTI -->
+                                        <core:Title text="Importi" />
+
+                                        <m:Label text="Imponibile" />
+                                        <m:Text text="{Imponibile}" />
+
+                                        <m:Label text="Totale" />
+                                        <m:Text text="{Totale}" />
+                                    </form:SimpleForm>
+                                </uxap:blocks>
+                            </uxap:ObjectPageSubSection>
+                        </uxap:subSections>
+                    </uxap:ObjectPageSection>
+
+                    <!-- SEZIONE DETTAGLIO RIGHE -->
+                    <uxap:ObjectPageSection
+                        id="dettaglioRigheSection"
+                        title="Dettaglio righe"
                     >
                         <uxap:subSections>
                             <uxap:ObjectPageSubSection>
@@ -140,13 +247,11 @@
                                                         text="Prezzo Unitario"
                                                     />
                                                 </m:Column>
-
                                                 <m:Column width="7rem">
                                                     <m:Text
                                                         text="Prezzo Totale"
                                                     />
                                                 </m:Column>
-
                                                 <m:Column width="5rem">
                                                     <m:Text
                                                         text="Cod. IVA (%)"
@@ -216,7 +321,6 @@
                                                             text="{matFornCcac}"
                                                         />
 
-                                                        <!-- Codice Materiale SAP (1 cella, edit/display dentro VBox) -->
                                                         <m:VBox
                                                             renderType="Bare"
                                                         >
@@ -227,9 +331,8 @@
                                                                 width="100%"
                                                             />
                                                             <m:Text
-                                                                text="{= ${materialCode} ? ${materialCode} : '' }"
+                                                                text="{materialCode}"
                                                                 visible="{= ${viewModel>/ui/mode} !== 'edit' }"
-                                                                wrapping="false"
                                                             />
                                                         </m:VBox>
 
@@ -237,7 +340,6 @@
                                                             text="{fattura>Descrizione}"
                                                         />
 
-                                                        <!-- Unità di misura -->
                                                         <m:VBox
                                                             renderType="Bare"
                                                         >
@@ -248,9 +350,8 @@
                                                                 width="100%"
                                                             />
                                                             <m:Text
-                                                                text="{= ${fattura>UnitaMisura} ? ${fattura>UnitaMisura} : '' }"
+                                                                text="{fattura>UnitaMisura}"
                                                                 visible="{= ${viewModel>/ui/mode} !== 'edit' }"
-                                                                wrapping="false"
                                                             />
                                                         </m:VBox>
 
@@ -267,18 +368,15 @@
                                                             text="{fattura>AliquotaIVA}"
                                                         />
 
-                                                        <!-- OdA action -->
                                                         <m:Button
                                                             icon="sap-icon://action"
                                                             enabled="{= ${viewModel>/ui/mode} === 'edit' }"
                                                         />
-
                                                         <m:Link
                                                             text="{fattura>odaIdDocumento}"
                                                             href="https://example.com/docAcq/{docAcq}"
                                                         />
 
-                                                        <!-- Posizione Oda -->
                                                         <m:VBox
                                                             renderType="Bare"
                                                         >
@@ -289,9 +387,8 @@
                                                                 width="100%"
                                                             />
                                                             <m:Text
-                                                                text="{= ${fattura>odaPosOda} ? ${fattura>odaPosOda} : '' }"
+                                                                text="{fattura>odaPosOda}"
                                                                 visible="{= ${viewModel>/ui/mode} !== 'edit' }"
-                                                                wrapping="false"
                                                             />
                                                         </m:VBox>
 
@@ -299,13 +396,11 @@
                                                             text="{fattura>odaDataDoc}"
                                                         />
 
-                                                        <!-- DDT action -->
                                                         <m:Button
                                                             icon="sap-icon://action"
                                                             enabled="{= ${viewModel>/ui/mode} === 'edit' }"
                                                         />
 
-                                                        <!-- Doc. Materiale -->
                                                         <m:VBox
                                                             renderType="Bare"
                                                         >
@@ -316,13 +411,11 @@
                                                                 width="100%"
                                                             />
                                                             <m:Text
-                                                                text="{= ${docMat} ? ${docMat} : '' }"
+                                                                text="{docMat}"
                                                                 visible="{= ${viewModel>/ui/mode} !== 'edit' }"
-                                                                wrapping="false"
                                                             />
                                                         </m:VBox>
 
-                                                        <!-- Posizione -->
                                                         <m:VBox
                                                             renderType="Bare"
                                                         >
@@ -333,13 +426,11 @@
                                                                 width="100%"
                                                             />
                                                             <m:Text
-                                                                text="{= ${posDocMat} ? ${posDocMat} : '' }"
+                                                                text="{posDocMat}"
                                                                 visible="{= ${viewModel>/ui/mode} !== 'edit' }"
-                                                                wrapping="false"
                                                             />
                                                         </m:VBox>
 
-                                                        <!-- Es.doc.mat -->
                                                         <m:VBox
                                                             renderType="Bare"
                                                         >
@@ -350,23 +441,18 @@
                                                                 width="100%"
                                                             />
                                                             <m:Text
-                                                                text="{= ${esDocMat} ? ${esDocMat} : '' }"
+                                                                text="{esDocMat}"
                                                                 visible="{= ${viewModel>/ui/mode} !== 'edit' }"
-                                                                wrapping="false"
                                                             />
                                                         </m:VBox>
 
+                                                        <m:Text text="{cup}" />
+                                                        <m:Text text="{cig}" />
                                                         <m:Text
-                                                            text="{= ${cup} ? ${cup} : '' }"
+                                                            text="{commessa}"
                                                         />
                                                         <m:Text
-                                                            text="{= ${cig} ? ${cig} : '' }"
-                                                        />
-                                                        <m:Text
-                                                            text="{= ${commessa} ? ${commessa} : '' }"
-                                                        />
-                                                        <m:Text
-                                                            text="{= ${bolla} ? ${bolla} : '' }"
+                                                            text="{bolla}"
                                                         />
                                                         <m:Text text="-" />
                                                         <m:Text text="-" />
