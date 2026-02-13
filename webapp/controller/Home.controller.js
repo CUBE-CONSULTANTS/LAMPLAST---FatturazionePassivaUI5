@@ -27,7 +27,11 @@ sap.ui.define([
                     Processed: 0,    // stato 3
                 },
                 ui: {
-                    canOpenCreateApps: false
+                    canOpenCreateApps: false,
+                    canBlocca: false,
+                    canArchivia: false,
+                    canSblocca: false,
+                    canStorno: false
                 }
             });
             this.getView().setModel(oViewModel, "viewModel");
@@ -1720,18 +1724,31 @@ sap.ui.define([
 
         onRowSelectionChange: function () {
             const oTable = this.byId("idTreeTable");
-            const aSel = oTable.getSelectedIndices();
+            const aSel = oTable.getSelectedIndices() || [];
+            const oVM = this.getView().getModel("viewModel");
 
-            let bEnable = false;
+            const aRows = aSel
+                .map(i => oTable.getContextByIndex(i))
+                .filter(Boolean)
+                .map(ctx => ctx.getObject() || {});
 
-            if (aSel && aSel.length === 1) {
-                const oCtx = oTable.getContextByIndex(aSel[0]);
-                const oRow = oCtx?.getObject?.() || {};
-                bEnable = oRow.StatoFattura === "1";
-            }
+            const iCount = aRows.length;
+            const oSingle = iCount === 1 ? aRows[0] : null;
 
-            this.getView().getModel("viewModel").setProperty("/ui/canOpenCreateApps", bEnable);
+            const bCanStorno = !!(oSingle && oSingle.StatoFattura === "3");
+
+            const bCanBlocca = !!(oSingle && oSingle.StatoFattura && oSingle.StatoFattura !== "3");
+
+            const bCanArchivia = iCount > 0 && aRows.every(r => r.Archiviato === true);
+
+            const bCanOpenCreateApps = !!(oSingle && oSingle.StatoFattura === "1");
+
+            oVM.setProperty("/ui/canStorno", bCanStorno);
+            oVM.setProperty("/ui/canBlocca", bCanBlocca);
+            oVM.setProperty("/ui/canArchivia", bCanArchivia);
+            oVM.setProperty("/ui/canOpenCreateApps", bCanOpenCreateApps);
         },
+
 
 
 

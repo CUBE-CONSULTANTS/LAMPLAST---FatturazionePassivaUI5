@@ -748,6 +748,7 @@
                     tooltip="Blocca"
                     press=".onBloccaFattura"
                     type="Emphasized"
+                    enabled="{= ${viewModel>/ui/canBlocca} }"
                 />
                 <!-- 7. Lucchetto Sblocco -->
                 <Button
@@ -763,6 +764,7 @@
                     icon="sap-icon://save"
                     press=".onArchiviaFattura"
                     type="Emphasized"
+                    enabled="{= ${viewModel>/ui/canArchivia} }"
                 />
                 <!-- 9. Storno Fattura -->
                 <Button
@@ -770,6 +772,7 @@
                     icon="sap-icon://reset"
                     press=".onStornoFattura"
                     type="Emphasized"
+                    enabled="{= ${viewModel>/ui/canStorno} }"
                 />
                 <!-- 10. Annulla Archiviazione -->
                 <Button
