@@ -33,8 +33,16 @@ sap.ui.define([
                     canSblocca: false,
                     canStorno: false
                 }
+
             });
             this.getView().setModel(oViewModel, "viewModel");
+
+            const oHomeFilters = new sap.ui.model.json.JSONModel({
+                SupplierTokens: [],
+                TipoDocAdeTokens: [],
+                NomeFornitoreTokens:[]
+            });
+            this.getView().setModel(oHomeFilters, "homeFilters");
 
 
             // Modello locale per la tabella
@@ -103,10 +111,164 @@ sap.ui.define([
             });
         },
 
-        _bindTable: function (bReset = true) {
+        onFilterBarSearch: function () {
+            const aFilters = this._buildMainFiltersFromFilterBar();
 
+            const oTable = this.byId("idTreeTable");
+            if (oTable) oTable.clearSelection();
+
+            this.getView().getModel("viewModel").setProperty("/ui/canOpenCreateApps", false);
+            this.getView().getModel("viewModel").setProperty("/ui/canBlocca", false);
+            this.getView().getModel("viewModel").setProperty("/ui/canArchivia", false);
+            this.getView().getModel("viewModel").setProperty("/ui/canStorno", false);
+
+            this._bindTable(true, aFilters);
+        },
+
+        _buildMainFiltersFromFilterBar: function () {
+            const Filter = sap.ui.model.Filter;
+            const FO = sap.ui.model.FilterOperator;
+            const aFilters = [];
+
+            const sSoc = this.byId("selectSocieta") && this.byId("selectSocieta").getSelectedKey();
+            if (sSoc) aFilters.push(new Filter("CompanyCode", FO.EQ, sSoc));
+
+            const aForn = this._getTokenKeys("multiInputFornitore");
+            if (aForn.length === 1) {
+                aFilters.push(new Filter("SupplierCode", FO.EQ, aForn[0]));
+            } else if (aForn.length > 1) {
+                aFilters.push(new Filter(aForn.map(v => new Filter("SupplierCode", FO.EQ, v)), false));
+            }
+
+            const sCF = this.byId("inputCodFiscale") && (this.byId("inputCodFiscale").getValue() || "").trim();
+            if (sCF) aFilters.push(new Filter("CodiceFiscale", FO.Contains, sCF));
+
+            const sPiva = this.byId("inputPartitaIva") && (this.byId("inputPartitaIva").getValue() || "").trim();
+            if (sPiva) aFilters.push(new Filter("PartitaIVAcee", FO.Contains, sPiva));
+
+            const aTipoAde = this._getTokenKeys("multiInputTipoDocAdE");
+            if (aTipoAde.length === 1) {
+                aFilters.push(new Filter("TipoDocAdE", FO.EQ, aTipoAde[0]));
+            } else if (aTipoAde.length > 1) {
+                aFilters.push(new Filter(aTipoAde.map(v => new Filter("TipoDocAdE", FO.EQ, v)), false));
+            }
+
+            const sNrDoc = this.byId("inputNrDoc") && (this.byId("inputNrDoc").getValue() || "").trim();
+            if (sNrDoc) aFilters.push(new Filter("NumeroFattura", FO.Contains, sNrDoc.toUpperCase()));
+
+            const oDRDoc = this.byId("dateRangePicker2");
+            if (oDRDoc) {
+                const dFrom = oDRDoc.getDateValue();
+                const dTo = oDRDoc.getSecondDateValue();
+                if (dFrom && dTo) {
+                    const d1 = new Date(dFrom.getTime()); d1.setHours(0, 0, 0, 0);
+                    const d2 = new Date(dTo.getTime()); d2.setHours(23, 59, 59, 999);
+                    aFilters.push(new Filter("DataFattura", FO.BT, d1, d2));
+                }
+            }
+
+            const oDRRic = this.byId("dateRangePicker");
+            if (oDRRic) {
+                const dFrom = oDRRic.getDateValue();
+                const dTo = oDRRic.getSecondDateValue();
+                if (dFrom && dTo) {
+                    const d1 = new Date(dFrom.getTime()); d1.setHours(0, 0, 0, 0);
+                    const d2 = new Date(dTo.getTime()); d2.setHours(23, 59, 59, 999);
+                    aFilters.push(new Filter("DataSDI", FO.BT, d1, d2));
+                }
+            }
+
+            const sCodDest = this.byId("inputCodiceDestinatario") && (this.byId("inputCodiceDestinatario").getValue() || "").trim();
+            if (sCodDest) aFilters.push(new Filter("CodDestinatario", FO.Contains, sCodDest));
+
+            const sNrInvio = this.byId("inputNrInvioSdi") && (this.byId("inputNrInvioSdi").getValue() || "").trim();
+            if (sNrInvio) aFilters.push(new Filter("NumeroSDI", FO.Contains, sNrInvio));
+
+            // (opzionale ma consigliato) applica anche il filtro stato in base alla tab selezionata
+            const oITB = this.byId("idIconTabBar");
+            const sKey = oITB && oITB.getSelectedKey();
+            if (sKey === "NotAllowed") aFilters.push(new Filter("StatoFattura", FO.EQ, "0"));
+            if (sKey === "Working") aFilters.push(new Filter("StatoFattura", FO.EQ, "1"));
+            if (sKey === "Parked") aFilters.push(new Filter("StatoFattura", FO.EQ, "2"));
+            if (sKey === "Processed") aFilters.push(new Filter("StatoFattura", FO.EQ, "3"));
+
+            return aFilters;
+        },
+
+        onFilterBarClear: function () {
+            const oVM = this.getView().getModel("viewModel");
+
+            // 1) reset UI state
+            oVM.setProperty("/ui/canOpenCreateApps", false);
+            oVM.setProperty("/ui/canBlocca", false);
+            oVM.setProperty("/ui/canArchivia", false);
+            oVM.setProperty("/ui/canSblocca", false);
+            oVM.setProperty("/ui/canStorno", false);
+
+            // 2) svuota davvero i campi della FilterBar
+            const oSelSoc = this.byId("selectSocieta");
+            if (oSelSoc) oSelSoc.setSelectedKey("");
+
+            const oMIFor = this.byId("multiInputFornitore");
+            if (oMIFor) oMIFor.removeAllTokens();
+
+            const oInpCF = this.byId("inputCodFiscale");
+            if (oInpCF) oInpCF.setValue("");
+
+            const oInpPiva = this.byId("inputPartitaIva");
+            if (oInpPiva) oInpPiva.setValue("");
+
+            const oMITipo = this.byId("multiInputTipoDocAdE");
+            if (oMITipo) oMITipo.removeAllTokens();
+
+            const oInpNrDoc = this.byId("inputNrDoc");
+            if (oInpNrDoc) oInpNrDoc.setValue("");
+
+            const oDRDoc = this.byId("dateRangePicker2");
+            if (oDRDoc) {
+                oDRDoc.setDateValue(null);
+                oDRDoc.setSecondDateValue(null);
+                oDRDoc.setValue("");
+            }
+
+            const oDRRic = this.byId("dateRangePicker");
+            if (oDRRic) {
+                oDRRic.setDateValue(null);
+                oDRRic.setSecondDateValue(null);
+                oDRRic.setValue("");
+            }
+
+            const oInpCodDest = this.byId("inputCodiceDestinatario");
+            if (oInpCodDest) oInpCodDest.setValue("");
+
+            const oInpNrInvio = this.byId("inputNrInvioSdi");
+            if (oInpNrInvio) oInpNrInvio.setValue("");
+
+            // 3) reset filtri “server-side”
+            this._currentFilters = [];
+
+            // 4) reset tab
+            const oITB = this.byId("idIconTabBar");
+            if (oITB) oITB.setSelectedKey("All");
+
+            // 5) clear selezione tabella
+            const oTable = this.byId("idTreeTable");
+            if (oTable) oTable.clearSelection();
+
+            // 6) ricarica senza filtri
+            this._bindTable(true, []);
+        },
+
+
+
+        _bindTable: function (bReset = true, aFilters) {
             const oODataModel = this.getOwnerComponent().getModel("mainService");
             const oFattureModel = this.getView().getModel("fattureModel");
+
+            if (Array.isArray(aFilters)) {
+                this._currentFilters = aFilters;
+            }
+            const aUseFilters = this._currentFilters || [];
 
             if (bReset) {
                 this._pagination.skip = 0;
@@ -115,24 +277,25 @@ sap.ui.define([
             }
 
             if (!this._pagination.hasMore || this._pagination.isLoading) return;
+
             this._pagination.isLoading = true;
             sap.ui.core.BusyIndicator.show(0);
 
             const sPath = "/zeim_lista_fatture_passive";
 
             oODataModel.read(sPath, {
+                filters: aUseFilters,
                 urlParameters: {
                     "$top": this._pagination.top,
                     "$skip": this._pagination.skip
                 },
                 success: (oData) => {
-
-                    const aOld = oFattureModel.getProperty("/results");
+                    const aOld = oFattureModel.getProperty("/results") || [];
                     const aNew = oData.results || [];
 
                     oFattureModel.setProperty("/results", aOld.concat(aNew));
 
-                    const aRows = oFattureModel.getProperty("/results");
+                    const aRows = oFattureModel.getProperty("/results") || [];
                     this._updateCounts(aRows);
 
                     this._pagination.skip += aNew.length;
@@ -145,14 +308,15 @@ sap.ui.define([
                         setTimeout(() => this._bindTable(false), 50);
                     }
                 },
-                error: (err) => {
-                    console.error(err);
+                error: () => {
                     this._pagination.isLoading = false;
                     this._pagination.hasMore = false;
                     sap.ui.core.BusyIndicator.hide();
+                    sap.m.MessageToast.show("Errore nel caricamento fatture.");
                 }
             });
         },
+
 
 
         _updateCounts: function (aRows) {
@@ -325,30 +489,33 @@ sap.ui.define([
             }.bind(this));
         },
         onValueHelpFornitore: function () {
-            sap.ui.require([
-                "com/zeim/fatturazionepassiva/controller/helpers/ValueHelpHandler"
-            ], function (VH) {
+            sap.ui.require(["com/zeim/fatturazionepassiva/controller/helpers/ValueHelpHandler"], function (VH) {
+
                 VH.openValueHelp(
                     this,
                     "com.zeim.fatturazionepassiva.view.fragments.ValueHelpDialogFilterbarFornitore",
                     "Fornitore",
                     "/zeim_search_supplier_data",
                     {
-                        key: "CompanyCode",
-                        desc: "CompanyName",
-                        keyProp: "CompanyCode",
-                        maxKeyLength: 10, // regola: oltre 10 char non filtrare su Customer
-                        filterProps: ["Customer", "OrganizationBPName1", "CityName"],
+                        vhId: "HOME_FORN",
+                        key: "Supplier",
+                        desc: "SupplierName",
+                        keyProp: "Supplier",
+                        filterProps: ["Supplier", "SupplierName", "Country"],
                         columns: [
                             { label: "Fornitore", path: "Supplier" },
-                            { label: "Descrizione", path: "SupplierName" },
-                            { label: "Country", path: "Country" }
+                            { label: "Nome Fornitore", path: "SupplierName" },
+                            { label: "Paese", path: "Country" }
                         ],
-                        multiInputId: "multiInput"
+                        targetModelName: "homeFilters",
+                        tokensPath: "/SupplierTokens",
+                        multiInputId: "multiInputFornitore",
                     }
                 );
+
             }.bind(this));
         },
+
 
         onValueHelpTipoDocAde: function () {
             sap.ui.require([
@@ -369,7 +536,7 @@ sap.ui.define([
                             { label: "Tipo Doc. AdE", path: "BlartAde" },
                             { label: "Descrizione", path: "Descrizione" }
                         ],
-                        multiInputId: "multiInput"
+                        multiInputId: "multiInputTipoDocAdE"
                     }
                 );
             }.bind(this));
@@ -1748,6 +1915,355 @@ sap.ui.define([
             oVM.setProperty("/ui/canArchivia", bCanArchivia);
             oVM.setProperty("/ui/canOpenCreateApps", bCanOpenCreateApps);
         },
+
+
+        onArchiviaFattura: function () {
+            const oTable = this.byId("idTreeTable");
+            const aSelectedIndices = oTable.getSelectedIndices();
+
+            if (!aSelectedIndices || aSelectedIndices.length === 0) {
+                sap.m.MessageToast.show("Seleziona almeno una fattura.");
+                return;
+            }
+
+            const aRows = aSelectedIndices
+                .map(i => oTable.getContextByIndex(i))
+                .filter(Boolean)
+                .map(ctx => ctx.getObject() || {});
+
+            // Coerenza con la regola che hai già messo in onRowSelectionChange
+            const bAllArchiviabili = aRows.every(r => r.Archiviato === true);
+
+            if (!bAllArchiviabili) {
+                sap.m.MessageToast.show("Puoi archiviare solo se tutte le fatture selezionate risultano Archiviato = true.");
+                return;
+            }
+
+            sap.m.MessageBox.confirm(
+                `Confermi l'archiviazione di ${aRows.length} fattura/e?`,
+                {
+                    actions: [sap.m.MessageBox.Action.OK, sap.m.MessageBox.Action.CANCEL],
+                    emphasizedAction: sap.m.MessageBox.Action.OK,
+                    onClose: async (sAction) => {
+                        if (sAction !== sap.m.MessageBox.Action.OK) return;
+
+                        try {
+                            await this._archiviaFattureMassive(aSelectedIndices, aRows);
+                            oTable.clearSelection();
+                            this.getView().getModel("viewModel").setProperty("/ui/canArchivia", false);
+                            this._bindTable(true)
+                            sap.m.MessageToast.show("Archiviazione completata.");
+                        } catch (e) {
+                            console.error(e);
+                            sap.m.MessageBox.error("Errore durante l'archiviazione.");
+                        }
+                    }
+                }
+            );
+        },
+
+
+        _archiviaFattureMassive: async function (aSelectedIndices, aRows) {
+            const oODataModel = this.getOwnerComponent().getModel("mainService");
+            sap.ui.core.BusyIndicator.show(0);
+
+            try {
+                // Esegui in parallelo (se preferisci seriale, si cambia facilmente)
+                await Promise.all(
+                    aRows.map(r => this._putArchivia(oODataModel, r.Id))
+                );
+
+                // Update UI locale
+                const oJson = this.getView().getModel("fattureModel");
+                aSelectedIndices.forEach(iIndex => {
+                    const sPath = `/results/${iIndex}`;
+                    oJson.setProperty(sPath + "/Archiviato", true);
+                });
+                oJson.refresh(true);
+
+            } finally {
+                sap.ui.core.BusyIndicator.hide();
+            }
+        },
+
+        _putArchivia: function (oODataModel, sId) {
+            const sPath = oODataModel.createKey("/ZC_EIM_FPXML", { ID: sId });
+
+            const oPayload = {
+                Archv: true
+            };
+
+            return new Promise((resolve, reject) => {
+                oODataModel.update(sPath, oPayload, {
+                    merge: true,
+                    success: resolve,
+                    error: reject
+                });
+            });
+        },
+
+        onAnnullaArchiviazione: function () {
+            const oArchModel = new sap.ui.model.json.JSONModel({ results: [] });
+            this.getView().setModel(oArchModel, "archModel");
+            const oArchFilters = new sap.ui.model.json.JSONModel({
+                CompanyCode: "",
+                SupplierTokens: [],
+                TipoDocAdeTokens: [],
+                NumeroFattura: "",
+                DataFatturaFrom: null,
+                DataFatturaTo: null
+            });
+            this.getView().setModel(oArchFilters, "archFilters");
+            sap.ui.core.Fragment.load({
+                id: this.getView().getId(),
+                name: "com.zeim.fatturazionepassiva.view.fragments.AnnullaArchiviazioneDialog",
+                controller: this
+            }).then(function (oDialog) {
+                this._oAnnullaArchiviaDialog = oDialog;
+                this.getView().addDependent(oDialog);
+
+                oDialog.open();
+                this._loadArchiviatiOnce();
+            }.bind(this));
+        },
+
+
+        onClearArchiviati: function () {
+            const oFB = this.byId("fbAnnullaArchiviazione");
+            if (oFB) oFB.fireClear();
+
+            const oModel = this.getView().getModel("archModel");
+            if (oModel) oModel.setData({ results: [] }, true);
+
+            const oTable = this.byId("archTable");
+            if (oTable) oTable.clearSelection();
+        },
+
+        onUnarchiveSelected: function () {
+            const oTable = this.byId("archTable");
+            if (!oTable) return;
+
+            const aSel = oTable.getSelectedIndices() || [];
+            if (!aSel.length) {
+                sap.m.MessageToast.show("Seleziona almeno una fattura.");
+                return;
+            }
+
+            const oArchModel = this.getView().getModel("archModel");
+            const aIds = aSel.map((i) => {
+                const oCtx = oTable.getContextByIndex(i);
+                const sPath = oCtx && oCtx.getPath();
+                const oRow = sPath ? oArchModel.getProperty(sPath) : null;
+                return oRow && oRow.Id;
+            }).filter(Boolean);
+
+            if (!aIds.length) {
+                sap.m.MessageToast.show("ID mancanti sulle righe selezionate.");
+                return;
+            }
+
+            sap.m.MessageBox.confirm(`Confermi l'annullamento archiviazione per ${aIds.length} fattura/e?`, {
+                actions: [sap.m.MessageBox.Action.OK, sap.m.MessageBox.Action.CANCEL],
+                emphasizedAction: sap.m.MessageBox.Action.OK,
+                onClose: function (sAction) {
+                    if (sAction !== sap.m.MessageBox.Action.OK) return;
+
+                    sap.ui.core.BusyIndicator.show(0);
+
+                    this._unarchiveByIds(aIds).then((res) => {
+                        const aOk = res.ok || [];
+                        const aKo = res.ko || [];
+
+                        const aAll = oArchModel.getProperty("/results") || [];
+                        oArchModel.setProperty("/results", aAll.filter(r => !aOk.includes(r.Id)));
+                        oArchModel.refresh(true);
+
+                        oTable.clearSelection();
+
+                        this._bindTable(true);
+
+                        if (aKo.length) {
+                            sap.m.MessageBox.warning(`Annullate ${aOk.length} fatture, ${aKo.length} in errore.`);
+                        } else {
+                            sap.m.MessageToast.show("Archiviazione annullata.");
+                        }
+                    }).catch(() => {
+                        sap.m.MessageBox.error("Errore durante annullamento archiviazione.");
+                    }).finally(() => {
+                        sap.ui.core.BusyIndicator.hide();
+                    });
+
+                }.bind(this)
+            });
+        },
+
+
+        _loadArchiviatiOnce: function () {
+            const oODataModel = this.getOwnerComponent().getModel("mainService");
+            const oArchModel = this.getView().getModel("archModel");
+            if (!oODataModel || !oArchModel) return Promise.resolve();
+
+            sap.ui.core.BusyIndicator.show(0);
+
+            const aFilters = this._buildArchiviatiFilters();
+
+            return new Promise((resolve, reject) => {
+                oODataModel.read("/zeim_lista_fatture_archiviate", {
+                    filters: aFilters,
+                    urlParameters: { "$top": 5000, "$skip": 0 },
+                    success: (oData) => {
+                        oArchModel.setData({ results: (oData && oData.results) ? oData.results : [] }, true);
+                        sap.ui.core.BusyIndicator.hide();
+                        resolve();
+                    },
+                    error: () => {
+                        sap.ui.core.BusyIndicator.hide();
+                        reject();
+                    }
+                });
+            });
+        },
+
+
+
+
+        _buildArchiviatiFilters: function () {
+            const Filter = sap.ui.model.Filter;
+            const FO = sap.ui.model.FilterOperator;
+            const aFilters = [];
+
+            const sCompany = this.byId("archSelectSocieta") && this.byId("archSelectSocieta").getSelectedKey();
+            if (sCompany) aFilters.push(new Filter("CompanyCode", FO.EQ, sCompany));
+
+            const aSuppliers = this._getTokenKeys("archMultiInputFornitore");
+            if (aSuppliers.length === 1) {
+                aFilters.push(new Filter("SupplierCode", FO.EQ, aSuppliers[0]));
+            } else if (aSuppliers.length > 1) {
+                aFilters.push(new Filter(aSuppliers.map(v => new Filter("SupplierCode", FO.EQ, v)), false));
+            }
+
+            const aTipoAde = this._getTokenKeys("archMultiInputTipoDocAdE");
+            if (aTipoAde.length === 1) {
+                aFilters.push(new Filter("TipoDocAdE", FO.EQ, aTipoAde[0]));
+            } else if (aTipoAde.length > 1) {
+                aFilters.push(new Filter(aTipoAde.map(v => new Filter("TipoDocAdE", FO.EQ, v)), false));
+            }
+
+            const sNumero = this.byId("archInputNumeroFattura") && this.byId("archInputNumeroFattura").getValue();
+            if (sNumero) aFilters.push(new Filter("NumeroFattura", FO.Contains, sNumero));
+
+            const oDRS = this.byId("archDrsDataFattura");
+            if (oDRS) {
+                const dFrom = oDRS.getDateValue();
+                const dTo = oDRS.getSecondDateValue();
+                if (dFrom && dTo) {
+                    const d1 = new Date(dFrom.getTime()); d1.setHours(0, 0, 0, 0);
+                    const d2 = new Date(dTo.getTime()); d2.setHours(23, 59, 59, 999);
+                    aFilters.push(new Filter("DataFattura", FO.BT, d1, d2));
+                }
+            }
+
+            return aFilters;
+        },
+
+        _getTokenKeys: function (sId) {
+            const oMI = this.byId(sId);
+            if (!oMI) return [];
+            return (oMI.getTokens() || []).map(t => (t.getKey && t.getKey()) || t.getText()).filter(Boolean);
+        },
+
+
+        _unarchiveByIds: function (aIds) {
+            const oODataModel = this.getOwnerComponent().getModel("mainService");
+
+            const runOne = (sId) => {
+                const sPath = oODataModel.createKey("/ZC_EIM_FPXML", { ID: sId });
+                return new Promise((resolve, reject) => {
+                    oODataModel.update(sPath, { Archv: false }, {
+                        merge: true,
+                        success: () => resolve(sId),
+                        error: (err) => reject({ id: sId, err })
+                    });
+                });
+            };
+
+            return Promise.allSettled(aIds.map(runOne)).then((aRes) => {
+                const ok = aRes.filter(r => r.status === "fulfilled").map(r => r.value);
+                const ko = aRes.filter(r => r.status === "rejected").map(r => r.reason.id);
+
+                if (ok.length === 0) throw new Error("ALL_FAILED");
+                return { ok, ko };
+            });
+        },
+
+
+
+        onValueHelpFornitoreArch: function () {
+            sap.ui.require(["com/zeim/fatturazionepassiva/controller/helpers/ValueHelpHandler"], function (VH) {
+
+                VH.openValueHelp(
+                    this,
+                    "com.zeim.fatturazionepassiva.view.fragments.ValueHelpDialogFilterbarFornitore",
+                    "Fornitore",
+                    "/zeim_search_supplier_data",
+                    {
+                        vhId: "ARCH_FORN",
+                        key: "Supplier",
+                        desc: "SupplierName",
+                        columns: [
+                            { label: "Fornitore", path: "Supplier" },
+                            { label: "Descrizione", path: "SupplierName" },
+                            { label: "Country", path: "Country" }
+                        ],
+                        targetModelName: "archFilters",
+                        tokensPath: "/SupplierTokens"
+                    }
+                );
+
+            }.bind(this));
+        },
+
+
+
+        onValueHelpTipoDocAdeArch: function () {
+            this.onValueHelpTipoDocAde();
+        },
+
+        onCloseAnnullaArchiviazione: function () {
+            if (this._oAnnullaArchiviaDialog) {
+                this._oAnnullaArchiviaDialog.close();
+                this._oAnnullaArchiviaDialog.destroy();
+                this._oAnnullaArchiviaDialog = null;
+            }
+
+            const oArchModel = this.getView().getModel("archModel");
+            if (oArchModel) this.getView().setModel(null, "archModel");
+        },
+
+        //NAvigazione ad app standard
+
+
+        onPartitarioFornitore: async function () {
+            try {
+
+                const Navigation = await sap.ushell.Container.getServiceAsync("Navigation");
+
+                const sHref = await Navigation.getHref({
+                    target: {
+                        semanticObject: "PurchaseOrderItem",
+                        action: "reconcileGRIRAccounts"
+                    }
+
+                });
+
+                console.log(" Navigazione FLP:", sHref);
+
+                window.open(sHref, "_blank");
+            } catch (err) {
+                console.error("Errore nella navigazione Cross-App:", err);
+            }
+        }
+
 
 
 

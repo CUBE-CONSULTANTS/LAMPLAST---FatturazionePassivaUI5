@@ -24,7 +24,7 @@
                     <fb:FilterGroupItem
                         groupName="__$INTERNAL$"
                         name="OrganizationBPName1"
-                        label="Descrizione"
+                        label="Nome Fornitore"
                         visibleInFilterBar="true">
                         <fb:control>
                             <m:Input name="OrganizationBPName1"/>

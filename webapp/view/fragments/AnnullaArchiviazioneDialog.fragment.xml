@@ -1,0 +1,275 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:fb="sap.ui.comp.filterbar"
+    xmlns:table="sap.ui.table"
+>
+    <Dialog
+        id="dlgAnnullaArchiviazione"
+        title="Fatture archiviate"
+        contentWidth="92vw"
+        contentHeight="82vh"
+        resizable="true"
+        draggable="true"
+        horizontalScrolling="false"
+        afterClose=".onCloseAnnullaArchiviazione"
+    >
+        <content>
+            <VBox
+                width="100%"
+                class="sapUiContentPadding"
+            >
+                <fb:FilterBar
+                    id="fbAnnullaArchiviazione"
+                    useToolbar="true"
+                    showGoOnFB="true"
+                    showClearOnFB="true"
+                    isRunningInValueHelpDialog="false"
+                    search=".onSearchArchiviati"
+                    clear=".onClearArchiviati"
+                >
+                    <fb:filterGroupItems>
+                        <fb:FilterGroupItem
+                            name="CompanyCode"
+                            label="Società"
+                            groupName="General"
+                            visibleInFilterBar="true"
+                        >
+                            <fb:control>
+                                <Select
+                                    id="archSelectSocieta"
+                                    width="300px"
+                                    forceSelection="false"
+                                    items="{path:'MCSocieta>/ZR_EIM_COMPANY'}"
+                                >
+                                    <core:Item
+                                        key="{MCSocieta>CompanyCode}"
+                                        text="{MCSocieta>CompanyCode}"
+                                    />
+                                </Select>
+                            </fb:control>
+                        </fb:FilterGroupItem>
+
+                        <fb:FilterGroupItem
+                            name="SupplierCode"
+                            label="Fornitore"
+                            groupName="General"
+                            visibleInFilterBar="true"
+                        >
+                            <fb:control>
+                                <MultiInput
+                                    id="archMultiInputFornitore"
+                                    width="300px"
+                                    showValueHelp="true"
+                                    valueHelpRequest=".onValueHelpFornitoreArch"
+                                    tokens="{archFilters>/SupplierTokens}"
+                                >
+                                    <tokens>
+                                        <Token
+                                            key="{archFilters>key}"
+                                            text="{archFilters>text}"
+                                        />
+                                    </tokens>
+                                </MultiInput>
+                            </fb:control>
+                        </fb:FilterGroupItem>
+
+                        <fb:FilterGroupItem
+                            name="TipoDocAdE"
+                            label="Tipo doc. AdE"
+                            groupName="General"
+                            visibleInFilterBar="true"
+                        >
+                            <fb:control>
+                                <MultiInput
+                                    id="archMultiInputTipoDocAdE"
+                                    width="300px"
+                                    showValueHelp="true"
+                                    valueHelpRequest=".onValueHelpTipoDocAdeArch"
+                                    showSuggestion="true"
+                                    suggestionItems="{path:'TipoDocAde>/ZC_EIM_BLADE'}"
+                                >
+                                    <suggestionItems>
+                                        <core:Item
+                                            key="{TipoDocAde>BlartAde}"
+                                            text="{TipoDocAde>Descrizione}"
+                                        />
+                                    </suggestionItems>
+                                </MultiInput>
+                            </fb:control>
+                        </fb:FilterGroupItem>
+
+                        <fb:FilterGroupItem
+                            name="NumeroFattura"
+                            label="Nr. docomento nel file XML"
+                            groupName="General"
+                            visibleInFilterBar="true"
+                        >
+                            <fb:control>
+                                <Input
+                                    id="archInputNumeroFattura"
+                                    width="300px"
+                                    type="Text"
+                                />
+                            </fb:control>
+                        </fb:FilterGroupItem>
+
+                        <fb:FilterGroupItem
+                            name="DataFattura"
+                            label="Data Documento"
+                            groupName="Date"
+                            visibleInFilterBar="true"
+                        >
+                            <fb:control>
+                                <DateRangeSelection
+                                    id="archDrsDataFattura"
+                                    delimiter=" - "
+                                    width="300px"
+                                    displayFormat="dd/MM/yyyy"
+                                    valueFormat="yyyy-MM-dd"
+                                />
+                            </fb:control>
+                        </fb:FilterGroupItem>
+                    </fb:filterGroupItems>
+                </fb:FilterBar>
+
+                <table:Table
+                    id="archTable"
+                    rows="{archModel>/results}"
+                    threshold="200"
+                    class="sapUiTinyMarginTop"
+                >
+                    <table:columns>
+                        <table:Column width="5rem">
+                            <table:label>
+                                <Label text="Società" />
+                            </table:label>
+                            <table:template>
+                                <Text text="{archModel>CompanyCode}" />
+                            </table:template>
+                        </table:Column>
+
+                        <table:Column width="14rem">
+                            <table:label>
+                                <Label text="Nome società" />
+                            </table:label>
+                            <table:template>
+                                <Text text="{archModel>CompanyName}" />
+                            </table:template>
+                        </table:Column>
+
+                        <table:Column width="7rem">
+                            <table:label>
+                                <Label text="Fornitore" />
+                            </table:label>
+                            <table:template>
+                                <Text text="{archModel>SupplierCode}" />
+                            </table:template>
+                        </table:Column>
+
+                        <table:Column width="14rem">
+                            <table:label>
+                                <Label text="Nome fornitore" />
+                            </table:label>
+                            <table:template>
+                                <Text text="{archModel>SupplierName}" />
+                            </table:template>
+                        </table:Column>
+
+                        <table:Column width="5rem">
+                            <table:label>
+                                <Label text="Tipo AdE" />
+                            </table:label>
+                            <table:template>
+                                <Text text="{archModel>TipoDocAdE}" />
+                            </table:template>
+                        </table:Column>
+
+                        <table:Column width="10rem">
+                            <table:label>
+                                <Label text="N. fattura fornitore" />
+                            </table:label>
+                            <table:template>
+                                <Text text="{archModel>NumeroFattura}" />
+                            </table:template>
+                        </table:Column>
+
+                        <table:Column width="6rem">
+                            <table:label>
+                                <Label text="Data fattura" />
+                            </table:label>
+                            <table:template>
+                                <Text
+                                    text="{path:'archModel>DataFattura', formatter: '.formatter.formatDate'}"
+                                />
+                            </table:template>
+                        </table:Column>
+
+                        <table:Column width="10rem">
+                            <table:label>
+                                <Label text="N. doc." />
+                            </table:label>
+                            <table:template>
+                                <Text text="{archModel>DocumentNumber}" />
+                            </table:template>
+                        </table:Column>
+
+                        <table:Column width="6rem">
+                            <table:label>
+                                <Label text="Esercizio" />
+                            </table:label>
+                            <table:template>
+                                <Text text="{archModel>FiscalYear}" />
+                            </table:template>
+                        </table:Column>
+
+                        <table:Column width="8rem">
+                            <table:label>
+                                <Label text="Doc contabile" />
+                            </table:label>
+                            <table:template>
+                                <Text text="{archModel>FinanceDocument}" />
+                            </table:template>
+                        </table:Column>
+
+                        <table:Column width="6rem">
+                            <table:label>
+                                <Label text="Data registr." />
+                            </table:label>
+                            <table:template>
+                                <Text
+                                    text="{path:'archModel>PostingDate', formatter: '.formatter.formatDate'}"
+                                />
+                            </table:template>
+                        </table:Column>
+
+                        <table:Column width="7rem">
+                            <table:label>
+                                <Label text="Tipo SAP" />
+                            </table:label>
+                            <table:template>
+                                <Text text="{archModel>DocumentType}" />
+                            </table:template>
+                        </table:Column>
+                    </table:columns>
+                </table:Table>
+            </VBox>
+        </content>
+
+        <beginButton>
+            <Button
+                text="Annulla archiviazione"
+                type="Emphasized"
+                press=".onUnarchiveSelected"
+            />
+        </beginButton>
+
+        <endButton>
+            <Button
+                text="Chiudi"
+                type="Emphasized"
+                press=".onCloseAnnullaArchiviazione"
+            />
+        </endButton>
+    </Dialog>
+</core:FragmentDefinition>

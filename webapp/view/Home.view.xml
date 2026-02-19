@@ -22,6 +22,8 @@
                 useToolbar="false"
                 search=".onFilterBarSearch"
                 showGoOnFB="true"
+                showClearOnFB="true"
+                clear=".onFilterBarClear"
                 isRunningInValueHelpDialog="false"
             >
                 <fb:filterGroupItems>
@@ -58,18 +60,14 @@
                                 width="300px"
                                 showValueHelp="true"
                                 valueHelpRequest=".onValueHelpFornitore"
-                                showSuggestion="true"
-                                suggestionItems="{path: 'Fornitore>/zeim_search_supplier_data'}"
-                                data-model="Fornitore"
-                                data-key="Supplier"
-                                data-desc="SupplierName"
+                                tokens="{homeFilters>/SupplierTokens}"
                             >
-                                <suggestionItems>
-                                    <core:Item
-                                        key="{Fornitore>Supplier}"
-                                        text="{Fornitore>SupplierName}"
+                                <tokens>
+                                    <Token
+                                        key="{homeFilters>key}"
+                                        text="{homeFilters>text}"
                                     />
-                                </suggestionItems>
+                                </tokens>
                             </MultiInput>
                         </fb:control>
                     </fb:FilterGroupItem>
@@ -275,7 +273,7 @@
                 fixedColumnCount="1"
                 rowActionCount="1"
                 rowSelectionChange="onRowSelectionChange"
-            >   
+            >
                 <table:rowActionTemplate>
                     <table:RowAction>
                         <table:items>
@@ -713,9 +711,9 @@
                 <ToolbarSpacer />
                 <!-- 1. OdA senza fattura -->
                 <Button
-                    text="OdA senza fattura"
+                    text="Assegna Società"
                     icon="sap-icon://add-document"
-                    press=".onOdaSenzaFattura"
+                    press=".onAssegnaSocieta"
                     type="Emphasized"
                 />
                 <!-- 3. Partitario Fornitore -->

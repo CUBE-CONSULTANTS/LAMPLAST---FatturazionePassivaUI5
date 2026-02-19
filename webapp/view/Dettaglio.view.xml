@@ -87,11 +87,6 @@
                                         <!-- DOCUMENTO -->
                                         <core:Title text="Documento" />
 
-                                        <m:Label text="Tipo fattura" />
-                                        <m:Text
-                                            text="{= ${TipoFattura} === 'M' ? 'Fattura Logistica' : 'Fattura Contabile' }"
-                                        />
-
                                         <m:Label text="Società" />
                                         <m:Text text="{CompanyCode}" />
 
@@ -104,9 +99,9 @@
                                         <m:Label text="Descrizione Tipo Doc." />
                                         <m:Text text="{TipoDocText}" />
 
-                                        <m:Label text="Data fattura" />
+                                        <m:Label text="Tipo fattura" />
                                         <m:Text
-                                            text="{path: 'DataFattura', formatter: '.formatter.formatDate'}"
+                                            text="{= ${TipoFattura} === 'M' ? 'Fattura Logistica' : 'Fattura Contabile' }"
                                         />
 
                                         <m:Label text="Esercizio" />
@@ -147,8 +142,10 @@
                                         <m:Label text="N. fattura fornitore" />
                                         <m:Text text="{NumeroFattura}" />
 
-                                        <m:Label text="Divisa" />
-                                        <m:Text text="{Divisa}" />
+                                        <m:Label text="Data fattura" />
+                                        <m:Text
+                                            text="{path: 'DataFattura', formatter: '.formatter.formatDate'}"
+                                        />
 
                                         <m:Label text="Causale" />
                                         <m:Text text="{Causale}" />
@@ -170,11 +167,6 @@
                                         <m:Label text="Paese" />
                                         <m:Text text="{Paese}" />
 
-                                        <m:Label text="Data pagamento" />
-                                        <m:Text
-                                            text="{path: 'DataPagamento', formatter: '.formatter.formatDate'}"
-                                        />
-
                                         <m:Label text="Blocco" />
                                         <m:Text
                                             text="{= ${CodBlocco} ? 'Bloccato' : 'Sbloccato' }"
@@ -191,6 +183,14 @@
 
                                         <m:Label text="Totale" />
                                         <m:Text text="{Totale}" />
+
+                                        <m:Label text="Divisa" />
+                                        <m:Text text="{Divisa}" />
+                                        
+                                        <m:Label text="Data pagamento" />
+                                        <m:Text
+                                            text="{path: 'DataPagamento', formatter: '.formatter.formatDate'}"
+                                        />
                                     </form:SimpleForm>
                                 </uxap:blocks>
                             </uxap:ObjectPageSubSection>
