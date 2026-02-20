@@ -1,5 +1,5 @@
 sap.ui.define([
-    "sap/ui/core/mvc/Controller",
+    "./BaseController",
     "sap/ui/model/json/JSONModel",
     "sap/ui/core/Fragment",
     "sap/m/MessageBox",
@@ -7,12 +7,13 @@ sap.ui.define([
     "sap/ui/codeeditor/CodeEditor",
     "sap/m/Dialog",
     "sap/m/Button",
-    "sap/m/VBox"
+    "sap/m/VBox",
 
-], (Controller, JSONModel, Fragment, MessageBox, MessageToast, CodeEditor, Dialog, Button, VBox) => {
+
+], (BaseController, JSONModel, Fragment, MessageBox, MessageToast, CodeEditor, Dialog, Button, VBox) => {
     "use strict";
 
-    return Controller.extend("com.zeim.fatturazionepassiva.controller.Home", {
+    return BaseController.extend("com.zeim.fatturazionepassiva.controller.Home", {
 
         onInit() {
             sap.ui.getCore().getEventBus().subscribe("fatture", "clearSelection", this._onClearSelection, this);
@@ -31,7 +32,8 @@ sap.ui.define([
                     canBlocca: false,
                     canArchivia: false,
                     canSblocca: false,
-                    canStorno: false
+                    canStorno: false,
+                    enableAssignCompany: false
                 }
 
             });
@@ -40,7 +42,7 @@ sap.ui.define([
             const oHomeFilters = new sap.ui.model.json.JSONModel({
                 SupplierTokens: [],
                 TipoDocAdeTokens: [],
-                NomeFornitoreTokens:[]
+                NomeFornitoreTokens: []
             });
             this.getView().setModel(oHomeFilters, "homeFilters");
 
@@ -121,6 +123,7 @@ sap.ui.define([
             this.getView().getModel("viewModel").setProperty("/ui/canBlocca", false);
             this.getView().getModel("viewModel").setProperty("/ui/canArchivia", false);
             this.getView().getModel("viewModel").setProperty("/ui/canStorno", false);
+            this.getView().getModel("viewModel").setProperty("/ui/enableAssignCompany", false);
 
             this._bindTable(true, aFilters);
         },
@@ -133,12 +136,16 @@ sap.ui.define([
             const sSoc = this.byId("selectSocieta") && this.byId("selectSocieta").getSelectedKey();
             if (sSoc) aFilters.push(new Filter("CompanyCode", FO.EQ, sSoc));
 
-            const aForn = this._getTokenKeys("multiInputFornitore");
+            const aForn = this._getTokenKeys("multinputFornitore");
             if (aForn.length === 1) {
                 aFilters.push(new Filter("SupplierCode", FO.EQ, aForn[0]));
             } else if (aForn.length > 1) {
                 aFilters.push(new Filter(aForn.map(v => new Filter("SupplierCode", FO.EQ, v)), false));
             }
+
+            const nomeFornitore = this.byId("inputNomeFornitore") && (this.byId("inputNomeFornitore").getValue() || "").trim();
+            if (nomeFornitore) aFilters.push(new Filter("SupplierName", FO.Contains, nomeFornitore));
+            
 
             const sCF = this.byId("inputCodFiscale") && (this.byId("inputCodFiscale").getValue() || "").trim();
             if (sCF) aFilters.push(new Filter("CodiceFiscale", FO.Contains, sCF));
@@ -204,6 +211,7 @@ sap.ui.define([
             oVM.setProperty("/ui/canArchivia", false);
             oVM.setProperty("/ui/canSblocca", false);
             oVM.setProperty("/ui/canStorno", false);
+            oVM.setProperty("/ui/enableAssignCompany", false);
 
             // 2) svuota davvero i campi della FilterBar
             const oSelSoc = this.byId("selectSocieta");
@@ -211,6 +219,9 @@ sap.ui.define([
 
             const oMIFor = this.byId("multiInputFornitore");
             if (oMIFor) oMIFor.removeAllTokens();
+
+            const oMINomeFornitore = this.byId("inputNomeFornitore");
+            if (oMINomeFornitore) oMINomeFornitore.setValue("");
 
             const oInpCF = this.byId("inputCodFiscale");
             if (oInpCF) oInpCF.setValue("");
@@ -404,7 +415,7 @@ sap.ui.define([
 
 
 
-        onVisualizzaDati: function (oEvent) {
+        onFatturaLogisticaButtonPress: function (oEvent) {
             let oCtx = null;
 
             // Caso 1: RowAction (table row action)
@@ -510,6 +521,34 @@ sap.ui.define([
                         targetModelName: "homeFilters",
                         tokensPath: "/SupplierTokens",
                         multiInputId: "multiInputFornitore",
+                    }
+                );
+
+            }.bind(this));
+        },
+
+        onValueHelpNomeFornitore: function () {
+            sap.ui.require(["com/zeim/fatturazionepassiva/controller/helpers/ValueHelpHandler"], function (VH) {
+
+                VH.openValueHelp(
+                    this,
+                    "com.zeim.fatturazionepassiva.view.fragments.ValueHelpDialogFilterbarFornitore",
+                    "Fornitore",
+                    "/zeim_search_supplier_data",
+                    {
+                        vhId: "HOME_FORN",
+                        key: "SupplierName",
+                        desc: "SupplierName",
+                        keyProp: "Supplier",
+                        filterProps: ["Supplier", "SupplierName", "Country"],
+                        columns: [
+                            { label: "Fornitore", path: "Supplier" },
+                            { label: "Nome Fornitore", path: "SupplierName" },
+                            { label: "Paese", path: "Country" }
+                        ],
+                        targetModelName: "homeFilters",
+                        tokensPath: "/NomeFornitoreTokens",
+                        multiInputId: "multiInputNomeFornitore",
                     }
                 );
 
@@ -976,7 +1015,7 @@ sap.ui.define([
             return nodeToXml("FatturaElettronica", root, 0).trim() + "\n";
         },
 
-        onBloccaFattura: function () {
+        onBloccaFatturaButtonPress: function () {
             const oTable = this.byId("idTreeTable");
             const aSelectedIndices = oTable.getSelectedIndices();
 
@@ -1130,7 +1169,7 @@ sap.ui.define([
             });
         },
 
-        onSbloccaFattura: function () {
+        onSbloccaFatturaButtonPress: function () {
             const oTable = this.byId("idTreeTable");
             const aSelectedIndices = oTable.getSelectedIndices();
 
@@ -1269,213 +1308,9 @@ sap.ui.define([
             }
         },
 
-        //Aprire una dialog per popolare i dati di logistica della fattura
-        // onFatturaContabile: function () {
-        //     const oTable = this.byId("idTreeTable");
-        //     const aSelectedIndices = oTable.getSelectedIndices();
-
-        //     if (aSelectedIndices.length === 0) {
-        //         sap.m.MessageToast.show("Seleziona una fattura.");
-        //         return;
-        //     }
-        //     if (aSelectedIndices.length > 1) {
-        //         sap.m.MessageToast.show("Puoi compilare i dati di logistica di una sola fattura alla volta.");
-        //         return;
-        //     }
-
-        //     const iIndex = aSelectedIndices[0];
-        //     const oJson = this.getView().getModel("fattureModel");
-
-        //     const oRow = oJson.getProperty(`/results/${iIndex}`);
-        //     if (!oRow || !oRow.Id) {
-        //         sap.m.MessageToast.show("ID mancante sulla riga selezionata.");
-        //         return;
-        //     }
-
-
-
-        //     this._openFatturaContabileDialog(oRow);
-
-        // },
-
-        // _openFatturaContabileDialog: function (oRow) {
-
-        //     if (!this._oFatturaContabileDialog) {
-
-        //         this._oFatturaContabileModel = new sap.ui.model.json.JSONModel({
-        //             Blart: "",
-        //             PostingDate: ""
-        //         });
-
-        //         this._oTpdopModel = new sap.ui.model.json.JSONModel({
-        //             value: []
-        //         });
-
-        //         this._oFatturaContabileDialog = new sap.m.Dialog({
-        //             title: "Dati Fattura Contabile",
-        //             contentWidth: "600px",
-        //             resizable: true,
-        //             draggable: true,
-        //             horizontalScrolling: false,
-        //             content: [
-        //                 new sap.m.VBox({
-        //                     width: "100%",
-        //                     items: [
-        //                         new sap.m.Label({ text: "Tipo documento (BLART)" }),
-        //                         new sap.m.Select({
-        //                             width: "100%",
-        //                             selectedKey: "{logModel>/Blart}",
-        //                             items: {
-        //                                 path: "tpdopModel>/value",
-        //                                 template: new sap.ui.core.Item({
-        //                                     key: "{tpdopModel>Blart}",
-        //                                     text: "{tpdopModel>Blart}"
-        //                                 })
-        //                             }
-        //                         }).addStyleClass("sapUiSmallMarginBottom"),
-
-        //                         new sap.m.Label({ text: "Data registrazione" }),
-        //                         new sap.m.DatePicker({
-        //                             id: this.createId("dpPostingDate"),
-        //                             width: "100%",
-        //                             displayFormat: "dd/MM/yyyy",
-        //                             valueFormat: "yyyy-MM-dd",
-        //                             value: "{logModel>/PostingDate}",
-        //                             change: (oEvent) => {
-        //                                 const oDP = oEvent.getSource();
-        //                                 const bValid = oEvent.getParameter("valid");
-
-        //                                 if (!bValid) {
-        //                                     oDP.setValueState("Error");
-        //                                     oDP.setValueStateText("Data non valida.");
-        //                                     return;
-        //                                 }
-
-        //                                 const dVal = oDP.getDateValue();
-        //                                 const dMin = oDP.getMinDate();
-        //                                 const dMax = oDP.getMaxDate();
-
-        //                                 if (dVal && ((dMin && dVal < dMin) || (dMax && dVal > dMax))) {
-        //                                     oDP.setValueState("Error");
-        //                                     oDP.setValueStateText("La data deve essere compresa tra Data Fattura e la data odierna.");
-        //                                 } else {
-        //                                     oDP.setValueState("None");
-        //                                     oDP.setValueStateText("");
-        //                                 }
-        //                             }
-        //                         }).addStyleClass("sapUiSmallMarginBottom")
-        //                     ]
-        //                 })
-        //             ],
-        //             beginButton: new sap.m.Button({
-        //                 text: "Salva",
-        //                 type: "Emphasized",
-        //                 press: () => {
-        //                     const oPayload = this._oFatturaContabileModel.getData();
-        //                     sap.m.MessageToast.show("Dati salvati con successo.");
-        //                     this._oFatturaContabileDialog.close();
-        //                 }
-        //             }),
-        //             endButton: new sap.m.Button({
-        //                 text: "Chiudi",
-        //                 type: "Emphasized",
-        //                 press: () => this._oFatturaContabileDialog.close()
-        //             }),
-        //             afterClose: () => {
-        //                 this._oFatturaContabileModel.setData({
-        //                     Blart: "",
-        //                     PostingDate: ""
-        //                 }, true);
-
-        //                 this._oTpdopModel.setProperty("/value", []);
-
-        //                 const oDP = this.byId("dpPostingDate");
-        //                 if (oDP) {
-        //                     oDP.setValueState("None");
-        //                     oDP.setValueStateText("");
-        //                     oDP.setMinDate(null);
-        //                     oDP.setMaxDate(null);
-        //                 }
-
-        //                 const oTable = this.byId("idTreeTable");
-        //                 if (oTable) oTable.clearSelection();
-        //             }
-        //         });
-
-        //         this._oFatturaContabileDialog.addStyleClass("sapUiContentPadding");
-        //         this._oFatturaContabileDialog.setModel(this._oFatturaContabileModel, "logModel");
-        //         this._oFatturaContabileDialog.setModel(this._oTpdopModel, "tpdopModel");
-        //         this.getView().addDependent(this._oFatturaContabileDialog);
-        //     }
-
-        //     const sBukrs = oRow?.CompanyCode;
-        //     const sBlartAde = oRow?.TipoDocAdE;
-
-        //     if (!sBukrs || !sBlartAde) {
-        //         sap.m.MessageToast.show("Dati mancanti: CompanyCode / TipoDocAdE sulla riga.");
-        //         this._oFatturaContabileDialog.open();
-        //         return;
-        //     }
-
-        //     // Sempre vuoto di default quando si apre
-        //     this._oFatturaContabileModel.setData({
-        //         Blart: "",
-        //         PostingDate: ""
-        //     }, true);
-
-        //     // Imposta solo il range DatePicker: >= DataFattura e <= oggi
-        //     const oDP = this.byId("dpPostingDate");
-        //     if (oDP) {
-        //         const dToday = new Date();
-        //         dToday.setHours(0, 0, 0, 0);
-
-        //         const dInvoice = this._toDate(oRow?.DataFattura);
-        //         if (dInvoice) oDP.setMinDate(dInvoice);
-        //         oDP.setMaxDate(dToday);
-
-        //         oDP.setValueState("None");
-        //         oDP.setValueStateText("");
-        //     }
-
-        //     const oV2 = this.getOwnerComponent().getModel("mainService");
-        //     const aFilters = [
-        //         new sap.ui.model.Filter("Bukrs", sap.ui.model.FilterOperator.EQ, sBukrs),
-        //         new sap.ui.model.Filter("BlartAde", sap.ui.model.FilterOperator.EQ, sBlartAde),
-        //         new sap.ui.model.Filter("IsActiveEntity", sap.ui.model.FilterOperator.EQ, true)
-        //     ];
-
-        //     sap.ui.core.BusyIndicator.show(0);
-
-        //     oV2.read("/ZC_EIM_TPDOP", {
-        //         filters: aFilters,
-        //         success: (oData) => {
-        //             sap.ui.core.BusyIndicator.hide();
-
-        //             let aResults = (oData && oData.results) ? oData.results : [];
-        //             aResults = [{
-        //                 Blart: ""
-        //             }].concat(aResults);
-
-        //             this._oTpdopModel.setProperty("/value", aResults);
-
-        //             if (aResults.length === 0) {
-        //                 sap.m.MessageToast.show("Nessun tipo documento trovato per i filtri indicati.");
-        //             }
-
-        //             this._oFatturaContabileDialog.open();
-        //         },
-        //         error: () => {
-        //             sap.ui.core.BusyIndicator.hide();
-        //             this._oTpdopModel.setProperty("/value", []);
-        //             sap.m.MessageToast.show("Errore nel recupero da ZC_EIM_TPDOP.");
-        //             this._oFatturaContabileDialog.open();
-        //         }
-        //     });
-        // },
-
         //Navigazione verso app standard di creazione
 
-        onFatturaContabile: async function () {
+        onFatturaContabileButtonPress: async function () {
             try {
 
 
@@ -1498,7 +1333,7 @@ sap.ui.define([
             }
         },
 
-        onFatturaLogisticaMiro: async function () {
+        onFatturaLogisticaMiroButtonPress: async function () {
             try {
                 const oCrossAppNav = await sap.ushell.Container.getServiceAsync("CrossApplicationNavigation");
 
@@ -1517,39 +1352,6 @@ sap.ui.define([
                 sap.m.MessageBox.error("Impossibile aprire l'app Create Invoice - Advanced.")
             }
         },
-
-
-        // _toDate: function (v) {
-        //     if (!v) return null;
-        //     if (v instanceof Date) {
-        //         const d = new Date(v.getTime());
-        //         d.setHours(0, 0, 0, 0);
-        //         return d;
-        //     }
-        //     if (typeof v === "string") {
-        //         if (/^\d{4}-\d{2}-\d{2}/.test(v)) {
-        //             const y = Number(v.slice(0, 4));
-        //             const m = Number(v.slice(5, 7));
-        //             const d = Number(v.slice(8, 10));
-        //             const dt = new Date(y, m - 1, d);
-        //             dt.setHours(0, 0, 0, 0);
-        //             return dt;
-        //         }
-        //         const dt2 = new Date(v);
-        //         if (!isNaN(dt2.getTime())) {
-        //             dt2.setHours(0, 0, 0, 0);
-        //             return dt2;
-        //         }
-        //     }
-        //     return null;
-        // },
-
-        // _toYMD: function (d) {
-        //     const y = d.getFullYear();
-        //     const m = String(d.getMonth() + 1).padStart(2, "0");
-        //     const day = String(d.getDate()).padStart(2, "0");
-        //     return `${y}-${m}-${day}`;
-        // },
 
 
 
@@ -1854,7 +1656,7 @@ sap.ui.define([
                 }
 
                 // CONTABILE -> AccountingDocument-manageV2 con entity path
-                const belnr = oRow.FinanceDocument || oRow.DocumentNumber; // usa FinanceDocument se presente
+                const belnr = oRow.FinanceDocument || oRow.DocumentNumber;
                 const bukrs = oRow.CompanyCode;
                 const gjahr = oRow.FiscalYear;
 
@@ -1870,7 +1672,7 @@ sap.ui.define([
                         AccountingDocument: belnr,
                         CompanyCode: bukrs,
                         FiscalYear: gjahr,
-                        "sap-app-origin-hint": "", // come da tua richiesta (omesso/vuoto)
+                        "sap-app-origin-hint": "",
                         FCLLayout: "MidColumnFullScreen"
                     }
                 });
@@ -1910,10 +1712,13 @@ sap.ui.define([
 
             const bCanOpenCreateApps = !!(oSingle && oSingle.StatoFattura === "1");
 
+            const bCanAssegnaSocieta = iCount === 1 && !(oSingle.CompanyCode && oSingle.CompanyName);
+
             oVM.setProperty("/ui/canStorno", bCanStorno);
             oVM.setProperty("/ui/canBlocca", bCanBlocca);
             oVM.setProperty("/ui/canArchivia", bCanArchivia);
             oVM.setProperty("/ui/canOpenCreateApps", bCanOpenCreateApps);
+            oVM.setProperty("/ui/enableAssignCompany", bCanAssegnaSocieta);
         },
 
 
@@ -2173,7 +1978,7 @@ sap.ui.define([
         },
 
 
-        _unarchiveByIds: function (aIds) {
+        _unarchiveByIds: async function (aIds) {
             const oODataModel = this.getOwnerComponent().getModel("mainService");
 
             const runOne = (sId) => {
@@ -2187,13 +1992,11 @@ sap.ui.define([
                 });
             };
 
-            return Promise.allSettled(aIds.map(runOne)).then((aRes) => {
-                const ok = aRes.filter(r => r.status === "fulfilled").map(r => r.value);
-                const ko = aRes.filter(r => r.status === "rejected").map(r => r.reason.id);
-
-                if (ok.length === 0) throw new Error("ALL_FAILED");
-                return { ok, ko };
-            });
+            const aRes = await Promise.allSettled(aIds.map(runOne));
+            const ok = aRes.filter(r => r.status === "fulfilled").map(r_1 => r_1.value);
+            const ko = aRes.filter(r_2 => r_2.status === "rejected").map(r_3 => r_3.reason.id);
+            if (ok.length === 0) throw new Error("ALL_FAILED");
+            return { ok, ko };
         },
 
 
@@ -2240,29 +2043,104 @@ sap.ui.define([
             if (oArchModel) this.getView().setModel(null, "archModel");
         },
 
-        //NAvigazione ad app standard
+        onAssegnaSocietaButtonPress: function () {
+            const oTable = this.byId("idTreeTable");
+            const aSel = oTable.getSelectedIndices() || [];
 
-
-        onPartitarioFornitore: async function () {
-            try {
-
-                const Navigation = await sap.ushell.Container.getServiceAsync("Navigation");
-
-                const sHref = await Navigation.getHref({
-                    target: {
-                        semanticObject: "PurchaseOrderItem",
-                        action: "reconcileGRIRAccounts"
-                    }
-
-                });
-
-                console.log(" Navigazione FLP:", sHref);
-
-                window.open(sHref, "_blank");
-            } catch (err) {
-                console.error("Errore nella navigazione Cross-App:", err);
+            if (aSel.length !== 1) {
+                sap.m.MessageToast.show("Seleziona una sola fattura.");
+                return;
             }
-        }
+
+            const iIndex = aSel[0];
+            const oJson = this.getView().getModel("fattureModel");
+            const sRowPath = `/results/${iIndex}`;
+            const oRow = oJson.getProperty(sRowPath) || {};
+
+            const sBukrs = (oRow.Bukrs || oRow.CompanyCode || "").toString().trim();
+            // if (sBukrs) {
+            //     sap.m.MessageToast.show("La fattura selezionata ha già una società.");
+            //     return;
+            // }
+
+            if (!oRow.Id) {
+                sap.m.MessageToast.show("ID mancante sulla riga selezionata.");
+                return;
+            }
+
+            sap.ui.require(
+                ["com/zeim/fatturazionepassiva/controller/helpers/ValueHelpHandler"],
+                function (VH) {
+                    VH.openValueHelp(
+                        this,
+                        "com.zeim.fatturazionepassiva.view.fragments.ValueHelpDialogFilterbarSocieta",
+                        "mainService",
+                        "/ZR_EIM_COMPANY",
+                        {
+                            key: "CompanyCode",
+                            desc: "CompanyCodeName",
+                            keyProp: "CompanyCode",
+                            filterProps: ["CompanyCode", "CompanyCodeName"],
+                            columns: [
+                                { label: "Società", path: "CompanyCode" },
+                                { label: "Descrizione", path: "CompanyCodeName" }
+                            ],
+                            onOk: async function (oSel) {
+                                const sCompany = (oSel && oSel.key ? oSel.key : "").toString().trim();
+                                const sCompanyName = (oSel && oSel.text ? oSel.text : "").toString().trim();
+
+                                if (!sCompany) {
+                                    sap.m.MessageToast.show("Seleziona una società.");
+                                    return;
+                                }
+
+                                await this._putAssegnaSocieta(this.getOwnerComponent().getModel("mainService"), oRow.Id, sCompany);
+
+                                oJson.setProperty(sRowPath + "/CompanyCode", sCompany);
+                                oJson.setProperty(sRowPath + "/Bukrs", sCompany);
+
+                                if (sCompanyName) {
+                                    oJson.setProperty(sRowPath + "/CompanyName", sCompanyName);
+                                }
+
+                                oJson.refresh(true);
+
+                                oTable.clearSelection();
+                                this.getView().getModel("viewModel").setProperty("/ui/enableAssignCompany", false);
+
+                                sap.m.MessageToast.show("Società assegnata correttamente.");
+                            }.bind(this)
+                        }
+                    );
+                }.bind(this)
+            );
+        },
+
+        _putAssegnaSocieta: function (oODataModel, sId, sBukrs) {
+            const sPath = oODataModel.createKey("/ZC_EIM_FPXML", { ID: sId });
+
+            const oPayload = {
+                Bukrs: sBukrs
+            };
+
+            sap.ui.core.BusyIndicator.show(0);
+
+            return new Promise((resolve, reject) => {
+                oODataModel.update(sPath, oPayload, {
+                    merge: true,
+                    success: function (oData) {
+                        sap.ui.core.BusyIndicator.hide();
+                        resolve(oData);
+                    },
+                    error: function (e) {
+                        sap.ui.core.BusyIndicator.hide();
+                        sap.m.MessageBox.error("Errore durante l'assegnazione della società.");
+                        reject(e);
+                    }
+                });
+            });
+        },
+
 
 
 

@@ -144,14 +144,33 @@ sap.ui.define([
         });
 
         // --- sincronizza i token visivi della VH con quelli del MultiInput
-        const oMultiInput = oController.byId(oSettings.multiInputId);
+        const oMultiInput = oSettings.multiInputId ? oController.byId(oSettings.multiInputId) : null;
         if (oMultiInput) {
           oDialog.setTokens(oMultiInput.getTokens());
         }
 
         oDialog.attachOk(function (oEvent) {
+          const aTokens = oEvent.getParameter("tokens") || [];
+
+          // CASO 1: dialog "azione" (es. assegna società)
+          if (typeof oSettings.onOk === "function") {
+            const oFirst = aTokens[0];
+            const oSel = {
+              key: oFirst && oFirst.getKey ? oFirst.getKey() : "",
+              text: oFirst && oFirst.getText ? oFirst.getText() : "",
+              tokens: aTokens
+            };
+
+            Promise.resolve(oSettings.onOk(oSel))
+              .then(function () { oDialog.close(); })
+              .catch(function () { /* gestisci errori nel controller */ });
+
+            return;
+          }
+
+          // CASO 2: handler standard (FilterBar/MultiInput)
           if (oMultiInput) {
-            oMultiInput.setTokens(oEvent.getParameter("tokens"));
+            oMultiInput.setTokens(aTokens);
           }
           oDialog.close();
         });
@@ -159,8 +178,13 @@ sap.ui.define([
         oDialog.attachCancel(() => oDialog.close());
         oDialog.attachAfterClose(() => oDialog.destroy());
 
-        // trigger popolamento iniziale
-        oDialog.attachAfterOpen(() => oFilterBar.search());
+        // trigger popolamento iniziale (senza dipendere da variabili fuori scope)
+        oDialog.attachAfterOpen(function () {
+          const fb = oDialog.getFilterBar();
+          if (fb) {
+            fb.search();
+          }
+        });
 
         oDialog.open();
       });

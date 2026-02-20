@@ -72,6 +72,20 @@
                         </fb:control>
                     </fb:FilterGroupItem>
                     <fb:FilterGroupItem
+                        name="NomeFornitore"
+                        label="Nome Fornitore"
+                        groupName="General"
+                        visibleInFilterBar="true"
+                    >
+                        <fb:control>
+                            <Input
+                                id="inputNomeFornitore"
+                                width="300px"
+                                type="Text"
+                            />
+                        </fb:control>
+                    </fb:FilterGroupItem>
+                    <fb:FilterGroupItem
                         name="codFiscale"
                         label="Codice Fiscale"
                         groupName="codFiscale"
@@ -711,23 +725,24 @@
                 <ToolbarSpacer />
                 <!-- 1. OdA senza fattura -->
                 <Button
-                    text="Assegna Società"
-                    icon="sap-icon://add-document"
-                    press=".onAssegnaSocieta"
                     type="Emphasized"
+                    text="Assegna Società"
+                    icon="sap-icon://add"
+                    enabled="{viewModel>/ui/enableAssignCompany}"
+                    press=".onAssegnaSocietaButtonPress"
                 />
                 <!-- 3. Partitario Fornitore -->
                 <Button
                     text="Partitario Fornitore"
                     icon="sap-icon://supplier"
-                    press=".onPartitarioFornitore"
+                    press=".onPartitarioFornitoreButtonPress"
                     type="Emphasized"
                 />
                 <!-- 4. Fattura Logistica -->
                 <Button
                     text="Fattura Logistica"
                     icon="sap-icon://shipping-status"
-                    press=".onVisualizzaDati"
+                    press=".onFatturaLogisticaButtonPress"
                     type="Emphasized"
                     enabled="{viewModel>/ui/canOpenCreateApps}"
                 />
@@ -735,7 +750,7 @@
                 <Button
                     text="Fattura Contabile"
                     icon="sap-icon://expense-report"
-                    press=".onFatturaContabile"
+                    press=".onFatturaContabileButtonPress"
                     type="Emphasized"
                     enabled="{viewModel>/ui/canOpenCreateApps}"
                 />
@@ -744,7 +759,7 @@
                     text="Blocca"
                     icon="sap-icon://locked"
                     tooltip="Blocca"
-                    press=".onBloccaFattura"
+                    press=".onBloccaFatturaButtonPress"
                     type="Emphasized"
                     enabled="{= ${viewModel>/ui/canBlocca} }"
                 />
@@ -753,14 +768,14 @@
                     text="Sblocca"
                     icon="sap-icon://unlocked"
                     tooltip="Sblocca"
-                    press=".onSbloccaFattura"
+                    press=".onSbloccaFatturaButtonPress"
                     type="Emphasized"
                 />
                 <!-- 8. Archivia Fattura -->
                 <Button
                     text="Archivia Fattura"
                     icon="sap-icon://save"
-                    press=".onArchiviaFattura"
+                    press=".onArchiviaFatturaButtonPress"
                     type="Emphasized"
                     enabled="{= ${viewModel>/ui/canArchivia} }"
                 />
@@ -768,7 +783,7 @@
                 <Button
                     text="Storno Fattura"
                     icon="sap-icon://reset"
-                    press=".onStornoFattura"
+                    press=".onStornoFatturaButtonPress"
                     type="Emphasized"
                     enabled="{= ${viewModel>/ui/canStorno} }"
                 />
@@ -776,14 +791,14 @@
                 <Button
                     text="Annulla Archiviazione"
                     icon="sap-icon://sys-cancel-2"
-                    press=".onAnnullaArchiviazione"
+                    press=".onAnnullaArchiviazioneButtonPress"
                     type="Emphasized"
                 />
                 <!-- 11. Fattura logistica MIRO -->
                 <Button
                     text="Fattura logistica MIRO"
                     icon="sap-icon://doc-attachment"
-                    press=".onFatturaLogisticaMiro"
+                    press=".onFatturaLogisticaMiroButtonPress"
                     type="Emphasized"
                     enabled="{viewModel>/ui/canOpenCreateApps}"
                 />
