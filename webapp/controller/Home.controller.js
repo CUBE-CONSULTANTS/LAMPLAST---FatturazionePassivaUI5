@@ -144,8 +144,8 @@ sap.ui.define([
             }
 
             const nomeFornitore = this.byId("inputNomeFornitore") && (this.byId("inputNomeFornitore").getValue() || "").trim();
-            if (nomeFornitore) aFilters.push(new Filter("SupplierName", FO.Contains, nomeFornitore));
-            
+            if (nomeFornitore) aFilters.push(new Filter("SupplierName", FO.Contains, nomeFornitore.toUpperCase()));
+
 
             const sCF = this.byId("inputCodFiscale") && (this.byId("inputCodFiscale").getValue() || "").trim();
             if (sCF) aFilters.push(new Filter("CodiceFiscale", FO.Contains, sCF));
@@ -1015,27 +1015,78 @@ sap.ui.define([
             return nodeToXml("FatturaElettronica", root, 0).trim() + "\n";
         },
 
-        onBloccaFatturaButtonPress: function () {
-            const oTable = this.byId("idTreeTable");
-            const aSelectedIndices = oTable.getSelectedIndices();
+        onBloccaFatturaButtonPress: async function () {
 
-            if (aSelectedIndices.length === 0) {
+            const oTable = this.byId("idTreeTable");
+            const aSel = oTable.getSelectedIndices() || [];
+
+            if (aSel.length === 0) {
                 sap.m.MessageToast.show("Seleziona una fattura da bloccare.");
                 return;
             }
-            if (aSelectedIndices.length > 1) {
+
+            if (aSel.length > 1) {
                 sap.m.MessageToast.show("Puoi bloccare una sola fattura alla volta.");
                 return;
             }
 
-            const iIndex = aSelectedIndices[0];
+            const iIndex = aSel[0];
+            const oCtx = oTable.getContextByIndex(iIndex);
+            if (!oCtx) {
+                sap.m.MessageToast.show("Impossibile determinare la riga selezionata.");
+                return;
+            }
+
             const oJson = this.getView().getModel("fattureModel");
+            this._sBloccaRowPath = oCtx.getPath();
 
-            this._sBloccaRowPath = `/results/${iIndex}`;
-
-            const oRow = oJson.getProperty(this._sBloccaRowPath);
-            if (!oRow || !oRow.Id) {
+            const oRow = oCtx.getObject() || {};
+            if (!oRow.Id) {
                 sap.m.MessageToast.show("ID mancante sulla riga selezionata.");
+                return;
+            }
+
+            const oODataModel = this.getOwnerComponent().getModel("mainService");
+
+            sap.ui.core.BusyIndicator.show(0);
+
+            try {
+
+                const oServer = await this._readRicercaFatturaPassiva(oODataModel, oRow);
+
+                if (!oServer) {
+                    sap.ui.core.BusyIndicator.hide();
+                    sap.m.MessageBox.warning("Fattura non trovata sul backend.");
+                    return;
+                }
+
+                if (oServer.CodBlocco === true) {
+
+                    // allineo UI
+                    oJson.setProperty(this._sBloccaRowPath + "/CodBlocco", true);
+                    oJson.setProperty(this._sBloccaRowPath + "/MotivoBlocco", oServer.MotivoBlocco || "");
+                    oJson.updateBindings(true);
+
+                    sap.ui.core.BusyIndicator.hide();
+
+                    sap.m.MessageBox.warning(
+                        "La fattura risulta già bloccata da un altro utente.",
+                        {
+                            title: "Dati aggiornati",
+                            onClose: function () {
+                                oTable.clearSelection();
+                            }
+                        }
+                    );
+
+                    return;
+                }
+
+                sap.ui.core.BusyIndicator.hide();
+
+            } catch (e) {
+                sap.ui.core.BusyIndicator.hide();
+                sap.m.MessageBox.error("Errore durante la verifica del blocco.");
                 return;
             }
 
@@ -1595,7 +1646,7 @@ sap.ui.define([
             }
         },
 
-        onStornoFattura: async function () {
+        onStornoFatturaButtonPress: async function () {
             const oTable = this.byId("idTreeTable");
             const aSelected = oTable.getSelectedIndices();
 
@@ -1712,7 +1763,7 @@ sap.ui.define([
 
             const bCanOpenCreateApps = !!(oSingle && oSingle.StatoFattura === "1");
 
-            const bCanAssegnaSocieta = iCount === 1 && !(oSingle.CompanyCode && oSingle.CompanyName);
+            const bCanAssegnaSocieta = iCount === 1 && !(oSingle.CompanyCode);
 
             oVM.setProperty("/ui/canStorno", bCanStorno);
             oVM.setProperty("/ui/canBlocca", bCanBlocca);
@@ -1722,25 +1773,56 @@ sap.ui.define([
         },
 
 
-        onArchiviaFattura: function () {
-            const oTable = this.byId("idTreeTable");
-            const aSelectedIndices = oTable.getSelectedIndices();
+        onArchiviaFatturaButtonPress: async function () {
 
-            if (!aSelectedIndices || aSelectedIndices.length === 0) {
+            const oTable = this.byId("idTreeTable");
+            const aSelectedIndices = oTable.getSelectedIndices() || [];
+
+            if (!aSelectedIndices.length) {
                 sap.m.MessageToast.show("Seleziona almeno una fattura.");
                 return;
             }
 
-            const aRows = aSelectedIndices
-                .map(i => oTable.getContextByIndex(i))
-                .filter(Boolean)
-                .map(ctx => ctx.getObject() || {});
+            const aContexts = aSelectedIndices.map(i => oTable.getContextByIndex(i)).filter(Boolean);
+            const aRows = aContexts.map(ctx => ctx.getObject() || {});
 
-            // Coerenza con la regola che hai già messo in onRowSelectionChange
-            const bAllArchiviabili = aRows.every(r => r.Archiviato === true);
+            const oODataModel = this.getOwnerComponent().getModel("mainService");
 
-            if (!bAllArchiviabili) {
-                sap.m.MessageToast.show("Puoi archiviare solo se tutte le fatture selezionate risultano Archiviato = true.");
+            sap.ui.core.BusyIndicator.show(0);
+
+            try {
+
+                const aAlreadyArchivedIds = [];
+
+                for (let i = 0; i < aRows.length; i++) {
+                    const oServer = await this._readRicercaFatturaPassiva(oODataModel, aRows[i]);
+                    if (!oServer) continue;
+
+                    if (String(oServer.StatoFattura) === "4") {
+                        aAlreadyArchivedIds.push(aRows[i].Id);
+                    }
+                }
+
+                sap.ui.core.BusyIndicator.hide();
+
+                if (aAlreadyArchivedIds.length) {
+
+                    this._removeRowsByIds(aAlreadyArchivedIds);
+
+                    oTable.clearSelection();
+                    this.getView().getModel("viewModel").setProperty("/ui/canArchivia", false);
+
+                    sap.m.MessageBox.warning(
+                        "Una o più fatture risultano già archiviate da un altro utente e sono state rimosse dalla lista.",
+                        { title: "Dati aggiornati" }
+                    );
+
+                    return;
+                }
+
+            } catch (e) {
+                sap.ui.core.BusyIndicator.hide();
+                sap.m.MessageBox.error("Errore durante la verifica archiviazione.");
                 return;
             }
 
@@ -1753,13 +1835,11 @@ sap.ui.define([
                         if (sAction !== sap.m.MessageBox.Action.OK) return;
 
                         try {
-                            await this._archiviaFattureMassive(aSelectedIndices, aRows);
+                            await this._archiviaFattureMassive(aRows);
                             oTable.clearSelection();
                             this.getView().getModel("viewModel").setProperty("/ui/canArchivia", false);
-                            this._bindTable(true)
                             sap.m.MessageToast.show("Archiviazione completata.");
                         } catch (e) {
-                            console.error(e);
                             sap.m.MessageBox.error("Errore durante l'archiviazione.");
                         }
                     }
@@ -1768,23 +1848,29 @@ sap.ui.define([
         },
 
 
-        _archiviaFattureMassive: async function (aSelectedIndices, aRows) {
+        _removeRowsByIds: function (aIds) {
+            const oJson = this.getView().getModel("fattureModel");
+            const aAll = oJson.getProperty("/results") || [];
+            const aIdSet = new Set((aIds || []).filter(Boolean).map(String));
+
+            const aNew = aAll.filter(r => !aIdSet.has(String(r.Id)));
+
+            oJson.setProperty("/results", aNew);
+            this._updateCounts(aNew);
+            oJson.refresh(true);
+        },
+
+        _archiviaFattureMassive: async function (aRows) {
+
             const oODataModel = this.getOwnerComponent().getModel("mainService");
             sap.ui.core.BusyIndicator.show(0);
 
             try {
-                // Esegui in parallelo (se preferisci seriale, si cambia facilmente)
-                await Promise.all(
-                    aRows.map(r => this._putArchivia(oODataModel, r.Id))
-                );
 
-                // Update UI locale
-                const oJson = this.getView().getModel("fattureModel");
-                aSelectedIndices.forEach(iIndex => {
-                    const sPath = `/results/${iIndex}`;
-                    oJson.setProperty(sPath + "/Archiviato", true);
-                });
-                oJson.refresh(true);
+                await Promise.all(aRows.map(r => this._putArchivia(oODataModel, r.Id)));
+
+                const aIds = aRows.map(r => r.Id);
+                this._removeRowsByIds(aIds);
 
             } finally {
                 sap.ui.core.BusyIndicator.hide();
@@ -1807,7 +1893,7 @@ sap.ui.define([
             });
         },
 
-        onAnnullaArchiviazione: function () {
+        onAnnullaArchiviazioneButtonPress: function () {
             const oArchModel = new sap.ui.model.json.JSONModel({ results: [] });
             this.getView().setModel(oArchModel, "archModel");
             const oArchFilters = new sap.ui.model.json.JSONModel({
@@ -2043,7 +2129,8 @@ sap.ui.define([
             if (oArchModel) this.getView().setModel(null, "archModel");
         },
 
-        onAssegnaSocietaButtonPress: function () {
+        onAssegnaSocietaButtonPress: async function () {
+
             const oTable = this.byId("idTreeTable");
             const aSel = oTable.getSelectedIndices() || [];
 
@@ -2053,24 +2140,69 @@ sap.ui.define([
             }
 
             const iIndex = aSel[0];
-            const oJson = this.getView().getModel("fattureModel");
-            const sRowPath = `/results/${iIndex}`;
-            const oRow = oJson.getProperty(sRowPath) || {};
+            const oCtx = oTable.getContextByIndex(iIndex);
+            if (!oCtx) {
+                sap.m.MessageToast.show("Impossibile determinare la riga selezionata.");
+                return;
+            }
 
-            const sBukrs = (oRow.Bukrs || oRow.CompanyCode || "").toString().trim();
-            // if (sBukrs) {
-            //     sap.m.MessageToast.show("La fattura selezionata ha già una società.");
-            //     return;
-            // }
+            const oJson = this.getView().getModel("fattureModel");
+            const sRowPath = oCtx.getPath();
+            const oRow = oCtx.getObject() || {};
 
             if (!oRow.Id) {
                 sap.m.MessageToast.show("ID mancante sulla riga selezionata.");
                 return;
             }
 
+            const oODataModel = this.getOwnerComponent().getModel("mainService");
+
+            sap.ui.core.BusyIndicator.show(0);
+
+            try {
+
+                const oFresh = await this._readFPXMLById(oODataModel, oRow.Id);
+                const sBukrsServer = (oFresh?.Bukrs || "").toString().trim();
+
+                // 🔎 Controllo reale su Bukrs backend
+                if (sBukrsServer) {
+
+                    // Allineo la UI
+                    oJson.setProperty(sRowPath + "/CompanyCode", sBukrsServer);
+                    oJson.updateBindings(true);
+
+                    sap.ui.core.BusyIndicator.hide();
+
+                    sap.m.MessageBox.warning(
+                        "La fattura risulta già assegnata ad una società da un altro utente.",
+                        {
+                            title: "Dati aggiornati",
+                            onClose: function () {
+                                oTable.clearSelection();
+                                this.getView()
+                                    .getModel("viewModel")
+                                    .setProperty("/ui/enableAssignCompany", false);
+                            }.bind(this)
+                        }
+                    );
+
+                    return;
+                }
+
+                sap.ui.core.BusyIndicator.hide();
+
+            } catch (e) {
+                sap.ui.core.BusyIndicator.hide();
+                sap.m.MessageBox.error("Errore durante la verifica della società.");
+                return;
+            }
+
+            // Se arrivo qui, Bukrs è ancora vuoto → posso assegnare
+
             sap.ui.require(
                 ["com/zeim/fatturazionepassiva/controller/helpers/ValueHelpHandler"],
                 function (VH) {
+
                     VH.openValueHelp(
                         this,
                         "com.zeim.fatturazionepassiva.view.fragments.ValueHelpDialogFilterbarSocieta",
@@ -2086,60 +2218,126 @@ sap.ui.define([
                                 { label: "Descrizione", path: "CompanyCodeName" }
                             ],
                             onOk: async function (oSel) {
-                                const sCompany = (oSel && oSel.key ? oSel.key : "").toString().trim();
-                                const sCompanyName = (oSel && oSel.text ? oSel.text : "").toString().trim();
+
+                                const sCompany = (oSel?.key || "").toString().trim();
 
                                 if (!sCompany) {
                                     sap.m.MessageToast.show("Seleziona una società.");
                                     return;
                                 }
 
-                                await this._putAssegnaSocieta(this.getOwnerComponent().getModel("mainService"), oRow.Id, sCompany);
+                                await this._putAssegnaSocieta(oODataModel, oRow.Id, sCompany);
 
+                                // Aggiorno la UI coerentemente
                                 oJson.setProperty(sRowPath + "/CompanyCode", sCompany);
-                                oJson.setProperty(sRowPath + "/Bukrs", sCompany);
-
-                                if (sCompanyName) {
-                                    oJson.setProperty(sRowPath + "/CompanyName", sCompanyName);
-                                }
-
-                                oJson.refresh(true);
+                                oJson.updateBindings(true);
 
                                 oTable.clearSelection();
-                                this.getView().getModel("viewModel").setProperty("/ui/enableAssignCompany", false);
+                                this.getView()
+                                    .getModel("viewModel")
+                                    .setProperty("/ui/enableAssignCompany", false);
 
                                 sap.m.MessageToast.show("Società assegnata correttamente.");
                             }.bind(this)
                         }
                     );
+
                 }.bind(this)
             );
         },
 
-        _putAssegnaSocieta: function (oODataModel, sId, sBukrs) {
-            const sPath = oODataModel.createKey("/ZC_EIM_FPXML", { ID: sId });
+        _readRicercaFatturaPassiva: function (oODataModel, oRow) {
+            const sCompanyCode = this._odataStr(oRow.CompanyCode);
+            const sNumero = this._odataStr(oRow.NumeroFattura);
+            const sTipoDocAdE = this._odataStr(oRow.TipoDocAdE);
+            const sPartitaIVA = this._odataStr(oRow.PartitaIVA || oRow.PartitaIVAcee);
+            const sCodFisc = this._odataStr(oRow.CodiceFiscale); // può essere ""
 
-            const oPayload = {
-                Bukrs: sBukrs
-            };
+            const sDataLiteral = this._toODataDateTimeLiteral(oRow.DataFattura);
+            if (!sCompanyCode || !sNumero || !sTipoDocAdE || !sPartitaIVA || !sDataLiteral) {
+                return Promise.resolve(null);
+            }
 
-            sap.ui.core.BusyIndicator.show(0);
+            const sPath =
+                `/zeim_ricerca_fattura_passiva(` +
+                `CompanyCode='${sCompanyCode}',` +
+                `NumeroFattura='${sNumero}',` +
+                `DataFattura=${sDataLiteral},` +
+                `TipoDocAdE='${sTipoDocAdE}',` +
+                `PartitaIVA='${sPartitaIVA}',` +
+                `CodiceFiscale='${sCodFisc}'` +
+                `)/Set`;
 
             return new Promise((resolve, reject) => {
-                oODataModel.update(sPath, oPayload, {
-                    merge: true,
+                oODataModel.read(sPath, {
                     success: function (oData) {
-                        sap.ui.core.BusyIndicator.hide();
-                        resolve(oData);
+                        resolve((oData && oData.results && oData.results[0]) || null);
+                    },
+                    error: reject
+                });
+            });
+        },
+
+        _odataStr: function (v) {
+            return (v == null ? "" : String(v)).trim().replace(/'/g, "''");
+        },
+
+        _toODataDateTimeLiteral: function (v) {
+            if (!v) return "";
+
+            const oDate = (v instanceof Date) ? v : new Date(v);
+            if (isNaN(oDate.getTime())) return "";
+
+            const yyyy = oDate.getFullYear();
+            const mm = String(oDate.getMonth() + 1).padStart(2, "0");
+            const dd = String(oDate.getDate()).padStart(2, "0");
+
+            // Nota: i ":" vanno encodati per evitare "Invalid URI segment" in batch
+            return `datetime'${yyyy}-${mm}-${dd}T00%3A00%3A00'`;
+        },
+
+
+        _readFPXMLById: function (oODataModel, sId) {
+
+            const sPath = oODataModel.createKey("/ZC_EIM_FPXML", { ID: sId });
+
+            return new Promise((resolve, reject) => {
+                oODataModel.read(sPath, {
+                    success: function (oData) {
+                        resolve(oData || {});
                     },
                     error: function (e) {
-                        sap.ui.core.BusyIndicator.hide();
-                        sap.m.MessageBox.error("Errore durante l'assegnazione della società.");
                         reject(e);
                     }
                 });
             });
         },
+
+        _putAssegnaSocieta: function (oODataModel, sId, sBukrs) {
+
+            const sPath = oODataModel.createKey("/ZC_EIM_FPXML", { ID: sId });
+
+            sap.ui.core.BusyIndicator.show(0);
+
+            return new Promise((resolve, reject) => {
+                oODataModel.update(
+                    sPath,
+                    { Bukrs: sBukrs },
+                    {
+                        merge: true,
+                        success: function (oData) {
+                            sap.ui.core.BusyIndicator.hide();
+                            resolve(oData);
+                        },
+                        error: function (e) {
+                            sap.ui.core.BusyIndicator.hide();
+                            sap.m.MessageBox.error("Errore durante l'assegnazione della società.");
+                            reject(e);
+                        }
+                    }
+                );
+            });
+        }
 
 
 

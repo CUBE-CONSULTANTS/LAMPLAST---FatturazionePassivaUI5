@@ -60,6 +60,21 @@ sap.ui.define([
     });
   }
 
+  // helper: trova l'oggetto selezionato partendo dalla key
+  function _getObjectByKey(oTable, sKey, sKeyProp) {
+    const oBinding = oTable.getBinding("rows") || oTable.getBinding("items");
+    if (!oBinding) return null;
+
+    const iLen = oBinding.getLength();
+    const aCtxs = oBinding.getContexts(0, iLen);
+
+    for (let i = 0; i < aCtxs.length; i++) {
+      const oObj = aCtxs[i]?.getObject?.();
+      if (oObj && String(oObj[sKeyProp]) === String(sKey)) return oObj;
+    }
+    return null;
+  }
+
   return {
     openValueHelp: function (oController, sFragmentName, sModelName, sEntityPath, oSettings) {
       Fragment.load({ name: sFragmentName, controller: oController }).then(function (oDialog) {
@@ -71,6 +86,12 @@ sap.ui.define([
         oDialog.setRangeKeyFields([{ key: oSettings.key, label: oSettings.key, type: "string" }]);
         oDialog.setTokenDisplayBehaviour("descriptionAndId");
 
+        // se è una VH "azione" (tipo Assegna Società), voglio testo pulito
+        if (typeof oSettings.onOk === "function") {
+          oDialog.setTokenDisplayBehaviour("descriptionOnly"); // evita "(2310)" nel token
+        } else {
+          oDialog.setTokenDisplayBehaviour("descriptionAndId");
+        }
 
 
         // --- tabella
@@ -151,24 +172,24 @@ sap.ui.define([
 
         oDialog.attachOk(function (oEvent) {
           const aTokens = oEvent.getParameter("tokens") || [];
+          const oFirst = aTokens[0] || null;
 
-          // CASO 1: dialog "azione" (es. assegna società)
+          // Caso "azione": chiamo callback e chiudo
           if (typeof oSettings.onOk === "function") {
-            const oFirst = aTokens[0];
-            const oSel = {
-              key: oFirst && oFirst.getKey ? oFirst.getKey() : "",
-              text: oFirst && oFirst.getText ? oFirst.getText() : "",
-              tokens: aTokens
-            };
-
-            Promise.resolve(oSettings.onOk(oSel))
-              .then(function () { oDialog.close(); })
-              .catch(function () { /* gestisci errori nel controller */ });
-
+            const sKey = oFirst?.getKey?.() || "";
+            oDialog.getTableAsync().then(function (oTable) {
+              const oObj = _getObjectByKey(oTable, sKey, oSettings.keyProp || oSettings.key);
+              oSettings.onOk({
+                key: sKey,
+                text: oObj ? (oObj[oSettings.desc] || "") : (oFirst?.getText?.() || ""),
+                object: oObj || null
+              });
+              oDialog.close();
+            });
             return;
           }
 
-          // CASO 2: handler standard (FilterBar/MultiInput)
+          // Caso "FilterBar/MultiInput": comportamento classico
           if (oMultiInput) {
             oMultiInput.setTokens(aTokens);
           }
