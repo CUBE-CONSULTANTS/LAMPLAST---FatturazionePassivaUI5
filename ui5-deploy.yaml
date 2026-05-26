@@ -15,12 +15,12 @@ builder:
       configuration:
         verbose: true
         target:
-          url: https://my428121.s4hana.cloud.sap
+          url: https://my434419.s4hana.cloud.sap
           authenticationType: reentranceTicket # SAML support for vscode
         app:
           name: ZEIM_FATT_PASS
           description: Fatturazione Passsiva
-          package: ZEIM
-          transport: B3QK900029
+          package: ZEIM_FIORI
+          transport: F46K900397
         exclude:
           - /test/

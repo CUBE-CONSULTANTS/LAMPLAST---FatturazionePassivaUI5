@@ -740,7 +740,7 @@
                 />
                 <!-- 3. Partitario Fornitore -->
                 <Button
-                    text="Partitario Fornitore"
+                    text="Report saldi EM/EF"
                     icon="sap-icon://supplier"
                     press=".onPartitarioFornitoreButtonPress"
                     type="Emphasized"
@@ -780,7 +780,7 @@
                 />
                 <!-- 8. Archivia Fattura -->
                 <Button
-                    text="Archivia Fattura"
+                    text="Nascondi Fattura"
                     icon="sap-icon://save"
                     press=".onArchiviaFatturaButtonPress"
                     type="Emphasized"
@@ -794,9 +794,9 @@
                     type="Emphasized"
                     enabled="{= ${viewModel>/ui/canStorno} }"
                 />
-                <!-- 10. Annulla Archiviazione -->
+                <!-- 10. Ripristina Fatture -->
                 <Button
-                    text="Annulla Archiviazione"
+                    text="Ripristina Fatture"
                     icon="sap-icon://sys-cancel-2"
                     press=".onAnnullaArchiviazioneButtonPress"
                     type="Emphasized"

@@ -258,7 +258,7 @@
 
         <beginButton>
             <Button
-                text="Annulla archiviazione"
+                text="Ripristina Fatture"
                 type="Emphasized"
                 press=".onUnarchiveSelected"
             />
