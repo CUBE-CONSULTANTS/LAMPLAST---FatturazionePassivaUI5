@@ -1,10 +1,10 @@
 sap.ui.define([
-    "sap/ui/core/mvc/Controller",
+    "./BaseController",
     "sap/m/MessageToast",
-], function (Controller, MessageToast) {
+], function (BaseController, MessageToast) {
     "use strict";
 
-    return Controller.extend("com.zeim.fatturazionepassiva.controller.Dettaglio", {
+    return BaseController.extend("com.zeim.fatturazionepassiva.controller.Dettaglio", {
 
         onInit: function () {
             this.oRouter = sap.ui.core.UIComponent.getRouterFor(this);

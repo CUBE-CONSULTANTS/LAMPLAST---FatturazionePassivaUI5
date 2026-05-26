@@ -136,7 +136,7 @@ sap.ui.define([
             const sSoc = this.byId("selectSocieta") && this.byId("selectSocieta").getSelectedKey();
             if (sSoc) aFilters.push(new Filter("CompanyCode", FO.EQ, sSoc));
 
-            const aForn = this._getTokenKeys("multinputFornitore");
+            const aForn = this._getTokenKeys("multiInputFornitore");
             if (aForn.length === 1) {
                 aFilters.push(new Filter("SupplierCode", FO.EQ, aForn[0]));
             } else if (aForn.length > 1) {
@@ -418,13 +418,11 @@ sap.ui.define([
         onFatturaLogisticaButtonPress: function (oEvent) {
             let oCtx = null;
 
-            // Caso 1: RowAction (table row action)
             const oRow = oEvent?.getParameter && oEvent.getParameter("row");
             if (oRow) {
                 oCtx = oRow.getBindingContext("fattureModel");
             }
 
-            // Caso 2: bottone footer (nessun row param) -> prendo selezione tabella
             if (!oCtx) {
                 const oTable = this.byId("idTreeTable");
                 const aSel = oTable.getSelectedIndices();
@@ -452,24 +450,205 @@ sap.ui.define([
                 return;
             }
 
-            // Se vuoi limitarlo SOLO alle logistiche:
-            // if (oSelected.TipoFattura !== "M") {
-            //     sap.m.MessageToast.show("La fattura selezionata non è logistica.");
-            //     return;
-            // }
+            const bNeedChooseSupplier =
+                String(oSelected.StatoFattura) === "1" &&
+                String(oSelected.SupplierStatus) === "2";
 
-            sap.ui.getCore().setModel(
-                new sap.ui.model.json.JSONModel({ SelectedInvoice: oSelected }),
-                "SelectedInvoiceModel"
-            );
+            const proceed = (oSelectedWithChoice) => {
+                sap.ui.getCore().setModel(
+                    new sap.ui.model.json.JSONModel({ SelectedInvoice: oSelectedWithChoice }),
+                    "SelectedInvoiceModel"
+                );
 
-            const oRouter = sap.ui.core.UIComponent.getRouterFor(this);
+                const oRouter = sap.ui.core.UIComponent.getRouterFor(this);
 
-            if (oRow) {
-                oRouter.navTo("DettaglioDisplay", { invoiceId: String(oSelected.Id) });
-            } else {
-                oRouter.navTo("Dettaglio", { invoiceId: String(oSelected.Id) });
+                if (oRow) {
+                    oRouter.navTo("DettaglioDisplay", { invoiceId: String(oSelectedWithChoice.Id) });
+                } else {
+                    oRouter.navTo("Dettaglio", { invoiceId: String(oSelectedWithChoice.Id) });
+                }
+            };
+
+            if (!bNeedChooseSupplier) {
+                proceed(oSelected);
+                return;
             }
+
+            this._openChooseSupplierDialog(oSelected)
+                .then((oChosen) => {
+                    if (!oChosen) return;
+                    const oEnhanced = Object.assign({}, oSelected, {
+                        SelectedSupplierCode: oChosen.SupplierCode || oChosen.Supplier || oChosen.SupplierCode,
+                        SelectedSupplierName: oChosen.SupplierName || oChosen.SupplierDescription || oChosen.Name || oChosen.SupplierName
+                    });
+                    proceed(oEnhanced);
+                })
+                .catch(() => {
+                    sap.m.MessageToast.show("Errore nel caricamento fornitori.");
+                });
+        },
+
+        _readPossibleSuppliersForInvoice: function (oRow) {
+            const oODataModel = this.getOwnerComponent().getModel("mainService");
+
+            const sCompanyCode = this._odataStr(oRow.CompanyCode);
+            const sPartitaIVA = this._odataStr(oRow.PartitaIVA || oRow.PartitaIVAcee);
+            const sCodFisc = this._odataStr(oRow.CodiceFiscale);
+
+            if (!sCompanyCode || !sPartitaIVA) {
+                return Promise.resolve([]);
+            }
+
+            const sPath =
+                `/zeim_get_supplier_code(` +
+                `CompanyCode='${sCompanyCode}',` +
+                `PartitaIVA='${sPartitaIVA}',` +
+                `CodiceFiscale='${sCodFisc}'` +
+                `)/Set`;
+
+            return new Promise((resolve, reject) => {
+                oODataModel.read(sPath, {
+                    success: (oData) => resolve((oData && oData.results) ? oData.results : []),
+                    error: reject
+                });
+            });
+        },
+
+        _openChooseSupplierDialog: function (oInvoiceRow) {
+            if (!this._oChooseSupplierModel) {
+                this._oChooseSupplierModel = new sap.ui.model.json.JSONModel({ results: [] });
+            }
+
+            if (!this._oChooseSupplierDialog) {
+                const oList = new sap.m.List({
+                    mode: "SingleSelectMaster",
+                    items: {
+                        path: "/results",
+                        template: new sap.m.CustomListItem({
+                            content: new sap.m.VBox({
+                                width: "100%",
+                                items: [
+                                    new sap.m.Text({
+                                        text: "{SupplierName}",
+                                        wrapping: false
+                                    }).addStyleClass("sapMTextBold"),
+
+                                    new sap.m.Text({
+                                        text: "{= 'Codice: ' + ${SupplierCode} }"
+                                    }),
+
+                                    new sap.m.Text({
+                                        text: "{= 'Partita IVA: ' + ${PartIVAcee} }"
+                                    }),
+
+                                    new sap.m.Text({
+                                        text: "{= 'Codice Fiscale: ' + ${CodFiscale}  }"
+                                    }),
+
+                                    new sap.m.Text({
+                                        text: "{= 'Nr. Partita IVA: ' + ${NrPartIVA} }"
+                                    })
+                                ]
+                            }).addStyleClass("sapUiTinyMarginTop sapUiTinyMarginBottom")
+                        })
+                    }
+                });
+
+                oList.setModel(this._oChooseSupplierModel);
+
+                const oBtnOk = new sap.m.Button({
+                    text: "Conferma",
+                    type: "Emphasized",
+                    enabled: false,
+                    press: () => {
+                        const oItem = oList.getSelectedItem();
+                        const oCtx = oItem && oItem.getBindingContext();
+                        const oObj = oCtx && oCtx.getObject();
+                        this._oChooseSupplierDialog.close();
+                        this._resolveChooseSupplier && this._resolveChooseSupplier(oObj || null);
+                    }
+                });
+
+                oList.attachSelectionChange(() => {
+                    oBtnOk.setEnabled(!!oList.getSelectedItem());
+                });
+
+                this._oChooseSupplierDialog = new sap.m.Dialog({
+                    title: "Seleziona fornitore",
+                    contentWidth: "560px",
+                    resizable: true,
+                    draggable: true,
+                    content: [
+                        new sap.m.VBox({
+                            width: "100%",
+                            items: [
+                                new sap.m.Text({ text: "La fattura ha più fornitori possibili. Selezionane uno per proseguire." })
+                                    .addStyleClass("sapUiTinyMarginBottom"),
+                                oList
+                            ]
+                        }).addStyleClass("sapUiContentPadding")
+                    ],
+                    beginButton: oBtnOk,
+                    endButton: new sap.m.Button({
+                        text: "Annulla",
+                        press: () => {
+                            this._oChooseSupplierDialog.close();
+
+                            // 👇 DESELEZIONA RIGA
+                            const oTable = this.byId("idTreeTable");
+                            if (oTable) {
+                                oTable.clearSelection();
+                            }
+
+                            // opzionale: reset bottoni footer
+                            this.getView()
+                                .getModel("viewModel")
+                                .setProperty("/ui/canOpenCreateApps", false);
+
+                            this._resolveChooseSupplier && this._resolveChooseSupplier(null);
+                        }
+                    }),
+
+                    afterClose: () => {
+                        oList.removeSelections(true);
+                        oBtnOk.setEnabled(false);
+                    }
+                });
+                this._oChooseSupplierDialog.addStyleClass("sapUiContentPadding");
+                this.getView().addDependent(this._oChooseSupplierDialog);
+            }
+
+            sap.ui.core.BusyIndicator.show(0);
+
+            return this._readPossibleSuppliersForInvoice(oInvoiceRow)
+                .then((aRes) => {
+                    sap.ui.core.BusyIndicator.hide();
+
+                    const aClean = (aRes || []).map(r => ({
+                        SupplierCode: r.SupplierCode,
+                        SupplierName: r.SupplierName,
+                        PartIVAcee: r.PartIVAcee,
+                        CodFiscale: r.CodFiscale,
+                        NrPartIVA: r.NrPartIVA
+                    })).filter(r => r.SupplierCode || r.SupplierName);
+
+                    this._oChooseSupplierModel.setData({ results: aClean }, true);
+
+                    if (!aClean.length) {
+                        sap.m.MessageBox.warning("Nessun fornitore trovato per la fattura selezionata.");
+                        return null;
+                    }
+
+                    this._oChooseSupplierDialog.open();
+
+                    return new Promise((resolve) => {
+                        this._resolveChooseSupplier = resolve;
+                    });
+                })
+                .catch((e) => {
+                    sap.ui.core.BusyIndicator.hide();
+                    throw e;
+                });
         },
 
 
@@ -1406,44 +1585,7 @@ sap.ui.define([
 
 
 
-        onNavToFornitore: async function (oEvent) {
-            try {
-                const oContext = oEvent.getSource().getBindingContext("fattureModel");
-                if (!oContext) {
-                    sap.m.MessageToast.show("Impossibile determinare il cliente selezionato.");
-                    return;
-                }
 
-                const oData = oContext.getObject();
-                const SupplierCode = oData.SupplierCode;
-                if (!SupplierCode) {
-                    sap.m.MessageToast.show("Cliente (SupplierCode) non disponibile.");
-                    return;
-                }
-
-                const oCrossAppNav = await sap.ushell.Container.getServiceAsync("CrossApplicationNavigation");
-
-                const sHash = oCrossAppNav.hrefForExternal({
-                    target: {
-                        semanticObject: "Supplier",
-                        action: "displayFactSheet"
-                    },
-                    params: {
-                        Customer: SupplierCode
-                    }
-                });
-
-                const sEntityPath = `/C_SupplierFs('${SupplierCode}')`;
-
-                const sFullUrl = window.location.origin + "/ui" + sHash + "&sap-app-origin-hint=&" + sEntityPath;
-
-                window.open(sFullUrl, "_blank");
-
-            } catch (err) {
-                console.error("Errore nella navigazione Cross-App:", err);
-                sap.m.MessageBox.error("Impossibile aprire l'app Customer - Manage.");
-            }
-        },
 
         onDocumentNumberLinkPressConditional: function (oEvent) {
             const oCtx = oEvent.getSource().getBindingContext("fattureModel");
@@ -1920,14 +2062,31 @@ sap.ui.define([
 
 
         onClearArchiviati: function () {
-            const oFB = this.byId("fbAnnullaArchiviazione");
-            if (oFB) oFB.fireClear();
-
-            const oModel = this.getView().getModel("archModel");
-            if (oModel) oModel.setData({ results: [] }, true);
-
             const oTable = this.byId("archTable");
             if (oTable) oTable.clearSelection();
+
+            const oSelSoc = this.byId("archSelectSocieta");
+            if (oSelSoc) oSelSoc.setSelectedKey("");
+
+            const oMIFor = this.byId("archMultiInputFornitore");
+            if (oMIFor) oMIFor.removeAllTokens();
+
+            const oMITipo = this.byId("archMultiInputTipoDocAdE");
+            if (oMITipo) oMITipo.removeAllTokens();
+
+            const oInpNum = this.byId("archInputNumeroFattura");
+            if (oInpNum) oInpNum.setValue("");
+
+            const oDRS = this.byId("archDrsDataFattura");
+            if (oDRS) {
+                oDRS.setDateValue(null);
+                oDRS.setSecondDateValue(null);
+                oDRS.setValue("");
+            }
+
+            this._archCurrentFilters = [];
+
+            this.onSearchArchiviati();
         },
 
         onUnarchiveSelected: function () {
@@ -2105,7 +2264,8 @@ sap.ui.define([
                             { label: "Country", path: "Country" }
                         ],
                         targetModelName: "archFilters",
-                        tokensPath: "/SupplierTokens"
+                        tokensPath: "/SupplierTokens",
+                        multiInputId: "archMultiInputFornitore"
                     }
                 );
 
@@ -2115,7 +2275,31 @@ sap.ui.define([
 
 
         onValueHelpTipoDocAdeArch: function () {
-            this.onValueHelpTipoDocAde();
+            sap.ui.require([
+                "com/zeim/fatturazionepassiva/controller/helpers/ValueHelpHandler"
+            ], function (VH) {
+                VH.openValueHelp(
+                    this,
+                    "com.zeim.fatturazionepassiva.view.fragments.ValueHelpDialogFilterbarTipoDocAde",
+                    "TipoDocAde",
+                    "/ZC_EIM_BLADE",
+                    {
+                        vhId: "ARCH_TIPO_ADE",
+                        key: "BlartAde",
+                        desc: "Descrizione",
+                        keyProp: "BlartAde",
+                        maxKeyLength: 10,
+                        filterProps: ["BlartAde", "Descrizione"],
+                        columns: [
+                            { label: "Tipo Doc. AdE", path: "BlartAde" },
+                            { label: "Descrizione", path: "Descrizione" }
+                        ],
+                        targetModelName: "archFilters",
+                        tokensPath: "/TipoDocAdeTokens",
+                        multiInputId: "archMultiInputTipoDocAdE"
+                    }
+                );
+            }.bind(this));
         },
 
         onCloseAnnullaArchiviazione: function () {
@@ -2337,8 +2521,38 @@ sap.ui.define([
                     }
                 );
             });
-        }
+        },
 
+        onSearchArchiviati: function () {
+            const oODataModel = this.getOwnerComponent().getModel("mainService");
+            const oArchModel = this.getView().getModel("archModel");
+            const oTable = this.byId("archTable");
+
+            if (oTable) oTable.clearSelection();
+            if (!oODataModel || !oArchModel) return;
+
+            const aFilters = this._buildArchiviatiFilters();
+
+            sap.ui.core.BusyIndicator.show(0);
+
+            oODataModel.read("/zeim_lista_fatture_archiviate", {
+                filters: aFilters,
+                urlParameters: {
+                    "$top": 200,
+                    "$skip": 0
+                },
+                success: (oData) => {
+                    sap.ui.core.BusyIndicator.hide();
+                    const aRes = (oData && oData.results) ? oData.results : [];
+                    oArchModel.setProperty("/results", aRes);
+                    oArchModel.refresh(true);
+                },
+                error: () => {
+                    sap.ui.core.BusyIndicator.hide();
+                    sap.m.MessageBox.error("Errore durante la ricerca delle fatture archiviate.");
+                }
+            });
+        },
 
 
 

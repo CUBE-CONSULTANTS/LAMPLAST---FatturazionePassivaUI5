@@ -126,12 +126,12 @@
 
                                         <m:Label text="Codice" />
                                         <m:Link
-                                            text="{SupplierCode}"
+                                            text="{= ${SelectedSupplierCode} ? ${SelectedSupplierCode} : ${SupplierCode} }"
                                             press="onNavToFornitore"
                                         />
 
                                         <m:Label text="Nome" />
-                                        <m:Text text="{SupplierName}" />
+                                        <m:Text text="{= ${SupplierName} }" />
 
                                         <m:Label text="Partita IVA" />
                                         <m:Text text="{PartitaIVAcee}" />
@@ -186,7 +186,7 @@
 
                                         <m:Label text="Divisa" />
                                         <m:Text text="{Divisa}" />
-                                        
+
                                         <m:Label text="Data pagamento" />
                                         <m:Text
                                             text="{path: 'DataPagamento', formatter: '.formatter.formatDate'}"

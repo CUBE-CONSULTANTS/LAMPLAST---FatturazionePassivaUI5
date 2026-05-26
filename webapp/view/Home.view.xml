@@ -142,7 +142,7 @@
                     </fb:FilterGroupItem>
                     <fb:FilterGroupItem
                         name="nrDoc"
-                        label="Nr. docomento nel file XML"
+                        label="Nr. documento nel file XML"
                         groupName="nrDoc"
                         visibleInFilterBar="true"
                     >
@@ -457,6 +457,7 @@
                             <core:Icon
                                 src="{ path: 'fattureModel>SupplierStatus', formatter: '.formatter.supplierStatusIconSrc' }"
                                 tooltip="{ path: 'fattureModel>SupplierStatus', formatter: '.formatter.supplierStatusTooltip' }"
+                                size="1.25rem"
                             />
                         </table:template>
                     </table:Column>
@@ -722,6 +723,12 @@
         <!-- FOOTER -->
         <footer>
             <OverflowToolbar>
+                <Button
+                    icon="sap-icon://legend"
+                    type="Transparent"
+                    tooltip="Legenda icone"
+                    press=".onOpenLegendaPopover"
+                />
                 <ToolbarSpacer />
                 <!-- 1. OdA senza fattura -->
                 <Button

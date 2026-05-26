@@ -13,6 +13,7 @@ builder:
     - name: deploy-to-abap
       afterTask: generateCachebusterInfo
       configuration:
+        verbose: true
         target:
           url: https://my428121.s4hana.cloud.sap
           authenticationType: reentranceTicket # SAML support for vscode

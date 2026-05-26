@@ -101,7 +101,7 @@
 
                         <fb:FilterGroupItem
                             name="NumeroFattura"
-                            label="Nr. docomento nel file XML"
+                            label="Nr. documento nel file XML"
                             groupName="General"
                             visibleInFilterBar="true"
                         >
