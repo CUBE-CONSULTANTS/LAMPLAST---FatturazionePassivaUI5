@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=https://sap.github.io/ui5-tooling/schema/ui5.yaml.json
 
-specVersion: "3.1"
+specVersion: "4.0"
 metadata:
   name: com.zeim.fatturazionepassiva
 type: application
@@ -15,12 +15,12 @@ builder:
       configuration:
         verbose: true
         target:
-          url: https://my434419.s4hana.cloud.sap
+          url: https://my434419-api.s4hana.cloud.sap
           authenticationType: reentranceTicket # SAML support for vscode
         app:
           name: ZEIM_FATT_PASS
           description: Fatturazione Passsiva
           package: ZEIM_FIORI
-          transport: F46K900397
+          transport: F46K900573
         exclude:
           - /test/

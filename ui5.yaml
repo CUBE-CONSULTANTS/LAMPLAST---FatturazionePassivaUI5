@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=https://sap.github.io/ui5-tooling/schema/ui5.yaml.json
 
-specVersion: "3.1"
+specVersion: "4.0"
 metadata:
   name: com.zeim.fatturazionepassiva
 type: application
@@ -18,7 +18,7 @@ server:
         backend:
           - authenticationType: reentranceTicket # SAML support for vscode
             path: /sap
-            url: https://my428106.s4hana.cloud.sap
+            url: https://my434383-api.s4hana.cloud.sap
     - name: fiori-tools-appreload
       afterMiddleware: compression
       configuration:
