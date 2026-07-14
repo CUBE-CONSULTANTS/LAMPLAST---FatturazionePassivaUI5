@@ -8,9 +8,9 @@ sap.ui.define([
     "sap/m/Dialog",
     "sap/m/Button",
     "sap/m/VBox",
+    "sap/m/VariantItem"
 
-
-], (BaseController, JSONModel, Fragment, MessageBox, MessageToast, CodeEditor, Dialog, Button, VBox) => {
+], (BaseController, JSONModel, Fragment, MessageBox, MessageToast, CodeEditor, Dialog, Button, VBox, VariantItem) => {
     "use strict";
 
     return BaseController.extend("com.zeim.fatturazionepassiva.controller.Home", {
@@ -63,6 +63,30 @@ sap.ui.define([
 
             // Primo caricamento
             this._bindTable();
+
+            // layout standard iniziale della tabella
+            this._oStandardTableLayout = this._getCurrentTableLayout();
+
+            this._initVariantManagement();
+        },
+
+        _resetToStandardTableLayout: function () {
+            if (this._oStandardTableLayout) {
+                this._applyTableLayout(this._oStandardTableLayout);
+                return;
+            }
+
+            // fallback di sicurezza
+            var oTable = this.byId("idTreeTable");
+            if (!oTable) {
+                return;
+            }
+
+            oTable.getColumns().forEach(function (oColumn) {
+                oColumn.setVisible(true);
+            });
+
+            oTable.invalidate();
         },
 
         _onClearSelection: function () {
@@ -213,12 +237,24 @@ sap.ui.define([
             oVM.setProperty("/ui/canStorno", false);
             oVM.setProperty("/ui/enableAssignCompany", false);
 
-            // 2) svuota davvero i campi della FilterBar
+            // 2) reset model dei token
+            const oHomeFilters = this.getView().getModel("homeFilters");
+            if (oHomeFilters) {
+                oHomeFilters.setProperty("/SupplierTokens", []);
+                oHomeFilters.setProperty("/TipoDocAdeTokens", []);
+                oHomeFilters.setProperty("/NomeFornitoreTokens", []);
+                oHomeFilters.refresh(true);
+            }
+
+            // 3) svuota davvero i campi della FilterBar
             const oSelSoc = this.byId("selectSocieta");
             if (oSelSoc) oSelSoc.setSelectedKey("");
 
             const oMIFor = this.byId("multiInputFornitore");
-            if (oMIFor) oMIFor.removeAllTokens();
+            if (oMIFor) {
+                oMIFor.removeAllTokens();
+                oMIFor.setValue("");
+            }
 
             const oMINomeFornitore = this.byId("inputNomeFornitore");
             if (oMINomeFornitore) oMINomeFornitore.setValue("");
@@ -230,7 +266,10 @@ sap.ui.define([
             if (oInpPiva) oInpPiva.setValue("");
 
             const oMITipo = this.byId("multiInputTipoDocAdE");
-            if (oMITipo) oMITipo.removeAllTokens();
+            if (oMITipo) {
+                oMITipo.removeAllTokens();
+                oMITipo.setValue("");
+            }
 
             const oInpNrDoc = this.byId("inputNrDoc");
             if (oInpNrDoc) oInpNrDoc.setValue("");
@@ -255,18 +294,18 @@ sap.ui.define([
             const oInpNrInvio = this.byId("inputNrInvioSdi");
             if (oInpNrInvio) oInpNrInvio.setValue("");
 
-            // 3) reset filtri “server-side”
+            // 4) reset filtri server-side
             this._currentFilters = [];
 
-            // 4) reset tab
+            // 5) reset tab
             const oITB = this.byId("idIconTabBar");
             if (oITB) oITB.setSelectedKey("All");
 
-            // 5) clear selezione tabella
+            // 6) clear selezione tabella
             const oTable = this.byId("idTreeTable");
             if (oTable) oTable.clearSelection();
 
-            // 6) ricarica senza filtri
+            // 7) ricarica senza filtri
             this._bindTable(true, []);
         },
 
@@ -2219,8 +2258,28 @@ sap.ui.define([
         _getTokenKeys: function (sId) {
             const oMI = this.byId(sId);
             if (!oMI) return [];
-            return (oMI.getTokens() || []).map(t => (t.getKey && t.getKey()) || t.getText()).filter(Boolean);
+
+            const aValues = [];
+
+            // 1. Token già presenti
+            (oMI.getTokens() || []).forEach(function (oToken) {
+                const sKey = (oToken.getKey && oToken.getKey()) || oToken.getText();
+                if (sKey) {
+                    aValues.push(String(sKey).trim());
+                }
+            });
+
+            // 2. Valore digitato manualmente nel MultiInput
+            const sManualValue = oMI.getValue && oMI.getValue();
+            if (sManualValue && sManualValue.trim()) {
+                aValues.push(sManualValue.trim());
+            }
+
+            // 3. Rimuove duplicati
+            return Array.from(new Set(aValues.filter(Boolean)));
         },
+
+
 
 
         _unarchiveByIds: async function (aIds) {
@@ -2463,7 +2522,8 @@ sap.ui.define([
         },
 
         _odataStr: function (v) {
-            return (v == null ? "" : String(v)).trim().replace(/'/g, "''");
+            const s = String(v ?? "").replace(/'/g, "''");
+            return encodeURIComponent(s);
         },
 
         _toODataDateTimeLiteral: function (v) {
@@ -2553,10 +2613,322 @@ sap.ui.define([
                 }
             });
         },
+        _getColumnLayoutConfig: function () {
+            return [
+                // { id: "idTipoAllegatoColumn", text: "Allegato" },
+                // { id: "idXmlColumn", text: "XML" },
+                // { id: "idPdfColumn", text: "Fattura" },
+                { id: "idNumeroDocumentoColumn", text: "N. doc." },
+                { id: "idEsercizioColumn", text: "Esercizio" },
+                { id: "idSemaforoColumn", text: "Stato" },
+                { id: "idTipoFatturaColumn", text: "Tipo Fattura" },
+                { id: "idSocietaColumn", text: "Società" },
+                { id: "idNomeSocietaColumn", text: "Nome della società" },
+                { id: "idStatoColumn", text: "Stato Fornitore" },
+                { id: "idCodiceFornitoreColumn", text: "Fornitore" },
+                { id: "idNomeFornitoreColumn", text: "Nome Fornitore" },
+                { id: "idTipoDocumentoColumn", text: "Tipo Fatt" },
+                { id: "idTipoDocumentoDescrColumn", text: "Descrizione" },
+                { id: "idNumeroFatturaColumn", text: "N. Fat Fornitore" },
+                { id: "idDataFatturaColumn", text: "Data Fat" },
+                { id: "idDivisaColumn", text: "Divisa" },
+                { id: "idCausaleColumn", text: "Causale" },
+                { id: "idImportoTotaleColumn", text: "Importo totale" },
+                { id: "idImponibileColumn", text: "Imponibile" },
+                { id: "idFinanceDocumentColumn", text: "Doc Contabile" },
+                { id: "idPostingDateColumn", text: "Data registr." },
+                { id: "idDocumentTypeColumn", text: "Tipo SAP" },
+                { id: "idDataPagamentoColumn", text: "Data Pagamento" },
+                { id: "idMotivazioneBloccoColumn", text: "Motivazione Blocco" },
+                { id: "idBloccoColumn", text: "Blocco" }
+            ];
+        },
 
+        onOpenColumnLayoutDialog: function () {
+            var aConfig = this._getColumnLayoutConfig();
 
+            var oList = new sap.m.List({
+                mode: "MultiSelect",
+                includeItemInSelection: true
+            });
 
+            aConfig.forEach(function (oColumnConfig) {
+                var oColumn = this.byId(oColumnConfig.id);
 
+                if (!oColumn) {
+                    return;
+                }
+
+                oList.addItem(new sap.m.StandardListItem({
+                    title: oColumnConfig.text,
+                    selected: oColumn.getVisible()
+                }).data("columnId", oColumnConfig.id));
+            }.bind(this));
+
+            var oDialog = new sap.m.Dialog({
+                title: "Layout colonne",
+                contentWidth: "420px",
+                contentHeight: "520px",
+                resizable: true,
+                draggable: true,
+                content: [oList],
+                beginButton: new sap.m.Button({
+                    text: "Applica",
+                    type: "Emphasized",
+                    press: function () {
+                        oList.getItems().forEach(function (oItem) {
+                            var sColumnId = oItem.data("columnId");
+                            var oColumn = this.byId(sColumnId);
+
+                            if (oColumn) {
+                                oColumn.setVisible(oItem.getSelected());
+                            }
+                        }.bind(this));
+
+                        oDialog.close();
+                    }.bind(this)
+                }),
+                endButton: new sap.m.Button({
+                    text: "Annulla",
+                    press: function () {
+                        oDialog.close();
+                    }
+                }),
+                afterClose: function () {
+                    oDialog.destroy();
+                }
+            });
+
+            this.getView().addDependent(oDialog);
+            oDialog.open();
+        },
+
+        _getVariantStorageKey: function () {
+            return "ZEIM_FATTURAZIONE_PASSIVA_VARIANTS";
+        },
+
+        _getVariantData: function () {
+            var sKey = this._getVariantStorageKey();
+            var sValue = localStorage.getItem(sKey);
+
+            if (!sValue) {
+                return {
+                    variants: {},
+                    defaultVariantKey: ""
+                };
+            }
+
+            try {
+                return JSON.parse(sValue);
+            } catch (e) {
+                return {
+                    variants: {},
+                    defaultVariantKey: ""
+                };
+            }
+        },
+
+        _setVariantData: function (oData) {
+            var sKey = this._getVariantStorageKey();
+            localStorage.setItem(sKey, JSON.stringify(oData));
+        },
+
+        _initVariantManagement: function () {
+            var oVariantManagement = this.byId("variantManagement");
+
+            if (!oVariantManagement) {
+                return;
+            }
+
+            oVariantManagement.removeAllItems();
+
+            var oVariantData = this._getVariantData();
+            var aVariantKeys = Object.keys(oVariantData.variants || {});
+
+            aVariantKeys.forEach(function (sKey) {
+                var oVariant = oVariantData.variants[sKey];
+
+                oVariantManagement.addItem(new VariantItem({
+                    key: sKey,
+                    text: oVariant.name,
+                    remove: true,
+                    rename: true,
+                    changeable: true
+                }));
+            });
+
+            if (oVariantData.defaultVariantKey && oVariantData.variants[oVariantData.defaultVariantKey]) {
+                oVariantManagement.setDefaultKey(oVariantData.defaultVariantKey);
+                oVariantManagement.setSelectedKey(oVariantData.defaultVariantKey);
+
+                this._applyTableLayout(oVariantData.variants[oVariantData.defaultVariantKey].layout);
+            } else {
+                oVariantManagement.setDefaultKey("");
+                oVariantManagement.setSelectedKey("");
+
+                // questa è la parte che mancava
+                this._resetToStandardTableLayout();
+            }
+        },
+
+        _getCurrentTableLayout: function () {
+            var oTable = this.byId("idTreeTable");
+
+            return {
+                columns: oTable.getColumns().map(function (oColumn, iIndex) {
+                    return {
+                        id: oColumn.getId().split("--").pop(),
+                        index: iIndex,
+                        visible: oColumn.getVisible(),
+                        width: oColumn.getWidth()
+                    };
+                })
+            };
+        },
+
+        _applyTableLayout: function (oLayout) {
+            if (!oLayout || !oLayout.columns) {
+                return;
+            }
+
+            var oTable = this.byId("idTreeTable");
+
+            oLayout.columns.forEach(function (oColumnLayout) {
+                var oColumn = this.byId(oColumnLayout.id);
+
+                if (!oColumn) {
+                    return;
+                }
+
+                if (typeof oColumnLayout.visible === "boolean") {
+                    oColumn.setVisible(oColumnLayout.visible);
+                }
+
+                if (oColumnLayout.width) {
+                    oColumn.setWidth(oColumnLayout.width);
+                }
+            }.bind(this));
+
+            oLayout.columns
+                .slice()
+                .sort(function (a, b) {
+                    return a.index - b.index;
+                })
+                .forEach(function (oColumnLayout, iTargetIndex) {
+                    var oColumn = this.byId(oColumnLayout.id);
+
+                    if (!oColumn) {
+                        return;
+                    }
+
+                    oTable.removeColumn(oColumn);
+                    oTable.insertColumn(oColumn, iTargetIndex);
+                }.bind(this));
+        },
+
+        onVariantSave: function (oEvent) {
+            var oVariantManagement = this.byId("variantManagement");
+            var oVariantData = this._getVariantData();
+
+            var sName = oEvent.getParameter("name");
+            var sKey = oEvent.getParameter("key");
+            var bOverwrite = oEvent.getParameter("overwrite");
+            var bDefault = oEvent.getParameter("def");
+
+            if (!sName && !sKey) {
+                return;
+            }
+
+            if (!sKey || !bOverwrite) {
+                sKey = "VARIANT_" + Date.now();
+            }
+
+            oVariantData.variants[sKey] = {
+                key: sKey,
+                name: sName || oVariantData.variants[sKey]?.name || "Layout",
+                layout: this._getCurrentTableLayout()
+            };
+
+            if (bDefault) {
+                oVariantData.defaultVariantKey = sKey;
+            }
+
+            this._setVariantData(oVariantData);
+            this._initVariantManagement();
+
+            oVariantManagement.setSelectedKey(sKey);
+
+            sap.m.MessageToast.show("Layout salvato.");
+        },
+
+        onVariantSelect: function (oEvent) {
+            var sKey = oEvent.getParameter("key");
+
+            // Se seleziono Standard
+            if (!sKey) {
+                this._resetToStandardTableLayout();
+                return;
+            }
+
+            var oVariantData = this._getVariantData();
+            var oVariant = oVariantData.variants[sKey];
+
+            if (!oVariant) {
+                this._resetToStandardTableLayout();
+                return;
+            }
+
+            this._applyTableLayout(oVariant.layout);
+        },
+
+        onVariantManage: function (oEvent) {
+            var oVariantManagement = this.byId("variantManagement");
+            var sCurrentKey = oVariantManagement && oVariantManagement.getSelectedKey();
+
+            var oVariantData = this._getVariantData();
+
+            var aDeleted = oEvent.getParameter("deleted") || [];
+            var aRenamed = oEvent.getParameter("renamed") || [];
+            var sDefaultKey = oEvent.getParameter("def");
+
+            var bDeletedCurrent = false;
+
+            aDeleted.forEach(function (sKey) {
+                delete oVariantData.variants[sKey];
+
+                if (oVariantData.defaultVariantKey === sKey) {
+                    oVariantData.defaultVariantKey = "";
+                }
+
+                if (sCurrentKey === sKey) {
+                    bDeletedCurrent = true;
+                }
+            });
+
+            aRenamed.forEach(function (oRenamed) {
+                if (oVariantData.variants[oRenamed.key]) {
+                    oVariantData.variants[oRenamed.key].name = oRenamed.name;
+                }
+            });
+
+            if (sDefaultKey && oVariantData.variants[sDefaultKey]) {
+                oVariantData.defaultVariantKey = sDefaultKey;
+            } else if (!sDefaultKey) {
+                oVariantData.defaultVariantKey = "";
+            }
+
+            this._setVariantData(oVariantData);
+            this._initVariantManagement();
+
+            if (bDeletedCurrent || !oVariantData.defaultVariantKey) {
+                this._resetToStandardTableLayout();
+                if (oVariantManagement) {
+                    oVariantManagement.setSelectedKey("");
+                }
+            }
+
+            sap.m.MessageToast.show("Gestione layout aggiornata.");
+        },
 
     });
 });

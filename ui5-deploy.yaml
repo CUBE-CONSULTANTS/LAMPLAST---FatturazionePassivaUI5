@@ -21,6 +21,6 @@ builder:
           name: ZEIM_FATT_PASS
           description: Fatturazione Passsiva
           package: ZEIM_FIORI
-          transport: F46K900573
+          transport: F46K900748
         exclude:
           - /test/

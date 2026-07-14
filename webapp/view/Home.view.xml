@@ -278,7 +278,6 @@
                     />
                 </items>
             </IconTabBar>
-
             <table:Table
                 id="idTreeTable"
                 rows="{fattureModel>/results}"
@@ -288,6 +287,33 @@
                 rowActionCount="1"
                 rowSelectionChange="onRowSelectionChange"
             >
+                <table:extension>
+                    <OverflowToolbar>
+                        <Title text="Cruscotto fatture" />
+                        <VariantManagement
+                            id="variantManagement"
+                            standardItemText="Standard"
+                            showSetAsDefault="true"
+                            save=".onVariantSave"
+                            select=".onVariantSelect"
+                            manage=".onVariantManage"
+                        />
+
+                        <ToolbarSpacer />
+
+                        <Button
+                            icon="sap-icon://action-settings"
+                            text="Layout colonne"
+                            press=".onOpenColumnLayoutDialog"
+                        />
+
+                        <Button
+                            icon="sap-icon://excel-attachment"
+                            text="Esporta Excel"
+                            press=".onExportExcel"
+                        />
+                    </OverflowToolbar>
+                </table:extension>
                 <table:rowActionTemplate>
                     <table:RowAction>
                         <table:items>
@@ -307,7 +333,10 @@
                 </table:rowSettingsTemplate>
                 <!-- Colonne (lascia invariato) -->
                 <table:columns>
-                    <table:Column width="5rem">
+                    <table:Column
+                        id="idTipoAllegatoColumn"
+                        width="5rem"
+                    >
                         <table:label>
                             <Label text="Allegato" />
                         </table:label>
@@ -321,7 +350,10 @@
                             />
                         </table:template>
                     </table:Column>
-                    <table:Column width="4rem">
+                    <table:Column
+                        id="idXmlColumn"
+                        width="4rem"
+                    >
                         <table:label>
                             <Label text="XML" />
                         </table:label>
@@ -334,7 +366,10 @@
                         </table:template>
                     </table:Column>
 
-                    <table:Column width="4rem">
+                    <table:Column
+                        id="idPdfColumn"
+                        width="4rem"
+                    >
                         <table:label>
                             <Label text="Fattura" />
                         </table:label>
@@ -349,7 +384,10 @@
                     </table:Column>
 
                     <!-- N. doc. (presente su padre e figlio) -->
-                    <table:Column width="7rem">
+                    <table:Column
+                        id="idNumeroDocumentoColumn"
+                        width="7rem"
+                    >
                         <table:label>
                             <Label text="N. doc." />
                         </table:label>
@@ -365,7 +403,10 @@
                     </table:Column>
 
                     <!-- Esercizio (solo testata, le righe figlie non ce l’hanno) -->
-                    <table:Column width="6rem">
+                    <table:Column
+                        id="idEsercizioColumn"
+                        width="6rem"
+                    >
                         <table:label>
                             <Label text="Esercizio" />
                         </table:label>
@@ -374,7 +415,10 @@
                         </table:template>
                     </table:Column>
                     <!-- Eser St. (semaforo) -> visible solo se esiste 'status' -->
-                    <table:Column width="6rem">
+                    <table:Column
+                        id="idSemaforoColumn"
+                        width="6rem"
+                    >
                         <table:label>
                             <Label text="Stato" />
                         </table:label>
@@ -420,7 +464,10 @@
                     </table:Column>
 
                     <!-- Posizione (Figlio) -->
-                    <table:Column width="9rem">
+                    <table:Column
+                        id="idTipoFatturaColumn"
+                        width="9rem"
+                    >
                         <table:label>
                             <Label text="Tipo Fattura" />
                         </table:label>
@@ -431,7 +478,10 @@
                         </table:template>
                     </table:Column>
                     <!-- Società -->
-                    <table:Column width="6rem">
+                    <table:Column
+                        id="idSocietaColumn"
+                        width="6rem"
+                    >
                         <table:label>
                             <Label text="Società" />
                         </table:label>
@@ -440,7 +490,10 @@
                         </table:template>
                     </table:Column>
                     <!-- Nome Società-->
-                    <table:Column width="14rem">
+                    <table:Column
+                        id="idNomeSocietaColumn"
+                        width="14rem"
+                    >
                         <table:label>
                             <Label text="Nome della società" />
                         </table:label>
@@ -449,7 +502,10 @@
                         </table:template>
                     </table:Column>
                     <!-- S. Fornitore -->
-                    <table:Column width="4rem">
+                    <table:Column
+                        id="idStatoColumn"
+                        width="4rem"
+                    >
                         <table:label>
                             <Label text="Stato" />
                         </table:label>
@@ -462,7 +518,10 @@
                         </table:template>
                     </table:Column>
                     <!-- Codice Fornitore -->
-                    <table:Column width="6rem">
+                    <table:Column
+                        id="idCodiceFornitoreColumn"
+                        width="6rem"
+                    >
                         <table:label>
                             <Label text="Fornitore" />
                         </table:label>
@@ -474,7 +533,10 @@
                         </table:template>
                     </table:Column>
                     <!-- Nome Fornitore -->
-                    <table:Column width="14rem">
+                    <table:Column
+                        id="idNomeFornitoreColumn"
+                        width="14rem"
+                    >
                         <table:label>
                             <Label text="Nome Fornitore" />
                         </table:label>
@@ -492,7 +554,10 @@
                         </table:template>
                     </table:Column> -->
                     <!-- Tipo Documento Cod. -->
-                    <table:Column width="6rem">
+                    <table:Column
+                        id="idTipoDocumentoColumn"
+                        width="6rem"
+                    >
                         <table:label>
                             <Label text="Tipo Fatt" />
                         </table:label>
@@ -501,7 +566,10 @@
                         </table:template>
                     </table:Column>
                     <!-- Tipo Documento Descr. -->
-                    <table:Column width="6rem">
+                    <table:Column
+                        id="idTipoDocumentoDescrColumn"
+                        width="6rem"
+                    >
                         <table:label>
                             <Label text="Descrizione" />
                         </table:label>
@@ -510,7 +578,10 @@
                         </table:template>
                     </table:Column>
                     <!-- numero fattura fornitore. -->
-                    <table:Column width="14rem">
+                    <table:Column
+                        id="idNumeroFatturaColumn"
+                        width="14rem"
+                    >
                         <table:label>
                             <Label text="N. Fat Fornitore" />
                         </table:label>
@@ -519,7 +590,10 @@
                         </table:template>
                     </table:Column>
                     <!-- Data Fattura -->
-                    <table:Column width="6rem">
+                    <table:Column
+                        id="idDataFatturaColumn"
+                        width="6rem"
+                    >
                         <table:label>
                             <Label text="Data Fat" />
                         </table:label>
@@ -530,7 +604,10 @@
                         </table:template>
                     </table:Column>
                     <!-- Divisa -->
-                    <table:Column width="6rem">
+                    <table:Column
+                        id="idDivisaColumn"
+                        width="6rem"
+                    >
                         <table:label>
                             <Label text="Divisa" />
                         </table:label>
@@ -540,7 +617,10 @@
                     </table:Column>
 
                     <!-- Causale -->
-                    <table:Column width="14rem">
+                    <table:Column
+                        id="idCausaleColumn"
+                        width="14rem"
+                    >
                         <table:label>
                             <Label text="Causale" />
                         </table:label>
@@ -549,7 +629,10 @@
                         </table:template>
                     </table:Column>
                     <!-- Importo totale -->
-                    <table:Column width="10rem">
+                    <table:Column
+                        id="idImportoTotaleColumn"
+                        width="10rem"
+                    >
                         <table:label>
                             <Label text="Importo totale" />
                         </table:label>
@@ -558,7 +641,10 @@
                         </table:template>
                     </table:Column>
                     <!-- Imponibile -->
-                    <table:Column width="10rem">
+                    <table:Column
+                        id="idImponibileColumn"
+                        width="10rem"
+                    >
                         <table:label>
                             <Label text="Imponibile" />
                         </table:label>
@@ -567,7 +653,10 @@
                         </table:template>
                     </table:Column>
                     <!-- Doc Contabile -->
-                    <table:Column width="7rem">
+                    <table:Column
+                        id="idDocContabileColumn"
+                        width="7rem"
+                    >
                         <table:label>
                             <Label text="Doc Contabile" />
                         </table:label>
@@ -583,7 +672,10 @@
                     </table:Column>
 
                     <!-- Data registrazione -->
-                    <table:Column width="8rem">
+                    <table:Column
+                        id="idDataRegistrazioneColumn"
+                        width="8rem"
+                    >
                         <table:label>
                             <Label text="Data registr." />
                         </table:label>
@@ -594,7 +686,10 @@
                         </table:template>
                     </table:Column>
                     <!-- Tipo Documento SAP -->
-                    <table:Column width="5rem">
+                    <table:Column
+                        id="idTipoDocumentoSAPColumn"
+                        width="5rem"
+                    >
                         <table:label>
                             <Label text="Tipo SAP" />
                         </table:label>
@@ -677,7 +772,10 @@
                         </table:template>
                     </table:Column> -->
                     <!-- Scadenza Pagamento -->
-                    <table:Column width="8rem">
+                    <table:Column
+                        id="idDataPagamentoColumn"
+                        width="8rem"
+                    >
                         <table:label>
                             <Label text="Data Pagamento" />
                         </table:label>
@@ -688,7 +786,10 @@
                         </table:template>
                     </table:Column>
                     <!-- Motivazione Blocco -->
-                    <table:Column width="14rem">
+                    <table:Column
+                        id="idMotivazioneBloccoColumn"
+                        width="14rem"
+                    >
                         <table:label>
                             <Label text="Motivazione Blocco" />
                         </table:label>
@@ -697,7 +798,10 @@
                         </table:template>
                     </table:Column>
                     <!-- Blocco -->
-                    <table:Column width="4rem">
+                    <table:Column
+                        id="idBloccoColumn"
+                        width="4rem"
+                    >
                         <table:label>
                             <Label text="Blocco" />
                         </table:label>
@@ -738,7 +842,15 @@
                     enabled="{viewModel>/ui/enableAssignCompany}"
                     press=".onAssegnaSocietaButtonPress"
                 />
-                <!-- 3. Partitario Fornitore -->
+                <!-- 2. Partitario Fornitori -->
+                <Button
+                    text="Partitario Fornitori"
+                    icon="sap-icon://supplier"
+                    press=".onPartitarioFornitoriButtonPress"
+                    type="Emphasized"
+                />
+
+                <!-- 3. Report saldi EM/EF -->
                 <Button
                     text="Report saldi EM/EF"
                     icon="sap-icon://supplier"

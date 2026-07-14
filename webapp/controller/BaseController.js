@@ -1,7 +1,9 @@
 sap.ui.define([
-    "sap/ui/core/mvc/Controller"
+    "sap/ui/core/mvc/Controller",
+    "sap/ui/export/Spreadsheet"
 ], function (
-    Controller
+    Controller,
+    Spreadsheet
 ) {
     "use strict";
 
@@ -28,6 +30,30 @@ sap.ui.define([
                 window.open(sHref, "_blank");
             } catch (err) {
                 console.error("Errore nella navigazione Cross-App:", err);
+            }
+        },
+
+        onPartitarioFornitoriButtonPress: async function () {
+            try {
+                const oCrossAppNav = await sap.ushell.Container.getServiceAsync("CrossApplicationNavigation");
+
+                const sHash = oCrossAppNav.hrefForExternal({
+                    target: {
+                        semanticObject: "Supplier",
+                        action: "manageLineItems"
+                    }
+                });
+
+                if (!sHash) {
+                    sap.m.MessageToast.show("Impossibile generare la navigazione verso Partitario Fornitori.");
+                    return;
+                }
+
+                window.open(sHash, "_blank");
+
+            } catch (err) {
+                console.error("Errore navigazione Partitario Fornitori:", err);
+                sap.m.MessageBox.error("Impossibile aprire l'app Partitario Fornitori.");
             }
         },
 
@@ -200,7 +226,59 @@ sap.ui.define([
             }
         },
 
+        onExportExcel: function () {
+            const oModel = this.getView().getModel("fattureModel");
+            const aRows = oModel.getProperty("/results") || [];
 
+            if (!aRows.length) {
+                sap.m.MessageToast.show("Nessun dato da esportare.");
+                return;
+            }
+
+            const aColumns = [
+                { label: "N. doc.", property: "DocumentNumber", type: "string" },
+                { label: "Esercizio", property: "FiscalYear", type: "string" },
+                { label: "Stato Fattura", property: "StatoFattura", type: "string" },
+                { label: "Tipo Fattura", property: "TipoFattura", type: "string" },
+                { label: "Società", property: "CompanyCode", type: "string" },
+                { label: "Nome Società", property: "CompanyName", type: "string" },
+                { label: "Fornitore", property: "SupplierCode", type: "string" },
+                { label: "Nome Fornitore", property: "SupplierName", type: "string" },
+                { label: "Tipo doc. AdE", property: "TipoDocAdE", type: "string" },
+                { label: "Descrizione tipo doc.", property: "TipoDocText", type: "string" },
+                { label: "N. Fat Fornitore", property: "NumeroFattura", type: "string" },
+                { label: "Data Fattura", property: "DataFattura", type: "date" },
+                { label: "Divisa", property: "Divisa", type: "string" },
+                { label: "Causale", property: "Causale", type: "string" },
+                { label: "Importo totale", property: "Totale", type: "number" },
+                { label: "Imponibile", property: "Imponibile", type: "number" },
+                { label: "Doc Contabile", property: "FinanceDocument", type: "string" },
+                { label: "Data registrazione", property: "PostingDate", type: "date" },
+                { label: "Tipo SAP", property: "DocumentType", type: "string" },
+                { label: "Data Pagamento", property: "DataPagamento", type: "date" },
+                { label: "Motivazione Blocco", property: "MotivoBlocco", type: "string" },
+                { label: "Blocco", property: "CodBlocco", type: "boolean" }
+            ];
+
+            const oSettings = {
+                workbook: {
+                    columns: aColumns
+                },
+                dataSource: aRows,
+                fileName: "Fatture_Passive.xlsx",
+                worker: false
+            };
+
+            const oSheet = new Spreadsheet(oSettings);
+
+            oSheet.build()
+                .then(function () {
+                    sap.m.MessageToast.show("Export completato.");
+                })
+                .finally(function () {
+                    oSheet.destroy();
+                });
+        },
 
 
     });
