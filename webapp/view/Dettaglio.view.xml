@@ -235,9 +235,9 @@
                                                 <m:Text text="{fattura>PrezzoTotale}" />
                                                 <m:Text text="{fattura>AliquotaIVA}" />
 
-                                                <m:Button icon="sap-icon://action" tooltip="Assegna documenti SAP" enabled="{= ${viewModel>/ui/mode} === 'edit' 
+                                                <m:Button icon="sap-icon://action" tooltip="Assegna documenti SAP" visible="{= ${viewModel>/ui/mode} === 'edit' 
                                                                     &amp;&amp; (parseFloat(${fattura>Quantita}) || 0) !== 0 
-                                                                    &amp;&amp; (parseFloat(${fattura>PrezzoUnitario}) || 0) !== 0 }" />
+                                                                    &amp;&amp; (parseFloat(${fattura>PrezzoUnitario}) || 0) !== 0 }" enabled="{= ${viewModel>/ui/mode} === 'edit' }" />
                                                 <m:Link text="{fattura>odaIdDocumento}" href="https://example.com/docAcq/{docAcq}" tooltip="{fattura>odaIdDocumento}"/>
 
                                                 <m:VBox renderType="Bare">

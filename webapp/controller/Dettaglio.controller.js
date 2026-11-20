@@ -28,28 +28,35 @@ sap.ui.define([
             this._handleRoute(oEvent);
         },
 
-        _handleRoute: function (oEvent) {
+        _handleRoute: async function (oEvent) {
             const sInvoiceId = oEvent.getParameter("arguments").invoiceId;
             const oModel = sap.ui.getCore().getModel("SelectedInvoiceModel");
+            try {
+                sap.ui.core.BusyIndicator.show(0);
+                if (!oModel) {
+                    sap.m.MessageToast.show("Nessuna fattura selezionata, ritorno alla Home.");
+                    this.oRouter.navTo("RouteHome");
+                    return;
+                }
 
-            if (!oModel) {
-                sap.m.MessageToast.show("Nessuna fattura selezionata, ritorno alla Home.");
-                this.oRouter.navTo("RouteHome");
-                return;
+                const oSelected = oModel.getProperty("/SelectedInvoice");
+                if (!oSelected || oSelected.Id !== sInvoiceId) {
+                    sap.m.MessageToast.show("La fattura selezionata non è valida.");
+                    this.oRouter.navTo("RouteHome");
+                    return;
+                }
+
+                this.getView().setModel(oModel);
+                this.getView().bindElement({ path: "/SelectedInvoice" });
+
+
+                await this._loadDettaglioFattura(oSelected.FileName);
+                this._updateTotal();
+            } catch (e) {
+            } finally {
+                sap.ui.core.BusyIndicator.hide(0);
             }
 
-            const oSelected = oModel.getProperty("/SelectedInvoice");
-            if (!oSelected || oSelected.Id !== sInvoiceId) {
-                sap.m.MessageToast.show("La fattura selezionata non è valida.");
-                this.oRouter.navTo("RouteHome");
-                return;
-            }
-
-            this.getView().setModel(oModel);
-            this.getView().bindElement({ path: "/SelectedInvoice" });
-
-            this._loadDettaglioFattura(oSelected.FileName);
-            this._updateTotal();
         },
 
         _loadDettaglioFattura: function (sFileName) {
@@ -64,13 +71,17 @@ sap.ui.define([
                 FileName: sFileName
             });
 
-            oODataModel.read(sPath, {
-                success: (oData) => {
-                    this._bindFatturaData(oData.Data);
-                },
-                error: () => {
-                    MessageToast.show("Errore nel caricamento del dettaglio fattura");
-                }
+            return new Promise((resolve, reject) => {
+                oODataModel.read(sPath, {
+                    success: (oData) => {
+                        this._bindFatturaData(oData.Data);
+                        resolve(oData);
+                    },
+                    error: (oError) => {
+                        MessageToast.show("Errore nel caricamento del dettaglio fattura");
+                        reject(oError);
+                    }
+                });
             });
         },
 
