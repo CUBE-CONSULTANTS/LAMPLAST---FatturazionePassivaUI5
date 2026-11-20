@@ -12,62 +12,90 @@ sap.ui.define([
     return BaseController.extend("com.zeim.fatturazionepassiva.controller.Archiviate", {
         formatter: formatter,
         onInit() {
+            this.getView().setModel(new sap.ui.model.json.JSONModel(), "fattureModel")
             const oRouter = this.getOwnerComponent().getRouter();
             oRouter.getRoute("Archiviate").attachPatternMatched(this._onObjectMatched, this);
+
         },
         _onObjectMatched: function () {
-            this.getView().setModel(new sap.ui.model.json.JSONModel({
-                ui: {
-                    canOpenCreateApps: false,
-                    canBlocca: false,
-                    canArchivia: false,
-                    canSblocca: false,
-                    canStorno: false,
-                    enableAssignCompany: false
-                }
-
-            }), "viewModel");
-            this.getView().setModel(new sap.ui.model.json.JSONModel(), "fattureModel")
-
             const filterArchiviato = [new sap.ui.model.Filter("Archiviato", "EQ", false)]
-            this._bindTable(true, filterArchiviato)
+            this._loadFatture(true, filterArchiviato)
         },
 
-        _bindTable: async function (bReset = true, aFilters) {
+        onFilterBarClear: function (oEvent) {
+            const oFilterBar = oEvent.getSource();
+
+            oFilterBar.getFilterGroupItems().forEach(function (oItem) {
+                const oControl = oItem.getControl();
+
+                if (oControl.isA("sap.m.MultiInput")) {
+                    oControl.removeAllTokens();
+                    oControl.setValue("");
+
+                } else if (oControl.isA("sap.m.DateRangeSelection")) {
+                    oControl.setDateValue(null);
+                    oControl.setSecondDateValue(null);
+
+                } else if (oControl.isA("sap.m.Select")) {
+                    oControl.setSelectedKey("");
+
+                } else if (oControl.isA("sap.m.Input")) {
+                    oControl.setValue("");
+                }
+            });
+
+            const oTable = this.byId("idTreeTable");
+            if (oTable) {
+                oTable.clearSelection();
+            }
+            this._onObjectMatched()
+        },
+        _loadFatture: async function (bReset = true, aFilters) {
             const oODataModel = this.getOwnerComponent().getModel("mainService");
             const oFattureModel = this.getView().getModel("fattureModel");
 
             if (Array.isArray(aFilters)) {
                 this._currentFilters = aFilters;
             }
+
             const filterArray = this._currentFilters || [];
             const entity = "/zeim_lista_fatture_passive";
+
+            // Nuova ricerca: svuoto i risultati precedenti
+            if (bReset) {
+                oFattureModel.setData({ results: [] });
+            }
+
             try {
                 sap.ui.core.BusyIndicator.show(0);
-                const data = await API._getData({ model: oODataModel, entity, filterArray })
-                //
+
+                const data = await API._getData({
+                    model: oODataModel,
+                    entity,
+                    filterArray
+                });
+
                 const aOld = oFattureModel.getProperty("/results") || [];
                 const aNew = data.results || [];
 
-                oFattureModel.setProperty("/results", aOld.concat(aNew));
-                // this._pagination.skip += aNew.length;
-                // this._pagination.hasMore = aNew.length === this._pagination.top;
-                // this._pagination.isLoading = false;
+                if (bReset) {
+                    // Sostituisco completamente i dati
+                    oFattureModel.setProperty("/results", aNew);
+                } else {
+                    // Aggiungo i nuovi dati
+                    oFattureModel.setProperty("/results", aOld.concat(aNew));
+                }
 
+                oFattureModel.refresh(true);
 
-                // if (this._pagination.hasMore) {
-                //     setTimeout(() => this._bindTable(false), 50);
-                // }
-                //
             } catch (error) {
-                // this._pagination.isLoading = false;
-                // this._pagination.hasMore = false;
+                console.error("Errore caricamento fatture:", error);
                 sap.m.MessageToast.show("Errore nel caricamento fatture.");
             } finally {
-                sap.ui.core.BusyIndicator.hide(0);
+                sap.ui.core.BusyIndicator.hide();
             }
-
         },
+
         onFilterBarSearch: function (oEvent) {
             const Filter = sap.ui.model.Filter;
             const FO = sap.ui.model.FilterOperator;
@@ -80,6 +108,10 @@ sap.ui.define([
                 if (oControl.isA("sap.m.MultiInput")) {
                     // MultiInput prima di Input, perché lo estende
                     const aKeys = oControl.getTokens().map(t => t.getKey());
+                    const sManualValue = oControl.getValue();
+                    if (sManualValue && sManualValue.trim()) {
+                        aKeys.push(sManualValue.trim());
+                    }
                     if (aKeys.length === 1) {
                         aFilters.push(new Filter(sPath, FO.EQ, aKeys[0]));
                     } else if (aKeys.length > 1) {
@@ -110,8 +142,9 @@ sap.ui.define([
                 }
             });
 
-            debugger
-            // this._loadFatture(aFilters); 
+            const oTable = this.byId("idTreeTable");
+            if (oTable) oTable.clearSelection();
+            this._loadFatture(true, aFilters);
         },
 
     });
