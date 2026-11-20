@@ -37,7 +37,7 @@
                         >
                             <fb:control>
                                 <Select
-                                    id="archSelectSocieta"
+                                    id="archSelectSocieta2"
                                     width="300px"
                                     forceSelection="false"
                                     items="{path:'MCSocieta>/ZR_EIM_COMPANY'}"
@@ -58,7 +58,7 @@
                         >
                             <fb:control>
                                 <MultiInput
-                                    id="archMultiInputFornitore"
+                                    id="archMultiInputFornitore2"
                                     width="300px"
                                     showValueHelp="true"
                                     valueHelpRequest=".onValueHelpFornitoreArch"
@@ -82,7 +82,7 @@
                         >
                             <fb:control>
                                 <MultiInput
-                                    id="archMultiInputTipoDocAdE"
+                                    id="archMultiInputTipoDocAdE2"
                                     width="300px"
                                     showValueHelp="true"
                                     valueHelpRequest=".onValueHelpTipoDocAdeArch"
@@ -107,7 +107,7 @@
                         >
                             <fb:control>
                                 <Input
-                                    id="archInputNumeroFattura"
+                                    id="archInputNumeroFattura2"
                                     width="300px"
                                     type="Text"
                                 />

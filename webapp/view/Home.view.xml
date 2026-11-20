@@ -267,23 +267,23 @@
                         </table:template>
                     </table:Column> -->
                         <!-- Tipo Documento Cod. -->
-                        <table:Column id="idTipoDocumentoColumn" width="6rem">
+                        <table:Column id="idTipoDocumentoColumn" width="20rem">
                             <table:label>
                                 <Label text="Tipo Fatt" />
                             </table:label>
                             <table:template>
-                                <Text text="{fattureModel>TipoDocAdE}" />
+                                <ObjectIdentifier title="{fattureModel>TipoDocAdE}" text="{fattureModel>TipoDocText}"/>
                             </table:template>
                         </table:Column>
                         <!-- Tipo Documento Descr. -->
-                        <table:Column id="idTipoDocumentoDescrColumn" width="6rem">
+                        <!-- <table:Column id="idTipoDocumentoDescrColumn" width="6rem">
                             <table:label>
                                 <Label text="Descrizione" />
                             </table:label>
                             <table:template>
                                 <Text text="{fattureModel>TipoDocText}" />
                             </table:template>
-                        </table:Column>
+                        </table:Column> -->
                         <!-- numero fattura fornitore. -->
                         <table:Column id="idNumeroFatturaColumn" width="14rem">
                             <table:label>

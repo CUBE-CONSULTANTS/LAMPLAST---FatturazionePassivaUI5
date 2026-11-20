@@ -18,8 +18,7 @@ sap.ui.define([
 
         },
         _onObjectMatched: function () {
-            const filterArchiviato = [new sap.ui.model.Filter("Archiviato", "EQ", false)]
-            this._loadFatture(true, filterArchiviato)
+            this._loadFatture(true)
         },
 
         onFilterBarClear: function (oEvent) {
@@ -50,7 +49,7 @@ sap.ui.define([
             }
             this._onObjectMatched()
         },
-        _loadFatture: async function (bReset = true, aFilters) {
+        _loadFatture: async function (bReset = true, aFilters = []) {
             const oODataModel = this.getOwnerComponent().getModel("mainService");
             const oFattureModel = this.getView().getModel("fattureModel");
 
@@ -59,9 +58,8 @@ sap.ui.define([
             }
 
             const filterArray = this._currentFilters || [];
-            const entity = "/zeim_lista_fatture_passive";
+            const entity = "/zeim_lista_fatture_archiviate"; //zeim_lista_fatture_archiviate
 
-            // Nuova ricerca: svuoto i risultati precedenti
             if (bReset) {
                 oFattureModel.setData({ results: [] });
             }
@@ -145,6 +143,61 @@ sap.ui.define([
             const oTable = this.byId("idTreeTable");
             if (oTable) oTable.clearSelection();
             this._loadFatture(true, aFilters);
+        },
+        onValueHelpFornitoreArch: function () {
+            sap.ui.require(["com/zeim/fatturazionepassiva/controller/helpers/ValueHelpHandler"], function (VH) {
+
+                VH.openValueHelp(
+                    this,
+                    "com.zeim.fatturazionepassiva.view.fragments.ValueHelpDialogFilterbarFornitore",
+                    "Fornitore",
+                    "/zeim_search_supplier_data",
+                    {
+                        vhId: "ARCH_FORN",
+                        key: "Supplier",
+                        desc: "SupplierName",
+                        columns: [
+                            { label: "Fornitore", path: "Supplier" },
+                            { label: "Descrizione", path: "SupplierName" },
+                            { label: "Country", path: "Country" }
+                        ],
+                        targetModelName: "archFilters",
+                        tokensPath: "/SupplierTokens",
+                        multiInputId: "archMultiInputFornitore"
+                    }
+                );
+
+            }.bind(this));
+        },
+
+
+
+        onValueHelpTipoDocAdeArch: function () {
+            sap.ui.require([
+                "com/zeim/fatturazionepassiva/controller/helpers/ValueHelpHandler"
+            ], function (VH) {
+                VH.openValueHelp(
+                    this,
+                    "com.zeim.fatturazionepassiva.view.fragments.ValueHelpDialogFilterbarTipoDocAde",
+                    "TipoDocAde",
+                    "/ZC_EIM_BLADE",
+                    {
+                        vhId: "ARCH_TIPO_ADE",
+                        key: "BlartAde",
+                        desc: "Descrizione",
+                        keyProp: "BlartAde",
+                        maxKeyLength: 10,
+                        filterProps: ["BlartAde", "Descrizione"],
+                        columns: [
+                            { label: "Tipo Doc. AdE", path: "BlartAde" },
+                            { label: "Descrizione", path: "Descrizione" }
+                        ],
+                        targetModelName: "archFilters",
+                        tokensPath: "/TipoDocAdeTokens",
+                        multiInputId: "archMultiInputTipoDocAdE"
+                    }
+                );
+            }.bind(this));
         },
 
     });

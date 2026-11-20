@@ -13,72 +13,45 @@
         <!-- DynamicPage Header -->
         <f:header>
             <f:DynamicPageHeader pinnable="true">
-                <fb:FilterBar persistencyKey="myPersKey" useToolbar="false" search=".onFilterBarSearch" showGoOnFB="true" showClearOnFB="true" clear=".onFilterBarClear" isRunningInValueHelpDialog="false">
+                <fb:FilterBar useToolbar="false" showGoOnFB="true" showClearOnFB="true" isRunningInValueHelpDialog="false" search=".onFilterBarSearch" clear=".onFilterBarClear">
                     <fb:filterGroupItems>
                         <fb:FilterGroupItem name="CompanyCode" label="Società" groupName="General" visibleInFilterBar="true">
                             <fb:control>
-                                <Select width="300px" forceSelection="false" items="{
-                                    path: 'MCSocieta>/ZR_EIM_COMPANY'}">
+                                <Select id="archSelectSocieta" width="300px" forceSelection="false" items="{path:'MCSocieta>/ZR_EIM_COMPANY'}">
                                     <core:Item key="{MCSocieta>CompanyCode}" text="{MCSocieta>CompanyCode}" />
                                 </Select>
                             </fb:control>
                         </fb:FilterGroupItem>
+
                         <fb:FilterGroupItem name="SupplierCode" label="Fornitore" groupName="General" visibleInFilterBar="true">
                             <fb:control>
-                                <MultiInput width="300px" showValueHelp="true" valueHelpRequest=".onValueHelpFornitore" tokens="{homeFilters>/SupplierTokens}">
+                                <MultiInput id="archMultiInputFornitore" width="300px" showValueHelp="true" valueHelpRequest=".onValueHelpFornitoreArch" tokens="{archFilters>/SupplierTokens}">
                                     <tokens>
-                                        <Token key="{homeFilters>key}" text="{homeFilters>text}" />
+                                        <Token key="{archFilters>key}" text="{archFilters>text}" />
                                     </tokens>
                                 </MultiInput>
                             </fb:control>
                         </fb:FilterGroupItem>
-                        <fb:FilterGroupItem name="SupplierName" label="Nome Fornitore" groupName="General" visibleInFilterBar="true">
+
+                        <fb:FilterGroupItem name="TipoDocAdE" label="Tipo doc. AdE" groupName="General" visibleInFilterBar="true">
                             <fb:control>
-                                <Input width="300px" type="Text" />
-                            </fb:control>
-                        </fb:FilterGroupItem>
-                        <fb:FilterGroupItem name="CodiceFiscale" label="Codice Fiscale" groupName="codFiscale" visibleInFilterBar="true">
-                            <fb:control>
-                                <Input width="300px" type="Text" />
-                            </fb:control>
-                        </fb:FilterGroupItem>
-                        <fb:FilterGroupItem name="PartitaIVAcee" label="Partita IVA" groupName="partitaIva" visibleInFilterBar="true">
-                            <fb:control>
-                                <Input width="300px" type="Text" />
-                            </fb:control>
-                        </fb:FilterGroupItem>
-                        <fb:FilterGroupItem name="TipoDocAdE" label="Tipo doc. AdE" groupName="TipodocAdE" visibleInFilterBar="true">
-                            <fb:control>
-                                <MultiInput width="300px" showValueHelp="true" valueHelpRequest=".onValueHelpTipoDocAde" showSuggestion="true" suggestionItems="{path: 'TipoDocAde>/ZC_EIM_BLADE'}" data-model="TipoDocAde" data-key="BlartAde" data-desc="Descrizione">
+                                <MultiInput id="archMultiInputTipoDocAdE" width="300px" showValueHelp="true" valueHelpRequest=".onValueHelpTipoDocAdeArch" showSuggestion="true" suggestionItems="{path:'TipoDocAde>/ZC_EIM_BLADE'}">
                                     <suggestionItems>
                                         <core:Item key="{TipoDocAde>BlartAde}" text="{TipoDocAde>Descrizione}" />
                                     </suggestionItems>
                                 </MultiInput>
                             </fb:control>
                         </fb:FilterGroupItem>
-                        <fb:FilterGroupItem name="NumeroFattura" label="Nr. documento nel file XML" groupName="nrDoc" visibleInFilterBar="true">
+
+                        <fb:FilterGroupItem name="NumeroFattura" label="Nr. documento nel file XML" groupName="General" visibleInFilterBar="true">
                             <fb:control>
-                                <Input width="300px" type="Text" />
+                                <Input id="archInputNumeroFattura" width="300px" type="Text" />
                             </fb:control>
                         </fb:FilterGroupItem>
-                        <fb:FilterGroupItem name="DataFattura" label="Data Documento" groupName="dataDoc" visibleInFilterBar="true">
+
+                        <fb:FilterGroupItem name="DataFattura" label="Data Documento" groupName="Date" visibleInFilterBar="true">
                             <fb:control>
-                                <DateRangeSelection delimiter=" - " width="300px" displayFormat="dd/MM/yyyy" valueFormat="yyyy-MM-dd" />
-                            </fb:control>
-                        </fb:FilterGroupItem>
-                        <fb:FilterGroupItem name="DataSDI" label="Data Ricezione" groupName="dataRicezione" visibleInFilterBar="true">
-                            <fb:control>
-                                <DateRangeSelection delimiter=" - " width="300px" displayFormat="dd/MM/yyyy" valueFormat="yyyy-MM-dd" />
-                            </fb:control>
-                        </fb:FilterGroupItem>
-                        <fb:FilterGroupItem name="CodDestinatario" label="Codice Destinatario" groupName="codiceDestinatario" visibleInFilterBar="true">
-                            <fb:control>
-                                <Input width="300px" type="Text" />
-                            </fb:control>
-                        </fb:FilterGroupItem>
-                        <fb:FilterGroupItem name="NumeroSDI" label="Nr. invio SDI" groupName="nrInvioSdi" visibleInFilterBar="true">
-                            <fb:control>
-                                <Input width="300px" type="Text" />
+                                <DateRangeSelection id="archDrsDataFattura" delimiter=" - " width="300px" displayFormat="dd/MM/yyyy" valueFormat="yyyy-MM-dd" />
                             </fb:control>
                         </fb:FilterGroupItem>
                     </fb:filterGroupItems>
@@ -101,58 +74,91 @@
                             <Button icon="sap-icon://excel-attachment" text="Esporta Excel" press=".onExportExcel" />
                         </OverflowToolbar>
                     </table:extension>
-                    <table:rowActionTemplate>
+                    <!-- <table:rowActionTemplate>
                         <table:RowAction>
                             <table:items>
                                 <table:RowActionItem icon="sap-icon://navigation-right-arrow" text="Apri Dettaglio" type="Navigation" press=".onVisualizzaDati" />
                             </table:items>
                         </table:RowAction>
-                    </table:rowActionTemplate>
-                    <table:rowSettingsTemplate>
+                    </table:rowActionTemplate> -->
+                    <!-- <table:rowSettingsTemplate>
                         <table:RowSettings highlight="{path: 'status', formatter: '.getHighlight'}" />
-                    </table:rowSettingsTemplate>
+                    </table:rowSettingsTemplate> -->
                     <!-- Colonne (lascia invariato) -->
+
                     <table:columns>
                         <table:Column width="5rem">
                             <table:label>
-                                <Label text="Allegato" />
+                                <Label text="Società" />
                             </table:label>
                             <table:template>
-                                <Button type="Transparent" icon="sap-icon://attachment" enabled="{= Boolean(${fattureModel>TipoAllegato}) &amp;&amp; ${fattureModel>TipoAllegato} !== '0' }" tooltip="{path: 'fattureModel>TipoAllegato', formatter: '.formatter.allegatoText'}" press=".onVisualizzaAllegato" />
-                            </table:template>
-                        </table:Column>
-                        <table:Column width="4rem">
-                            <table:label>
-                                <Label text="XML" />
-                            </table:label>
-                            <table:template>
-                                <Button type="Transparent" icon="sap-icon://show" press=".onVisualizzaXML" />
+                                <Text text="{fattureModel>CompanyCode}" />
                             </table:template>
                         </table:Column>
 
-                        <table:Column width="4rem">
+                        <table:Column width="14rem">
                             <table:label>
-                                <Label text="Fattura" />
+                                <Label text="Nome società" />
                             </table:label>
                             <table:template>
-                                <Button type="Transparent" icon="sap-icon://pdf-attachment" tooltip="Visualizza Fattura" press=".onVisualizzaPDF" />
+                                <Text text="{fattureModel>CompanyName}" />
                             </table:template>
                         </table:Column>
 
-                        <!-- N. doc. (presente su padre e figlio) -->
                         <table:Column width="7rem">
+                            <table:label>
+                                <Label text="Fornitore" />
+                            </table:label>
+                            <table:template>
+                                <Text text="{fattureModel>SupplierCode}" />
+                            </table:template>
+                        </table:Column>
+
+                        <table:Column width="14rem">
+                            <table:label>
+                                <Label text="Nome fornitore" />
+                            </table:label>
+                            <table:template>
+                                <Text text="{fattureModel>SupplierName}" />
+                            </table:template>
+                        </table:Column>
+
+                        <table:Column width="5rem">
+                            <table:label>
+                                <Label text="Tipo AdE" />
+                            </table:label>
+                            <table:template>
+                                <Text text="{fattureModel>TipoDocAdE}" />
+                            </table:template>
+                        </table:Column>
+
+                        <table:Column width="10rem">
+                            <table:label>
+                                <Label text="N. fattura fornitore" />
+                            </table:label>
+                            <table:template>
+                                <Text text="{fattureModel>NumeroFattura}" />
+                            </table:template>
+                        </table:Column>
+
+                        <table:Column width="6rem">
+                            <table:label>
+                                <Label text="Data fattura" />
+                            </table:label>
+                            <table:template>
+                                <Text text="{path:'fattureModel>DataFattura', formatter: '.formatter.formatDate'}" />
+                            </table:template>
+                        </table:Column>
+
+                        <table:Column width="10rem">
                             <table:label>
                                 <Label text="N. doc." />
                             </table:label>
-
                             <table:template>
-                                <VBox renderType="Bare">
-                                    <Link text="{fattureModel>DocumentNumber}" press=".onDocumentNumberLinkPressConditional" />
-                                </VBox>
+                                <Text text="{fattureModel>DocumentNumber}" />
                             </table:template>
                         </table:Column>
 
-                        <!-- Esercizio (solo testata, le righe figlie non ce l'hanno) -->
                         <table:Column width="6rem">
                             <table:label>
                                 <Label text="Esercizio" />
@@ -161,211 +167,31 @@
                                 <Text text="{fattureModel>FiscalYear}" />
                             </table:template>
                         </table:Column>
-                        <!-- Eser St. (semaforo) -> visible solo se esiste 'status' -->
-                        <table:Column width="6rem">
-                            <table:label>
-                                <Label text="Stato" />
-                            </table:label>
-                            <table:template>
-                                <HBox alignItems="Center" justifyContent="Center" visible="{= ${fattureModel>StatoFattura} ? true : false }">
-                                    <!-- '0' = Non registrabile -->
-                                    <core:Icon src="sap-icon://circle-task-2" size="1rem" color="{= ${fattureModel>StatoFattura} === '0' ? 'black' : 'lightgrey'}" tooltip="Non registrabile" />
 
-                                    <!-- '1' = Da registrare -->
-                                    <core:Icon src="sap-icon://circle-task-2" size="1rem" color="{= ${fattureModel>StatoFattura} === '1' ? 'red' : 'lightgrey'}" tooltip="Da registrare" />
-
-                                    <!-- '2' = Parcheggiata -->
-                                    <core:Icon src="sap-icon://circle-task-2" size="1rem" color="{= ${fattureModel>StatoFattura} === '2' ? 'orange' : 'lightgrey'}" tooltip="Parcheggiata" />
-
-                                    <!-- '3' = Contabilizzata -->
-                                    <core:Icon src="sap-icon://circle-task-2" size="1rem" color="{= ${fattureModel>StatoFattura} === '3' ? 'green' : 'lightgrey'}" tooltip="Contabilizzata" />
-                                </HBox>
-                            </table:template>
-                        </table:Column>
-
-                        <!-- Posizione (Figlio) -->
-                        <table:Column width="9rem">
-                            <table:label>
-                                <Label text="Tipo Fattura" />
-                            </table:label>
-                            <table:template>
-                                <Text text="{= ${fattureModel>TipoFattura} === 'M' ? 'Fattura Logistica' : 'Fattura Contabile'}" />
-                            </table:template>
-                        </table:Column>
-                        <!-- Società -->
-                        <table:Column width="6rem">
-                            <table:label>
-                                <Label text="Società" />
-                            </table:label>
-                            <table:template>
-                                <Text text="{fattureModel>CompanyCode}" />
-                            </table:template>
-                        </table:Column>
-                        <!-- Nome Società-->
-                        <table:Column width="14rem">
-                            <table:label>
-                                <Label text="Nome della società" />
-                            </table:label>
-                            <table:template>
-                                <Text text="{fattureModel>CompanyName}" />
-                            </table:template>
-                        </table:Column>
-                        <!-- S. Fornitore -->
-                        <table:Column width="4rem">
-                            <table:label>
-                                <Label text="Stato" />
-                            </table:label>
-                            <table:template>
-                                <core:Icon src="{ path: 'fattureModel>SupplierStatus', formatter: '.formatter.supplierStatusIconSrc' }" tooltip="{ path: 'fattureModel>SupplierStatus', formatter: '.formatter.supplierStatusTooltip' }" size="1.25rem" />
-                            </table:template>
-                        </table:Column>
-                        <!-- Codice Fornitore -->
-                        <table:Column width="6rem">
-                            <table:label>
-                                <Label text="Fornitore" />
-                            </table:label>
-                            <table:template>
-                                <Link text="{fattureModel>SupplierCode}" press="onNavToFornitore" />
-                            </table:template>
-                        </table:Column>
-                        <!-- Nome Fornitore -->
-                        <table:Column width="14rem">
-                            <table:label>
-                                <Label text="Nome Fornitore" />
-                            </table:label>
-                            <table:template>
-                                <Text text="{fattureModel>SupplierName}" />
-                            </table:template>
-                        </table:Column>
-                        <!-- Tipo Documento Cod. -->
-                        <table:Column width="6rem">
-                            <table:label>
-                                <Label text="Tipo Fatt" />
-                            </table:label>
-                            <table:template>
-                                <Text text="{fattureModel>TipoDocAdE}" />
-                            </table:template>
-                        </table:Column>
-                        <!-- Tipo Documento Descr. -->
-                        <table:Column width="6rem">
-                            <table:label>
-                                <Label text="Descrizione" />
-                            </table:label>
-                            <table:template>
-                                <Text text="{fattureModel>TipoDocText}" />
-                            </table:template>
-                        </table:Column>
-                        <!-- numero fattura fornitore. -->
-                        <table:Column width="14rem">
-                            <table:label>
-                                <Label text="N. Fat Fornitore" />
-                            </table:label>
-                            <table:template>
-                                <Text text="{fattureModel>NumeroFattura}" />
-                            </table:template>
-                        </table:Column>
-                        <!-- Data Fattura -->
-                        <table:Column width="6rem">
-                            <table:label>
-                                <Label text="Data Fat" />
-                            </table:label>
-                            <table:template>
-                                <Text text="{path: 'fattureModel>DataFattura', formatter: '.formatter.formatDate'}" />
-                            </table:template>
-                        </table:Column>
-                        <!-- Divisa -->
-                        <table:Column width="6rem">
-                            <table:label>
-                                <Label text="Divisa" />
-                            </table:label>
-                            <table:template>
-                                <Text text="{fattureModel>Divisa}" />
-                            </table:template>
-                        </table:Column>
-
-                        <!-- Causale -->
-                        <table:Column width="14rem">
-                            <table:label>
-                                <Label text="Causale" />
-                            </table:label>
-                            <table:template>
-                                <Text text="{fattureModel>Causale}" />
-                            </table:template>
-                        </table:Column>
-                        <!-- Importo totale -->
-                        <table:Column width="10rem">
-                            <table:label>
-                                <Label text="Importo totale" />
-                            </table:label>
-                            <table:template>
-                                <Text text="{fattureModel>Totale}" />
-                            </table:template>
-                        </table:Column>
-                        <!-- Imponibile -->
-                        <table:Column width="10rem">
-                            <table:label>
-                                <Label text="Imponibile" />
-                            </table:label>
-                            <table:template>
-                                <Text text="{fattureModel>Imponibile}" />
-                            </table:template>
-                        </table:Column>
-                        <!-- Doc Contabile -->
-                        <table:Column width="7rem">
-                            <table:label>
-                                <Label text="Doc Contabile" />
-                            </table:label>
-
-                            <table:template>
-                                <VBox renderType="Bare">
-                                    <Link text="{fattureModel>FinanceDocument}" press="onFinanceDocumentLinkPress" />
-                                </VBox>
-                            </table:template>
-                        </table:Column>
-
-                        <!-- Data registrazione -->
                         <table:Column width="8rem">
+                            <table:label>
+                                <Label text="Doc contabile" />
+                            </table:label>
+                            <table:template>
+                                <Text text="{fattureModel>FinanceDocument}" />
+                            </table:template>
+                        </table:Column>
+
+                        <table:Column width="6rem">
                             <table:label>
                                 <Label text="Data registr." />
                             </table:label>
                             <table:template>
-                                <Text text="{path: 'fattureModel>PostingDate', formatter: '.formatter.formatDate'}" />
+                                <Text text="{path:'fattureModel>PostingDate', formatter: '.formatter.formatDate'}" />
                             </table:template>
                         </table:Column>
-                        <!-- Tipo Documento SAP -->
-                        <table:Column width="5rem">
+
+                        <table:Column width="7rem">
                             <table:label>
                                 <Label text="Tipo SAP" />
                             </table:label>
                             <table:template>
-                                <Text text="{path: 'fattureModel>DocumentType'}" />
-                            </table:template>
-                        </table:Column>
-                        <!-- Scadenza Pagamento -->
-                        <table:Column width="8rem">
-                            <table:label>
-                                <Label text="Data Pagamento" />
-                            </table:label>
-                            <table:template>
-                                <Text text="{path: 'fattureModel>DataPagamento', formatter: '.formatter.formatDate'}" />
-                            </table:template>
-                        </table:Column>
-                        <!-- Motivazione Blocco -->
-                        <table:Column width="14rem">
-                            <table:label>
-                                <Label text="Motivazione Blocco" />
-                            </table:label>
-                            <table:template>
-                                <Text text="{fattureModel>MotivoBlocco}" />
-                            </table:template>
-                        </table:Column>
-                        <!-- Blocco -->
-                        <table:Column width="4rem">
-                            <table:label>
-                                <Label text="Blocco" />
-                            </table:label>
-                            <table:template>
-                                <core:Icon src="{= ${fattureModel>CodBlocco} ? 'sap-icon://locked' : 'sap-icon://unlocked' }" tooltip="{= ${fattureModel>CodBlocco} ? 'Bloccato' : 'Sbloccato' }" />
+                                <Text text="{fattureModel>DocumentType}" />
                             </table:template>
                         </table:Column>
                     </table:columns>
