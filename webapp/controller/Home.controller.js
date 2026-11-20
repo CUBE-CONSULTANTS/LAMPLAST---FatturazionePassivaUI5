@@ -1581,14 +1581,17 @@ sap.ui.define([
 
         onFatturaContabileButtonPress: async function () {
             try {
-
-
+                const table = this.byId("idTreeTable")
+                let { SupplierCode } = table.getContextByIndex(table.getSelectedIndex()).getObject()
                 const oCrossAppNav = await sap.ushell.Container.getServiceAsync("CrossApplicationNavigation");
 
                 const sHash = oCrossAppNav.hrefForExternal({
                     target: {
                         semanticObject: "Supplier",
                         action: "createIncomingInvoice"
+                    },
+                    params: {
+                        Supplier: SupplierCode,
                     }
                 });
 
@@ -1604,12 +1607,18 @@ sap.ui.define([
 
         onFatturaLogisticaMiroButtonPress: async function () {
             try {
+                const table = this.byId("idTreeTable")
+                let { FiscalYear, DocumentNumber } = table.getContextByIndex(table.getSelectedIndex()).getObject()
                 const oCrossAppNav = await sap.ushell.Container.getServiceAsync("CrossApplicationNavigation");
 
                 const sHash = oCrossAppNav.hrefForExternal({
                     target: {
                         semanticObject: "SupplierInvoice",
                         action: "createAdvanced"
+                    },
+                    params: {
+                        SupplierInvoice: DocumentNumber,
+                        FiscalYear
                     }
                 });
 
