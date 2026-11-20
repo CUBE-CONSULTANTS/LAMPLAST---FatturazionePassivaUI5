@@ -9,88 +9,86 @@
     xmlns:fb="sap.ui.comp.filterbar"
     xmlns:layout="sap.ui.layout"
     xmlns:table="sap.ui.table">
-    <f:DynamicPage id="page" showFooter="true"  class="coloreBack" fitContent="true">
+    <f:DynamicPage id="page" showFooter="true" fitContent="true" class="sapUiNoContentPadding">
         <!-- DynamicPage Header -->
         <f:header>
             <f:DynamicPageHeader pinnable="true">
-                <layout:HorizontalLayout allowWrapping="true">
-                    <fb:FilterBar id="filterBar" persistencyKey="myPersKey" useToolbar="false" search=".onFilterBarSearch" showGoOnFB="true" showClearOnFB="true" clear=".onFilterBarClear" isRunningInValueHelpDialog="false">
-                        <fb:filterGroupItems>
-                            <fb:FilterGroupItem name="Società" label="Società" groupName="General" visibleInFilterBar="true">
-                                <fb:control>
-                                    <Select id="selectSocieta" width="300px" forceSelection="false" items="{
+                <fb:FilterBar id="filterBar" persistencyKey="myPersKey" useToolbar="false" search=".onFilterBarSearch" showGoOnFB="true" showClearOnFB="true" clear=".onFilterBarClear" isRunningInValueHelpDialog="false">
+                    <fb:filterGroupItems>
+                        <fb:FilterGroupItem name="Società" label="Società" groupName="General" visibleInFilterBar="true">
+                            <fb:control>
+                                <Select id="selectSocieta" width="300px" forceSelection="false" items="{
                                     path: 'MCSocieta>/ZR_EIM_COMPANY'}">
-                                        <core:Item key="{MCSocieta>CompanyCode}" text="{MCSocieta>CompanyCode}" />
-                                    </Select>
-                                </fb:control>
-                            </fb:FilterGroupItem>
-                            <fb:FilterGroupItem name="Fornitore" label="Fornitore" groupName="General" visibleInFilterBar="true">
-                                <fb:control>
-                                    <MultiInput id="multiInputFornitore" width="300px" showValueHelp="true" valueHelpRequest=".onValueHelpFornitore" tokens="{homeFilters>/SupplierTokens}">
-                                        <tokens>
-                                            <Token key="{homeFilters>key}" text="{homeFilters>text}" />
-                                        </tokens>
-                                    </MultiInput>
-                                </fb:control>
-                            </fb:FilterGroupItem>
-                            <fb:FilterGroupItem name="NomeFornitore" label="Nome Fornitore" groupName="General" visibleInFilterBar="true">
-                                <fb:control>
-                                    <Input id="inputNomeFornitore" width="300px" type="Text" />
-                                </fb:control>
-                            </fb:FilterGroupItem>
-                            <fb:FilterGroupItem name="codFiscale" label="Codice Fiscale" groupName="codFiscale" visibleInFilterBar="true">
-                                <fb:control>
-                                    <Input id="inputCodFiscale" width="300px" type="Text" />
-                                </fb:control>
-                            </fb:FilterGroupItem>
-                            <fb:FilterGroupItem name="partitaIva" label="Partita IVA" groupName="partitaIva" visibleInFilterBar="true">
-                                <fb:control>
-                                    <Input id="inputPartitaIva" width="300px" type="Text" />
-                                </fb:control>
-                            </fb:FilterGroupItem>
-                            <fb:FilterGroupItem name="Tipo doc. AdE" label="Tipo doc. AdE" groupName="TipodocAdE" visibleInFilterBar="true">
-                                <fb:control>
-                                    <MultiInput id="multiInputTipoDocAdE" width="300px" showValueHelp="true" valueHelpRequest=".onValueHelpTipoDocAde" showSuggestion="true" suggestionItems="{path: 'TipoDocAde>/ZC_EIM_BLADE'}" data-model="TipoDocAde" data-key="BlartAde" data-desc="Descrizione">
-                                        <suggestionItems>
-                                            <core:Item key="{TipoDocAde>BlartAde}" text="{TipoDocAde>Descrizione}" />
-                                        </suggestionItems>
-                                    </MultiInput>
-                                </fb:control>
-                            </fb:FilterGroupItem>
-                            <fb:FilterGroupItem name="nrDoc" label="Nr. documento nel file XML" groupName="nrDoc" visibleInFilterBar="true">
-                                <fb:control>
-                                    <Input id="inputNrDoc" width="300px" type="Text" />
-                                </fb:control>
-                            </fb:FilterGroupItem>
-                            <fb:FilterGroupItem name="Data" label="Data Documento" groupName="dataDoc" visibleInFilterBar="true">
-                                <fb:control>
-                                    <DateRangeSelection id="dateRangePicker2" delimiter=" - " width="300px" displayFormat="dd/MM/yyyy" valueFormat="yyyy-MM-dd" />
-                                </fb:control>
-                            </fb:FilterGroupItem>
-                            <fb:FilterGroupItem name="Data" label="Data Ricezione" groupName="dataRicezione" visibleInFilterBar="true">
-                                <fb:control>
-                                    <DateRangeSelection id="dateRangePicker" delimiter=" - " width="300px" displayFormat="dd/MM/yyyy" valueFormat="yyyy-MM-dd" />
-                                </fb:control>
-                            </fb:FilterGroupItem>
-                            <fb:FilterGroupItem name="codiceDestinatario" label="Codice Destinatario" groupName="codiceDestinatario" visibleInFilterBar="true">
-                                <fb:control>
-                                    <Input id="inputCodiceDestinatario" width="300px" type="Text" />
-                                </fb:control>
-                            </fb:FilterGroupItem>
-                            <fb:FilterGroupItem name="nrInvioSdi" label="Nr. invio SDI" groupName="nrInvioSdi" visibleInFilterBar="true">
-                                <fb:control>
-                                    <Input id="inputNrInvioSdi" width="300px" type="Text" />
-                                </fb:control>
-                            </fb:FilterGroupItem>
-                        </fb:filterGroupItems>
-                    </fb:FilterBar>
-                </layout:HorizontalLayout>
+                                    <core:Item key="{MCSocieta>CompanyCode}" text="{MCSocieta>CompanyCode}" />
+                                </Select>
+                            </fb:control>
+                        </fb:FilterGroupItem>
+                        <fb:FilterGroupItem name="Fornitore" label="Fornitore" groupName="General" visibleInFilterBar="true">
+                            <fb:control>
+                                <MultiInput id="multiInputFornitore" width="300px" showValueHelp="true" valueHelpRequest=".onValueHelpFornitore" tokens="{homeFilters>/SupplierTokens}">
+                                    <tokens>
+                                        <Token key="{homeFilters>key}" text="{homeFilters>text}" />
+                                    </tokens>
+                                </MultiInput>
+                            </fb:control>
+                        </fb:FilterGroupItem>
+                        <fb:FilterGroupItem name="NomeFornitore" label="Nome Fornitore" groupName="General" visibleInFilterBar="true">
+                            <fb:control>
+                                <Input id="inputNomeFornitore" width="300px" type="Text" />
+                            </fb:control>
+                        </fb:FilterGroupItem>
+                        <fb:FilterGroupItem name="codFiscale" label="Codice Fiscale" groupName="codFiscale" visibleInFilterBar="true">
+                            <fb:control>
+                                <Input id="inputCodFiscale" width="300px" type="Text" />
+                            </fb:control>
+                        </fb:FilterGroupItem>
+                        <fb:FilterGroupItem name="partitaIva" label="Partita IVA" groupName="partitaIva" visibleInFilterBar="true">
+                            <fb:control>
+                                <Input id="inputPartitaIva" width="300px" type="Text" />
+                            </fb:control>
+                        </fb:FilterGroupItem>
+                        <fb:FilterGroupItem name="Tipo doc. AdE" label="Tipo doc. AdE" groupName="TipodocAdE" visibleInFilterBar="true">
+                            <fb:control>
+                                <MultiInput id="multiInputTipoDocAdE" width="300px" showValueHelp="true" valueHelpRequest=".onValueHelpTipoDocAde" showSuggestion="true" suggestionItems="{path: 'TipoDocAde>/ZC_EIM_BLADE'}" data-model="TipoDocAde" data-key="BlartAde" data-desc="Descrizione">
+                                    <suggestionItems>
+                                        <core:Item key="{TipoDocAde>BlartAde}" text="{TipoDocAde>Descrizione}" />
+                                    </suggestionItems>
+                                </MultiInput>
+                            </fb:control>
+                        </fb:FilterGroupItem>
+                        <fb:FilterGroupItem name="nrDoc" label="Nr. documento nel file XML" groupName="nrDoc" visibleInFilterBar="true">
+                            <fb:control>
+                                <Input id="inputNrDoc" width="300px" type="Text" />
+                            </fb:control>
+                        </fb:FilterGroupItem>
+                        <fb:FilterGroupItem name="Data" label="Data Documento" groupName="dataDoc" visibleInFilterBar="true">
+                            <fb:control>
+                                <DateRangeSelection id="dateRangePicker2" delimiter=" - " width="300px" displayFormat="dd/MM/yyyy" valueFormat="yyyy-MM-dd" />
+                            </fb:control>
+                        </fb:FilterGroupItem>
+                        <fb:FilterGroupItem name="Data" label="Data Ricezione" groupName="dataRicezione" visibleInFilterBar="true">
+                            <fb:control>
+                                <DateRangeSelection id="dateRangePicker" delimiter=" - " width="300px" displayFormat="dd/MM/yyyy" valueFormat="yyyy-MM-dd" />
+                            </fb:control>
+                        </fb:FilterGroupItem>
+                        <fb:FilterGroupItem name="codiceDestinatario" label="Codice Destinatario" groupName="codiceDestinatario" visibleInFilterBar="true">
+                            <fb:control>
+                                <Input id="inputCodiceDestinatario" width="300px" type="Text" />
+                            </fb:control>
+                        </fb:FilterGroupItem>
+                        <fb:FilterGroupItem name="nrInvioSdi" label="Nr. invio SDI" groupName="nrInvioSdi" visibleInFilterBar="true">
+                            <fb:control>
+                                <Input id="inputNrInvioSdi" width="300px" type="Text" />
+                            </fb:control>
+                        </fb:FilterGroupItem>
+                    </fb:filterGroupItems>
+                </fb:FilterBar>
             </f:DynamicPageHeader>
         </f:header>
         <f:content>
-            <VBox class="sapUiNoMargin">
-                <Title text="Elenco Fatture"/>
-                <IconTabBar id="idIconTabBar" select=".onIconTabSelect" expandable="false" expanded="false" class="sapUiNoMargin">
+            <VBox class="sapUiNoMargin" height="100%" fitContainer="true">
+                <Title text="Elenco Fatture" class="sapUiSmallMarginBegin sapUiTinyMarginTop" />
+                <IconTabBar id="idIconTabBar" select=".onIconTabSelect" expandable="false" expanded="false" backgroundDesign="Solid" class="sapUiNoMargin">
                     <items>
                         <!-- ALL -->
                         <IconTabFilter key="All" text="Fatture" showAll="true" count="{viewModel>/counts/All}" icon="sap-icon://documents" iconColor="Neutral" />
@@ -174,7 +172,7 @@
                             </table:template>
                         </table:Column>
 
-                        <!-- Esercizio (solo testata, le righe figlie non ce l’hanno) -->
+                        <!-- Esercizio (solo testata, le righe figlie non ce l'hanno) -->
                         <table:Column id="idEsercizioColumn" width="6rem">
                             <table:label>
                                 <Label text="Esercizio" />

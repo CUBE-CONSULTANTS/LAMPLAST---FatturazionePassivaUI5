@@ -2,7 +2,7 @@
 .coloreBack .sapFDynamicPageContent {
   background-color: white !important;
 }
-.coloreBack .sapFDynamicPageContentWrapper,
+/* .coloreBack .sapFDynamicPageContentWrapper,
 .coloreBack .sapFDynamicPageContent,
 .coloreBack .sapFDynamicPageContentFitContainer {
   padding-left: 2px !important;
@@ -11,10 +11,10 @@
   margin-right: 0 !important;
 }
 
-/* header (filtri) e titolo */
+
 .coloreBack .sapFDynamicPageTitleWrapper,
 .coloreBack .sapFDynamicPageHeader,
 .coloreBack .sapFDynamicPageHeaderWrapper {
   padding-left: 1px !important;
   padding-right: 1px !important;
-}
+} */

@@ -1,9 +1,19 @@
 sap.ui.define([
     "sap/ui/core/mvc/Controller",
-    "sap/ui/export/Spreadsheet"
+    "sap/ui/export/Spreadsheet",
+    "sap/ui/model/json/JSONModel",
+    "sap/ui/codeeditor/CodeEditor",
+    "sap/m/Dialog",
+    "sap/m/Button",
+    "sap/m/VBox",
+
+
 ], function (
     Controller,
-    Spreadsheet
+    Spreadsheet,
+    JSONModel,
+    CodeEditor,
+    Dialog, Button, VBox
 ) {
     "use strict";
 
@@ -279,7 +289,720 @@ sap.ui.define([
                     oSheet.destroy();
                 });
         },
+        // gestione allegati comune sia per archiviate che per fatturazione passiva
+        _getFileNameFromRow: function (oRow) {
+            return oRow?.FileName || "";
+        },
+        onVisualizzaAllegato: function (oEvent) {
+            const oCtx = oEvent.getSource().getBindingContext("fattureModel");
+            if (!oCtx) {
+                MessageToast.show("Context non trovato");
+                return;
+            }
+
+            const oRow = oCtx.getObject();
+            const sFileName = this._getFileNameFromRow(oRow);
+
+            if (!sFileName) {
+                MessageToast.show("FileName non presente sulla riga");
+                return;
+            }
+
+            sap.ui.core.BusyIndicator.show(0);
+
+            const oODataModel = this.getOwnerComponent().getModel("mainService");
+            const aFilters = [new sap.ui.model.Filter("FileName", sap.ui.model.FilterOperator.EQ, sFileName)];
+
+            oODataModel.read("/ZEIM_AllegatiFattura", {
+                filters: aFilters,
+                success: (oData) => {
+                    sap.ui.core.BusyIndicator.hide();
+                    const aItems = oData?.results || [];
+                    this._openAllegatiDialog(aItems, sFileName);
+                },
+                error: (err) => {
+                    sap.ui.core.BusyIndicator.hide();
+                    console.error(err);
+                    MessageBox.error("Errore nel recupero allegati");
+                }
+            });
+        },
+        _openAllegatiDialog: function (aItems, sFileName) {
+            if (!this._oAllegatiDialog) {
+                this._oAllegatiModel = new sap.ui.model.json.JSONModel({ items: [] });
+
+                const oTable = new sap.m.Table({
+                    width: "100%",
+                    inset: false,
+                    columns: [
+                        new sap.m.Column({
+                            header: new sap.m.Label({ text: "Nome file" })
+                        }),
+                        new sap.m.Column({
+                            width: "10rem",
+                            hAlign: "End",
+                            header: new sap.m.Label({ text: "" })
+                        })
+                    ],
+                    items: {
+                        path: "/items",
+                        template: new sap.m.ColumnListItem({
+                            cells: [
+                                new sap.m.VBox({
+                                    items: [
+                                        new sap.m.Text({ text: "{NomeAttachment}" }),
+                                        new sap.m.Text({
+                                            text: "{DescrizioneAttachment}",
+                                            wrapping: false
+                                        }).addStyleClass("sapUiTinyMarginTop")
+                                    ]
+                                }),
+                                new sap.m.HBox({
+                                    justifyContent: "End",
+                                    items: [
+                                        new sap.m.Button({
+                                            text: {
+                                                parts: [
+                                                    { path: "FormatoAttachment" },
+                                                    { path: "NomeAttachment" }
+                                                ],
+                                                formatter: function (sFmt, sName) {
+                                                    const fmt = (sFmt || "").toUpperCase();
+                                                    const name = (sName || "").toUpperCase();
+                                                    const isPdf = fmt === "PDF" || name.endsWith(".PDF");
+                                                    return isPdf ? "Visualizza" : "Scarica";
+                                                }
+                                            },
+                                            type: "Emphasized",
+                                            press: this._onAttachmentAction.bind(this)
+                                        })
+                                    ]
+                                })
+                            ]
+                        })
+                    }
+                });
+
+                oTable.setModel(this._oAllegatiModel);
+
+                const oContent = new sap.m.VBox({
+                    width: "100%",
+                    items: [oTable]
+                }).addStyleClass("sapUiContentPadding");
+
+                this._oAllegatiDialog = new sap.m.Dialog({
+                    title: "Allegati",
+                    contentWidth: "700px",
+                    contentHeight: "420px",
+                    resizable: true,
+                    draggable: true,
+                    content: [oContent],
+                    endButton: new sap.m.Button({
+                        text: "Chiudi",
+                        press: () => this._oAllegatiDialog.close(),
+                        type: "Emphasized"
+                    })
+                });
+
+                this.getView().addDependent(this._oAllegatiDialog);
+            }
+
+            this._oAllegatiDialog.setTitle(`Allegati - ${sFileName || ""}`);
+            this._oAllegatiModel.setData({ items: aItems || [] });
+            this._oAllegatiDialog.open();
+        },
+        _openAllegatiDialog: function (aItems, sFileName) {
+            if (!this._oAllegatiDialog) {
+                this._oAllegatiModel = new JSONModel({ items: [] });
+
+                const oTable = new sap.m.Table({
+                    width: "100%",
+                    inset: false,
+                    columns: [
+                        new sap.m.Column({
+                            header: new sap.m.Label({ text: "Nome file" })
+                        }),
+                        new sap.m.Column({
+                            width: "10rem",
+                            hAlign: "End",
+                            header: new sap.m.Label({ text: "" })
+                        })
+                    ],
+                    items: {
+                        path: "/items",
+                        template: new sap.m.ColumnListItem({
+                            cells: [
+                                new sap.m.VBox({
+                                    items: [
+                                        new sap.m.Text({ text: "{NomeAttachment}" }),
+                                        new sap.m.Text({
+                                            text: "{DescrizioneAttachment}",
+                                            wrapping: false
+                                        }).addStyleClass("sapUiTinyMarginTop")
+                                    ]
+                                }),
+                                new sap.m.HBox({
+                                    justifyContent: "End",
+                                    items: [
+                                        new sap.m.Button({
+                                            text: {
+                                                parts: [
+                                                    { path: "FormatoAttachment" },
+                                                    { path: "NomeAttachment" }
+                                                ],
+                                                formatter: function (sFmt, sName) {
+                                                    const fmt = (sFmt || "").toUpperCase();
+                                                    const name = (sName || "").toUpperCase();
+                                                    const isPdf = fmt === "PDF" || name.endsWith(".PDF");
+                                                    return isPdf ? "Visualizza" : "Scarica";
+                                                }
+                                            },
+                                            type: "Emphasized",
+                                            press: this._onAttachmentAction.bind(this)
+                                        })
+                                    ]
+                                })
+                            ]
+                        })
+                    }
+                });
+
+                oTable.setModel(this._oAllegatiModel);
+
+                const oContent = new sap.m.VBox({
+                    width: "100%",
+                    items: [oTable]
+                }).addStyleClass("sapUiContentPadding");
+
+                this._oAllegatiDialog = new sap.m.Dialog({
+                    title: "Allegati",
+                    contentWidth: "700px",
+                    contentHeight: "420px",
+                    resizable: true,
+                    draggable: true,
+                    content: [oContent],
+                    endButton: new sap.m.Button({
+                        text: "Chiudi",
+                        press: () => this._oAllegatiDialog.close(),
+                        type: "Emphasized"
+                    })
+                });
+
+                this.getView().addDependent(this._oAllegatiDialog);
+            }
+
+            this._oAllegatiDialog.setTitle(`Allegati - ${sFileName || ""}`);
+            this._oAllegatiModel.setData({ items: aItems || [] });
+            this._oAllegatiDialog.open();
+        },
+        _onAttachmentAction: function (oEvent) {
+            const oCtx = oEvent.getSource().getBindingContext();
+            const oAtt = oCtx && oCtx.getObject();
+
+            const sBase64Raw = oAtt && oAtt.Attachment;
+            if (!sBase64Raw) {
+                MessageToast.show("Attachment vuoto");
+                return;
+            }
+
+            const sName = (oAtt.NomeAttachment || "allegato").trim();
+
+            if (this._isPdfBase64(sBase64Raw)) {
+                this._openPdfInApp(sBase64Raw, sName);
+            } else {
+                this._downloadAttachment(sBase64Raw, sName);
+            }
+        },
+        _isPdfBase64: function (sBase64) {
+            const clean = String(sBase64 || "").trim().split(",").pop().replace(/\s/g, "");
+            if (!clean) return false;
+
+            try {
+                const head = atob(clean.slice(0, 80)).slice(0, 5);
+                return head === "%PDF-";
+            } catch (e) {
+                return false;
+            }
+        },
+        _openPdfInApp: function (sBase64, sFileName) {
+            const clean = String(sBase64 || "").trim().split(",").pop().replace(/\s/g, "");
+            const sDataUrl = "data:application/pdf;base64," + clean;
+
+            const oIframe = new sap.ui.core.HTML({
+                content: `<iframe src="${sDataUrl}" width="100%" height="700px" style="border:none;"></iframe>`
+            });
+
+            const oDialog = new sap.m.Dialog({
+                title: `Anteprima - ${sFileName}`,
+                contentWidth: "90%",
+                contentHeight: "100%",
+                resizable: true,
+                draggable: true,
+                content: [oIframe],
+                beginButton: new sap.m.Button({ text: "Chiudi", press: () => oDialog.close(), type: "Emphasized" }),
+                afterClose: () => oDialog.destroy()
+            });
+
+            oDialog.open();
+        },
+        _base64ToObjectUrl: function (sBase64, sMime) {
+            const clean = String(sBase64 || "").trim().split(",").pop().replace(/\s/g, "");
+            const bin = atob(clean);
+
+            const bytes = new Uint8Array(bin.length);
+            for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+
+            return URL.createObjectURL(new Blob([bytes], { type: sMime }));
+        },
+        _downloadAttachment: function (sBase64, sFileName) {
+            const url = this._base64ToObjectUrl(sBase64, "application/octet-stream");
+
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = sFileName || "allegato";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+
+            setTimeout(() => URL.revokeObjectURL(url), 30000);
+        },
+
+        //gestione xml
+        onVisualizzaXML: function (oEvent) {
+            const oCtx = oEvent.getSource().getBindingContext("fattureModel");
+            if (!oCtx) {
+                MessageToast.show("Impossibile determinare la riga selezionata.");
+                return;
+            }
+
+            const oRow = oCtx.getObject() || {};
+            const sFileName = oRow.FileName;
+
+            if (!sFileName) {
+                MessageToast.show("FileName mancante sulla riga.");
+                return;
+            }
+
+            this._openXmlDialog();
+            this._loadXmlIntoDialog(sFileName);
+        },
+
+        _openXmlDialog: function () {
+            if (this._oXmlDialog) {
+                this._oXmlDialog.open();
+                return;
+            }
+
+            this._oXmlEditor = new CodeEditor({
+                type: "xml",
+                height: "70vh",
+                width: "100%",
+                editable: false,
+                showLineNumbers: true,
+                value: ""
+            });
+
+            this._oXmlDialog = new Dialog({
+                title: "XML Fattura",
+                contentWidth: "80vw",
+                contentHeight: "80vh",
+                resizable: true,
+                draggable: true,
+                content: [
+                    new VBox({
+                        width: "100%",
+                        height: "100%",
+                        items: [this._oXmlEditor]
+                    })
+                ],
+                beginButton: new Button({
+                    text: "Chiudi",
+                    press: () => this._oXmlDialog.close(),
+                    type: "Emphasized"
+                })
+            });
+
+            this.getView().addDependent(this._oXmlDialog);
+            this._oXmlDialog.open();
+        },
+
+        _loadXmlIntoDialog: function (sFileName) {
+            const oModel = this.getOwnerComponent().getModel("mainService");
+
+            const sPath = oModel.createKey("/ZEIM_DettaglioFattura", { FileName: sFileName });
+
+            this._oXmlEditor.setValue("Caricamento...");
+
+            oModel.read(sPath, {
+                success: (oData) => this._setDialogXmlFromJsonString(oData.Data),
+                error: () => {
+                    this._oXmlEditor.setValue("");
+                    MessageToast.show("Errore nel caricamento XML fattura");
+                }
+            });
+        },
+
+        _setDialogXmlFromJsonString: function (sData) {
+            let oJson;
+            try {
+                oJson = JSON.parse(sData);
+            } catch (e) {
+                this._oXmlEditor.setValue("");
+                MessageToast.show("Formato fattura non valido");
+                return;
+            }
+
+            const sXml = this._jsonToPrettyXml(oJson);
+            this._oXmlEditor.setValue(sXml);
+        },
+
+        _jsonToPrettyXml: function (oJson) {
+            const escapeXml = (v) => String(v)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&apos;");
+
+            const indentStr = (n) => "  ".repeat(n);
+
+            const nodeToXml = (name, value, level) => {
+                if (value === null || value === undefined) return `${indentStr(level)}<${name}/>\n`;
+                if (Array.isArray(value)) return value.map(v => nodeToXml(name, v, level)).join("");
+                if (typeof value !== "object") return `${indentStr(level)}<${name}>${escapeXml(value)}</${name}>\n`;
+
+                const attrsObj = value.$ || null;
+                const attrText = attrsObj
+                    ? " " + Object.keys(attrsObj).map(k => `${k}="${escapeXml(attrsObj[k])}"`).join(" ")
+                    : "";
+
+                const keys = Object.keys(value).filter(k => k !== "$");
+                if (keys.length === 0) return `${indentStr(level)}<${name}${attrText}/>\n`;
+
+                let inner = "";
+                for (const k of keys) inner += nodeToXml(k, value[k], level + 1);
+
+                return `${indentStr(level)}<${name}${attrText}>\n${inner}${indentStr(level)}</${name}>\n`;
+            };
+
+            const versione = oJson["@versione"];
+            const payload = { ...oJson };
+            delete payload["@versione"];
+
+            const root = {};
+            if (versione) root.$ = { versione };
+            Object.keys(payload).forEach(k => root[k] = payload[k]);
+
+            return nodeToXml("FatturaElettronica", root, 0).trim() + "\n";
+        },
+        //gestione visualizzazione fattura
+        onVisualizzaPDF: async function (oEvent) {
+            const oCtx = oEvent.getSource().getBindingContext("fattureModel");
+            const oDataModel = this.getOwnerComponent().getModel("mainService");
+
+            if (!oCtx) {
+                sap.m.MessageToast.show("Impossibile determinare la riga selezionata.");
+                return;
+            }
+
+            const oRow = oCtx.getObject() || {};
+            const sFileName = oRow.FileName;
+
+            if (!sFileName) {
+                sap.m.MessageToast.show("FileName mancante sulla riga.");
+                return;
+            }
+
+            const sPath = oDataModel.createKey("/ZEIM_PDFFATTURA", { FileName: sFileName });
+
+            sap.ui.core.BusyIndicator.show(0);
+
+            try {
+                const oResponse = await new Promise((resolve, reject) => {
+                    oDataModel.read(sPath, {
+                        success: resolve,
+                        error: reject
+                    });
+                });
+
+                sap.ui.core.BusyIndicator.hide();
+
+                if (!oResponse || !oResponse.Data) {
+                    sap.m.MessageToast.show("Nessun PDF disponibile per questo documento");
+                    return;
+                }
+
+                const pdfDataUrl = "data:application/pdf;base64," + oResponse.Data;
+
+                const oIframe = new sap.ui.core.HTML({
+                    content: `<iframe src="${pdfDataUrl}" width="100%" height="700px" style="border:none;"></iframe>`
+                });
+
+                const oDialog = new sap.m.Dialog({
+                    title: "Visualizza Fattura (PDF)",
+                    contentWidth: "90%",
+                    contentHeight: "100%",
+                    resizable: true,
+                    draggable: true,
+                    content: [oIframe],
+                    beginButton: new sap.m.Button({
+                        text: "Chiudi",
+                        press: function () { oDialog.close(); }
+                    }),
+                    afterClose: function () { oDialog.destroy(); }
+                });
+
+                oDialog.open();
+
+            } catch (err) {
+                sap.ui.core.BusyIndicator.hide();
+                console.error("Errore durante la lettura del PDF:", err);
+
+                const sMsg = err?.message || err?.responseText || "Errore nel recupero del PDF dal backend.";
+                sap.m.MessageBox.error(sMsg);
+            }
+        },
 
 
+        //gestione documento contabile
+
+
+
+        onDocumentNumberLinkPressConditional: function (oEvent) {
+            const oCtx = oEvent.getSource().getBindingContext("fattureModel");
+            if (!oCtx) {
+                sap.m.MessageToast.show("Impossibile determinare la riga selezionata.");
+                return;
+            }
+
+            const oRow = oCtx.getObject() || {};
+            const sTipo = oRow.TipoFattura; // 'M' = logistica, altrimenti contabile
+            const sDocNumber = oRow.DocumentNumber;
+
+            if (!sDocNumber) {
+                sap.m.MessageToast.show("DocumentNumber mancante.");
+                return;
+            }
+
+            if (sTipo === "M") {
+                this._onApriDocumentoLogistico(sDocNumber, oRow);
+                return;
+            }
+
+            this._onApriDocumentoContabile(sDocNumber, oRow);
+        },
+
+
+        _onApriDocumentoLogistico: async function (sDocNumber, oRow) {
+            try {
+                const belnr = sDocNumber;
+                const gjahr = oRow?.FiscalYear;
+
+                if (!belnr || !gjahr) {
+                    sap.m.MessageToast.show("Dati mancanti: DocumentNumber o FiscalYear.");
+                    return;
+                }
+
+                const oCrossAppNav = await sap.ushell.Container.getServiceAsync("CrossApplicationNavigation");
+
+                const sHash = oCrossAppNav.hrefForExternal({
+                    target: {
+                        semanticObject: "SupplierInvoice",
+                        action: "changeAdvanced"
+                    },
+                    params: {
+                        SupplierInvoice: belnr,
+                        FiscalYear: gjahr
+                    }
+                });
+
+                if (!sHash) {
+                    sap.m.MessageToast.show("Impossibile generare la navigazione (inbound mancante).");
+                    return;
+                }
+
+                window.open(sHash, "_blank");
+            } catch (err) {
+                console.error("Errore navigazione logistica:", err);
+                sap.m.MessageToast.show("Errore nella navigazione verso app standard (logistica).");
+            }
+        },
+
+        _onApriDocumentoContabile: async function (sDocNumber, oRow) {
+            try {
+                const belnr = oRow?.FinanceDocument || sDocNumber;
+                const bukrs = oRow?.CompanyCode;
+                const gjahr = oRow?.FiscalYear;
+
+                if (!belnr || !bukrs || !gjahr) {
+                    sap.m.MessageToast.show("Dati mancanti: FinanceDocument, CompanyCode o FiscalYear.");
+                    return;
+                }
+
+                const Navigation = await sap.ushell.Container.getServiceAsync("Navigation");
+
+                const sHref = await Navigation.getHref({
+                    target: {
+                        semanticObject: "AccountingDocument",
+                        action: "manageV2"
+                    },
+                    params: {
+                        AccountingDocument: belnr,
+                        CompanyCode: bukrs,
+                        FiscalYear: gjahr
+                    }
+                });
+
+                if (!sHref) {
+                    sap.m.MessageToast.show("Impossibile generare la navigazione contabile.");
+                    return;
+                }
+                window.open(sHref, "_blank");
+            } catch (err) {
+                console.error("Errore navigazione contabile:", err);
+                sap.m.MessageToast.show("Errore nella navigazione verso app standard (contabile).");
+            }
+        },
+        //documento contabile
+        onFinanceDocumentLinkPress: async function (oEvent) {
+            try {
+                const oContext = oEvent.getSource().getBindingContext("fattureModel");
+                if (!oContext) {
+                    sap.m.MessageToast.show("Impossibile determinare il cliente selezionato.");
+                    return;
+                }
+
+                const oData = oContext.getObject();
+                const belnr = oData.FinanceDocument;
+                const bukrs = oData.CompanyCode;
+                const gjahr = oData.FiscalYear;
+
+                const Navigation = await sap.ushell.Container.getServiceAsync("Navigation");
+
+                const sHref = await Navigation.getHref({
+                    target: {
+                        semanticObject: "AccountingDocument",
+                        action: "manageV2"
+                    },
+                    params: {
+                        AccountingDocument: belnr,
+                        CompanyCode: bukrs,
+                        FiscalYear: gjahr
+
+                    }
+                });
+
+                console.log(" Navigazione FLP:", sHref);
+
+                window.open(sHref, "_blank");
+            } catch (err) {
+                console.error("Errore nella navigazione Cross-App:", err);
+            }
+        },
+        //value help 
+        onValueHelpSocieta: function () {
+            sap.ui.require([
+                "com/zeim/fatturazionepassiva/controller/helpers/ValueHelpHandler"
+            ], function (VH) {
+                VH.openValueHelp(
+                    this,
+                    "com.zeim.fatturazionepassiva.view.fragments.ValueHelpDialogFilterbarSocieta",
+                    "Societa",
+                    "/ZR_EIM_COMPANY",
+                    {
+                        key: "CompanyCode",
+                        desc: "CompanyName",
+                        keyProp: "CompanyCode",
+                        maxKeyLength: 10, // regola: oltre 10 char non filtrare su Customer
+                        filterProps: ["Customer", "OrganizationBPName1", "CityName"],
+                        columns: [
+                            { label: "Cliente", path: "Customer" },
+                            { label: "Descrizione", path: "OrganizationBPName1" },
+                            { label: "Città", path: "CityName" }
+                        ],
+                        multiInputId: "multiInput"
+                    }
+                );
+            }.bind(this));
+        },
+        onValueHelpFornitore: function () {
+            sap.ui.require(["com/zeim/fatturazionepassiva/controller/helpers/ValueHelpHandler"], function (VH) {
+
+                VH.openValueHelp(
+                    this,
+                    "com.zeim.fatturazionepassiva.view.fragments.ValueHelpDialogFilterbarFornitore",
+                    "Fornitore",
+                    "/zeim_search_supplier_data",
+                    {
+                        vhId: "HOME_FORN",
+                        key: "Supplier",
+                        desc: "SupplierName",
+                        keyProp: "Supplier",
+                        filterProps: ["Supplier", "SupplierName", "Country"],
+                        columns: [
+                            { label: "Fornitore", path: "Supplier" },
+                            { label: "Nome Fornitore", path: "SupplierName" },
+                            { label: "Paese", path: "Country" }
+                        ],
+                        targetModelName: "homeFilters",
+                        tokensPath: "/SupplierTokens",
+                        multiInputId: "multiInputFornitore",
+                    }
+                );
+
+            }.bind(this));
+        },
+
+        onValueHelpNomeFornitore: function () {
+            sap.ui.require(["com/zeim/fatturazionepassiva/controller/helpers/ValueHelpHandler"], function (VH) {
+
+                VH.openValueHelp(
+                    this,
+                    "com.zeim.fatturazionepassiva.view.fragments.ValueHelpDialogFilterbarFornitore",
+                    "Fornitore",
+                    "/zeim_search_supplier_data",
+                    {
+                        vhId: "HOME_FORN",
+                        key: "SupplierName",
+                        desc: "SupplierName",
+                        keyProp: "Supplier",
+                        filterProps: ["Supplier", "SupplierName", "Country"],
+                        columns: [
+                            { label: "Fornitore", path: "Supplier" },
+                            { label: "Nome Fornitore", path: "SupplierName" },
+                            { label: "Paese", path: "Country" }
+                        ],
+                        targetModelName: "homeFilters",
+                        tokensPath: "/NomeFornitoreTokens",
+                        multiInputId: "multiInputNomeFornitore",
+                    }
+                );
+
+            }.bind(this));
+        },
+        onValueHelpTipoDocAde: function () {
+            sap.ui.require([
+                "com/zeim/fatturazionepassiva/controller/helpers/ValueHelpHandler"
+            ], function (VH) {
+                VH.openValueHelp(
+                    this,
+                    "com.zeim.fatturazionepassiva.view.fragments.ValueHelpDialogFilterbarTipoDocAde",
+                    "TipoDocAde",
+                    "/ZC_EIM_BLADE",
+                    {
+                        key: "BlartAde",
+                        desc: "Descrizione",
+                        keyProp: "BlartAde",
+                        maxKeyLength: 10,
+                        filterProps: ["BlartAde", "Descrizione"],
+                        columns: [
+                            { label: "Tipo Doc. AdE", path: "BlartAde" },
+                            { label: "Descrizione", path: "Descrizione" }
+                        ],
+                        multiInputId: "multiInputTipoDocAdE"
+                    }
+                );
+            }.bind(this));
+        },
     });
 });
