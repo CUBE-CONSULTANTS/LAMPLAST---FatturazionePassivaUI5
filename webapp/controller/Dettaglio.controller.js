@@ -139,7 +139,7 @@ sap.ui.define([
 
             }
 
-            // this._mapOrdineAcquisto(oFattura);
+            this._mapOrdineAcquisto(oFattura);
             const oJsonModel = new sap.ui.model.json.JSONModel(oFattura);
             this.getView().setModel(oJsonModel, "fattura");
             console.log('Modello:', oJsonModel);
