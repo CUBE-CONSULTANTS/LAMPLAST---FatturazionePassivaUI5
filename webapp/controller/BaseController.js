@@ -637,7 +637,7 @@ sap.ui.define([
                 success: (oData) => this._setDialogXmlFromJsonString(oData.Data),
                 error: () => {
                     this._oXmlEditor.setValue("");
-                    MessageToast.show("Errore nel caricamento XML fattura");
+                    sap.m.MessageToast.show("Errore nel caricamento XML fattura");
                 }
             });
         },
@@ -648,7 +648,7 @@ sap.ui.define([
                 oJson = JSON.parse(sData);
             } catch (e) {
                 this._oXmlEditor.setValue("");
-                MessageToast.show("Formato fattura non valido");
+                sap.m.MessageToast.show("Formato fattura non valido");
                 return;
             }
 
@@ -899,6 +899,6 @@ sap.ui.define([
                 console.error("Errore nella navigazione Cross-App:", err);
             }
         },
-        
+
     });
 });

@@ -75,7 +75,7 @@ sap.ui.define([
                     const sKey = this._getCustomDataValue(oColumn, "p13nKey")
                     if (!sKey) return
                     const sPath = this._getCustomDataValue(oColumn, "p13nPath")
-                    const oHeader = oColumn.getLabel()
+                    const oHeader = oColumn.getHeader()
                     const sLabel = oHeader && oHeader.getText ? oHeader.getText() : sKey
 
                     aMetadata.push({
@@ -511,7 +511,7 @@ sap.ui.define([
                 }
 
                 const aCurrentFilters = this._currentFilters || []
-                const sEntity = "/zeim_lista_fatture_archiviate" //zeim_lista_fatture_passive
+                const sEntity = /*"/zeim_lista_fatture_archiviate"*/ "/zeim_lista_fatture_passive"
 
                 if (bReset) {
                     oFattureModel.setData({ results: [] })

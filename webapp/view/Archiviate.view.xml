@@ -62,167 +62,139 @@
         </f:header>
 
         <f:content>
-            <VBox class="sapUiNoMargin" height="100%" fitContainer="true">
-                <table:Table id="fattureArchiviate" rows="{fattureModel>/results}" selectionMode="MultiToggle" enableColumnReordering="true" fixedColumnCount="1" rowActionCount="1" rowSelectionChange="onRowSelectionChange" class="sapUiNoMargin" sap.ui.fl:flexibility="sap/m/flexibility/EngineFlex">
-                    <table:extension>
-                        <OverflowToolbar>
-                            <Title text="Cruscotto fatture archiviate" />
-                            <VariantManagement id="idVariantManagement" standardItemText="Standard" showSetAsDefault="true" save=".onVariantSave" select=".onVariantSelect" manage=".onVariantManage" />
+            <VBox height="90%">
+                <OverflowToolbar style="Clear">
+                    <content>
+                        <Title text="Cruscotto fatture archiviate" />
+                        <VariantManagement id="idVariantManagement" standardItemText="Standard" showSetAsDefault="true" save=".onVariantSave" select=".onVariantSelect" manage=".onVariantManage" />
 
-                            <ToolbarSpacer />
+                        <ToolbarSpacer />
 
-                            <Button icon="sap-icon://action-settings" text="Layout colonne" press=".openPersoDialog" />
-                            <Button icon="sap-icon://excel-attachment" text="Esporta Excel" press=".onExportExcel" />
-                        </OverflowToolbar>
-                    </table:extension>
+                        <Button icon="sap-icon://action-settings" text="Layout colonne" press=".openPersoDialog" />
+                        <Button icon="sap-icon://excel-attachment" text="Esporta Excel" press=".onExportExcel" />
 
-                    <table:rowActionTemplate>
-                        <table:RowAction>
-                            <table:items>
-                                <table:RowActionItem icon="sap-icon://navigation-right-arrow" text="Apri Dettaglio" type="Navigation" press=".onVisualizzaDati" />
-                            </table:items>
-                        </table:RowAction>
-                    </table:rowActionTemplate>
+                    </content>
+                </OverflowToolbar>
+                <ScrollContainer width="100%" height="100%" vertical="true" horizontal="true">
+                    <Table id="fattureArchiviate" items="{fattureModel>/results}" mode="MultiSelect" selectionChange="onRowSelectionChange" class="sapUiNoMargin" width="120rem" sap.ui.fl:flexibility="sap/m/flexibility/EngineFlex">
+                        <columns >
+                            <Column width="7rem" hAlign="Begin">
+                                <header>
+                                    <Label text="Azioni" />
+                                </header>
+                            </Column>
 
-                    <table:columns>
-                        <!-- colonne azione -->
-                        <table:Column width="5rem">
-                            <table:label>
-                                <Label text="Allegato" />
-                            </table:label>
-                            <table:template>
-                                <Button type="Transparent" icon="sap-icon://attachment" enabled="{= Boolean(${fattureModel>TipoAllegato}) &amp;&amp; ${fattureModel>TipoAllegato} !== '0' }" tooltip="{path: 'fattureModel>TipoAllegato', formatter: '.formatter.allegatoText'}" press=".onVisualizzaAllegato" />
-                            </table:template>
-                        </table:Column>
+                            <!-- <Column width="5rem">
+                                <header>
+                                    <Label text="XML" />
+                                </header>
+                            </Column>
 
-                        <table:Column width="4rem">
-                            <table:label>
-                                <Label text="XML" />
-                            </table:label>
-                            <table:template>
-                                <Button type="Transparent" icon="sap-icon://show" press=".onVisualizzaXML" />
-                            </table:template>
-                        </table:Column>
+                            <Column width="5rem">
+                                <header>
+                                    <Label text="Fattura" />
+                                </header>
+                            </Column> -->
 
-                        <table:Column width="4rem">
-                            <table:label>
-                                <Label text="Fattura" />
-                            </table:label>
-                            <table:template>
-                                <Button type="Transparent" icon="sap-icon://pdf-attachment" tooltip="Visualizza Fattura" press=".onVisualizzaPDF" />
-                            </table:template>
-                        </table:Column>
-                        <!-- end colonne azione -->
+                            <Column app:p13nKey="societa_col">
+                                <header>
+                                    <Label text="Società" />
+                                </header>
+                            </Column>
 
-                        <table:Column width="5rem" app:p13nKey="societa_col">
-                            <table:label>
-                                <Label text="Società" />
-                            </table:label>
-                            <table:template>
+                            <Column app:p13nKey="Nomesocieta_col">
+                                <header>
+                                    <Label text="Nome società" />
+                                </header>
+                            </Column>
+
+                            <Column app:p13nKey="fornitore_col">
+                                <header>
+                                    <Label text="Fornitore" />
+                                </header>
+                            </Column>
+
+                            <Column app:p13nKey="NomeFornitore_col">
+                                <header>
+                                    <Label text="Nome fornitore" />
+                                </header>
+                            </Column>
+
+                            <Column app:p13nKey="tipoAdE_col">
+                                <header>
+                                    <Label text="Tipo AdE" />
+                                </header>
+                            </Column>
+
+                            <Column app:p13nKey="NumFattForn_col">
+                                <header>
+                                    <Label text="N. fattura fornitore" />
+                                </header>
+                            </Column>
+
+                            <Column app:p13nKey="DataFatt_col">
+                                <header>
+                                    <Label text="Data fattura" />
+                                </header>
+                            </Column>
+
+                            <Column app:p13nKey="NumDoc_col">
+                                <header>
+                                    <Label text="N. doc." />
+                                </header>
+                            </Column>
+
+                            <Column app:p13nKey="Esercizio_col">
+                                <header>
+                                    <Label text="Esercizio" />
+                                </header>
+                            </Column>
+
+                            <Column app:p13nKey="DocContabile_col">
+                                <header>
+                                    <Label text="Doc contabile" />
+                                </header>
+
+                            </Column>
+
+                            <Column app:p13nKey="DataReg_col">
+                                <header>
+                                    <Label text="Data registr." />
+                                </header>
+                            </Column>
+
+                            <Column app:p13nKey="TipoSap_col">
+                                <header>
+                                    <Label text="Tipo SAP" />
+                                </header>
+                            </Column>
+                        </columns>
+                        <items>
+                            <ColumnListItem type="Navigation" press=".onVisualizzaDati">
+                                <HBox>
+                                    <Button type="Transparent" icon="sap-icon://attachment" enabled="{= Boolean(${fattureModel>TipoAllegato}) &amp;&amp; ${fattureModel>TipoAllegato} !== '0' }" tooltip="{path: 'fattureModel>TipoAllegato', formatter: '.formatter.allegatoText'}" press=".onVisualizzaAllegato" />
+                                    <Button type="Transparent" icon="sap-icon://show" press=".onVisualizzaXML" tooltip="Visualizza Fattura XML"/>
+                                    <Button type="Transparent" icon="sap-icon://pdf-attachment" tooltip="Visualizza Fattura" press=".onVisualizzaPDF" />
+                                </HBox>
                                 <Text text="{fattureModel>CompanyCode}" />
-                            </table:template>
-                        </table:Column>
-
-                        <table:Column width="14rem" app:p13nKey="Nomesocieta_col">
-                            <table:label>
-                                <Label text="Nome società" />
-                            </table:label>
-                            <table:template>
                                 <Text text="{fattureModel>CompanyName}" />
-                            </table:template>
-                        </table:Column>
-
-                        <table:Column width="7rem" app:p13nKey="fornitore_col">
-                            <table:label>
-                                <Label text="Fornitore" />
-                            </table:label>
-                            <table:template>
                                 <Text text="{fattureModel>SupplierCode}" />
-                            </table:template>
-                        </table:Column>
-
-                        <table:Column width="14rem" app:p13nKey="NomeFornitore_col">
-                            <table:label>
-                                <Label text="Nome fornitore" />
-                            </table:label>
-                            <table:template>
                                 <Text text="{fattureModel>SupplierName}" />
-                            </table:template>
-                        </table:Column>
+                                <!-- <Text text="{fattureModel>TipoDocAdE}" /> -->
+                                <ObjectIdentifier title="{fattureModel>TipoDocAdE}" text="{fattureModel>TipoDocText}"/>
 
-                        <table:Column width="5rem" app:p13nKey="tipoAdE_col">
-                            <table:label>
-                                <Label text="Tipo AdE" />
-                            </table:label>
-                            <table:template>
-                                <Text text="{fattureModel>TipoDocAdE}" />
-                            </table:template>
-                        </table:Column>
-
-                        <table:Column width="10rem" app:p13nKey="NumFattForn_col">
-                            <table:label>
-                                <Label text="N. fattura fornitore" />
-                            </table:label>
-                            <table:template>
                                 <Text text="{fattureModel>NumeroFattura}" />
-                            </table:template>
-                        </table:Column>
-
-                        <table:Column width="6rem" app:p13nKey="DataFatt_col">
-                            <table:label>
-                                <Label text="Data fattura" />
-                            </table:label>
-                            <table:template>
                                 <Text text="{path:'fattureModel>DataFattura', formatter: '.formatter.formatDate'}" />
-                            </table:template>
-                        </table:Column>
-
-                        <table:Column width="10rem" app:p13nKey="NumDoc_col">
-                            <table:label>
-                                <Label text="N. doc." />
-                            </table:label>
-                            <table:template>
                                 <Text text="{fattureModel>DocumentNumber}" />
-                            </table:template>
-                        </table:Column>
-
-                        <table:Column width="6rem" app:p13nKey="Esercizio_col">
-                            <table:label>
-                                <Label text="Esercizio" />
-                            </table:label>
-                            <table:template>
                                 <Text text="{fattureModel>FiscalYear}" />
-                            </table:template>
-                        </table:Column>
-
-                        <table:Column width="8rem" app:p13nKey="DocContabile_col">
-                            <table:label>
-                                <Label text="Doc contabile" />
-                            </table:label>
-                            <table:template>
                                 <Text text="{fattureModel>FinanceDocument}" />
-                            </table:template>
-                        </table:Column>
-
-                        <table:Column width="6rem" app:p13nKey="DataReg_col">
-                            <table:label>
-                                <Label text="Data registr." />
-                            </table:label>
-                            <table:template>
                                 <Text text="{path:'fattureModel>PostingDate', formatter: '.formatter.formatDate'}" />
-                            </table:template>
-                        </table:Column>
-
-                        <table:Column width="7rem" app:p13nKey="TipoSap_col">
-                            <table:label>
-                                <Label text="Tipo SAP" />
-                            </table:label>
-                            <table:template>
                                 <Text text="{fattureModel>DocumentType}" />
-                            </table:template>
-                        </table:Column>
-                    </table:columns>
-                </table:Table>
+
+                            </ColumnListItem>
+                        </items>
+                    </Table>
+                </ScrollContainer>
             </VBox>
         </f:content>
 
