@@ -151,12 +151,12 @@
         },
         {
           "name": "Dettaglio",
-          "pattern": "Dettaglio/{invoiceId}",
+          "pattern": "Dettaglio/{invoiceId}/:supplierCode:",
           "target": ["TargetDettaglio"]
         },
         {
           "name": "DettaglioDisplay",
-          "pattern": "DettaglioDisplay/{invoiceId}",
+          "pattern": "DettaglioDisplay/{invoiceId}/:supplierCode:",
           "target": ["TargetDettaglio"]
         },
         {

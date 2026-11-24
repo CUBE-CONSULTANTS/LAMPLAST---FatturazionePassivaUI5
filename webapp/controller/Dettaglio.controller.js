@@ -32,28 +32,33 @@ sap.ui.define([
         },
 
         _handleRoute: async function (oEvent) {
-            const sInvoiceId = oEvent.getParameter("arguments").invoiceId;
+            const { invoiceId: sInvoiceId, supplierCode = '' } = oEvent.getParameter("arguments");
             const model = this.getOwnerComponent().getModel("mainService");
+            let supplier = {}
             try {
                 sap.ui.core.BusyIndicator.show(0);
-                // if (!oModel) {
-                //     sap.m.MessageToast.show("Nessuna fattura selezionata, ritorno alla Home.");
-                //     this.oRouter.navTo("RouteHome");
-                //     return;
-                // }
-
-                // const oSelected = oModel.getProperty("/SelectedInvoice");
-                // if (!oSelected || oSelected.Id !== sInvoiceId) {
-                //     sap.m.MessageToast.show("La fattura selezionata non è valida.");
-                //     this.oRouter.navTo("RouteHome");
-                //     return;
-                // }
                 var entity = "/zeim_lista_fatture_passive";
-                const data = await API._getData({
-                    model, entity, filterArray: [new Filter("Id", "EQ", sInvoiceId)]
-                })
+                let filterArray = [
+                    new Filter("Id", "EQ", sInvoiceId),
+                ]
 
-                this.getView().setModel(new sap.ui.model.json.JSONModel({ SelectedInvoice: data?.results?.[0] }));
+                const data = await API._getData({
+                    model, entity, filterArray
+                })
+                const row = data?.results?.[0];
+
+                if (supplierCode) {
+                    const { PartitaIVAcee = "", CodiceFiscale = "", CompanyCode = "" } = row || {}
+                    const entity = `/zeim_get_supplier_codeSet(CompanyCode='${CompanyCode}',PartitaIVA='${PartitaIVAcee}',CodiceFiscale='${CodiceFiscale}',SupplierCode='${supplierCode}')`;
+                    supplier = await API._getData({
+                        model, entity
+                    })
+                    row.SelectedSupplierCode = supplier.SupplierCode;
+                    row.SupplierName = supplier.SupplierName;
+
+                }
+
+                this.getView().setModel(new sap.ui.model.json.JSONModel({ SelectedInvoice: data?.results?.[0], SupplierInfo: supplier }));
                 this.getView().bindElement({ path: "/SelectedInvoice" });
 
 
@@ -254,7 +259,6 @@ sap.ui.define([
             const PO = infoFattura?.FatturaElettronicaBody?.DatiGenerali?.DatiOrdineAcquisto?.IdDocumento || ''
 
 
-            debugger
             const oCrossAppNav = await sap.ushell.Container.getServiceAsync("CrossApplicationNavigation");
 
             const sHash = oCrossAppNav.hrefForExternal({
@@ -264,12 +268,8 @@ sap.ui.define([
                 },
                 params: {
                     Supplier,
-                    // MaterialGroup: "",
-                    // PurchasingOrganization: "",
-                    // Plant: "",
                     CompanyCode,
-                    // Material: "",
-                    // PurchasingGroup: ""
+
                 }
 
             });

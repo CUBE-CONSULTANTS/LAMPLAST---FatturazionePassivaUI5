@@ -457,6 +457,7 @@ sap.ui.define([
 
 
         onFatturaLogisticaButtonPress: function (oEvent) {
+
             let oCtx = null;
 
             const oRow = oEvent?.getParameter && oEvent.getParameter("row");
@@ -502,11 +503,12 @@ sap.ui.define([
                 );
 
                 const oRouter = sap.ui.core.UIComponent.getRouterFor(this);
+                //SelectedSupplierCode
                 debugger
                 if (oRow) {
-                    oRouter.navTo("DettaglioDisplay", { invoiceId: String(oSelectedWithChoice.Id) });
+                    oRouter.navTo("DettaglioDisplay", { invoiceId: String(oSelectedWithChoice.Id), supplierCode: oSelectedWithChoice?.SelectedSupplierCode });
                 } else {
-                    oRouter.navTo("Dettaglio", { invoiceId: String(oSelectedWithChoice.Id) });
+                    oRouter.navTo("Dettaglio", { invoiceId: String(oSelectedWithChoice.Id), supplierCode: oSelectedWithChoice?.SelectedSupplierCode });
                 }
             };
 
