@@ -126,6 +126,7 @@ sap.ui.define([
                     : [oBeniServizi.DettaglioLinee];
 
                 oBeniServizi?.DettaglioLinee.forEach(x => {
+                    x['OdaSap'] = ''
                     if (DdtInfo.length == 1 && !DdtInfo[0].hasOwnProperty("RiferimentoNumeroLinea")) {
                         x['NumeroDDT'] = DdtInfo[0].NumeroDDT
                         x['DataDDT'] = DdtInfo[0].DataDDT
@@ -139,7 +140,6 @@ sap.ui.define([
             }
 
             // this._mapOrdineAcquisto(oFattura);
-            debugger
             const oJsonModel = new sap.ui.model.json.JSONModel(oFattura);
             this.getView().setModel(oJsonModel, "fattura");
             console.log('Modello:', oJsonModel);
