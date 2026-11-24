@@ -150,12 +150,14 @@
                             </table:template>
                         </table:Column>
 
-                        <table:Column width="5rem" app:p13nKey="tipoAdE_col">
+                        <table:Column width="8rem" app:p13nKey="tipoAdE_col">
                             <table:label>
                                 <Label text="Tipo AdE" />
                             </table:label>
                             <table:template>
-                                <Text text="{fattureModel>TipoDocAdE}" />
+                                <!-- <Text text="{fattureModel>TipoDocAdE}" /> -->
+                                <ObjectIdentifier title="{fattureModel>TipoDocAdE}" text="{fattureModel>TipoDocText}"/>
+
                             </table:template>
                         </table:Column>
 
