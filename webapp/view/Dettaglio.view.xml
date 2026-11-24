@@ -241,7 +241,7 @@
                                                 <m:Label text="Doc. Acquisto" />
                                             </table:label>
                                             <table:template>
-                                                <m:Link text="{fattura>odaIdDocumento}" href="https://example.com/docAcq/{docAcq}" tooltip="{fattura>odaIdDocumento}" />
+                                                <m:Link text="{fattura>odaIdDocumento}" tooltip="{fattura>odaIdDocumento}" press="navToOrdineAcquisto" />
                                             </table:template>
                                         </table:Column>
 

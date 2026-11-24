@@ -246,7 +246,39 @@ sap.ui.define([
                 this.oRouter.navTo("RouteHome", {}, true);
             }
         },
+        navToOrdineAcquisto: async function (oEvent) {
+            const objSelected = oEvent.getSource().getBindingContext().getObject()
+            const infoFattura = this.getView().getModel("fattura").getData()
+            const Supplier = infoFattura?.FatturaElettronicaHeader?.CedentePrestatore?.DatiAnagrafici?.IdFiscaleIVA?.IdCodice || ''
+            const CompanyCode = infoFattura?.FatturaElettronicaHeader?.CessionarioCommittente?.DatiAnagrafici?.IdFiscaleIVA?.IdCodice || ''
+            const PO = infoFattura?.FatturaElettronicaBody?.DatiGenerali?.DatiOrdineAcquisto?.IdDocumento || ''
 
+
+            debugger
+            const oCrossAppNav = await sap.ushell.Container.getServiceAsync("CrossApplicationNavigation");
+
+            const sHash = oCrossAppNav.hrefForExternal({
+                target: {
+                    semanticObject: "PurchaseOrder",
+                    action: "manage"
+                },
+                params: {
+                    Supplier,
+                    // MaterialGroup: "",
+                    // PurchasingOrganization: "",
+                    // Plant: "",
+                    CompanyCode,
+                    // Material: "",
+                    // PurchasingGroup: ""
+                }
+
+            });
+            const sEntityPath =
+                `/C_PurchaseOrderTP(PurchaseOrder='${PO}',DraftUUID=guid'00000000-0000-0000-0000-000000000000',IsActiveEntity=true)`;
+
+            const sFullUrl = window.location.origin + "/ui" + sHash + "&sap-app-origin-hint=&" + sEntityPath;
+            window.open(sFullUrl, "_blank");
+        }
 
 
 

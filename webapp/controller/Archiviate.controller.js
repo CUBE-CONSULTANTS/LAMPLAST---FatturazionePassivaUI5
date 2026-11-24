@@ -30,11 +30,6 @@ sap.ui.define([
         "com.zeim.fatturazionepassiva.controller.Archiviate",
         {
             formatter: formatter,
-
-            /* =========================================================== */
-            /* INIT                                                        */
-            /* =========================================================== */
-
             onInit: function () {
                 this.getView().setModel(
                     new sap.ui.model.json.JSONModel(),
@@ -529,8 +524,7 @@ sap.ui.define([
                 }
 
                 const aCurrentFilters = this._currentFilters || []
-
-                const sEntity = "/zeim_lista_fatture_passive"
+                const sEntity = "/zeim_lista_fatture_archiviate"
 
                 if (bReset) {
                     oFattureModel.setData({ results: [] })
