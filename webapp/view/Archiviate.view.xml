@@ -8,7 +8,9 @@
     xmlns:core="sap.ui.core"
     xmlns:fb="sap.ui.comp.filterbar"
     xmlns:layout="sap.ui.layout"
-    xmlns:table="sap.ui.table">
+    xmlns:app="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1"
+    xmlns:table="sap.ui.table"
+    xmlns:sap.ui.fl="sap.ui.fl">
     <f:DynamicPage showFooter="true" fitContent="true" class="sapUiNoContentPadding">
         <!-- DynamicPage Header -->
         <f:header>
@@ -61,7 +63,7 @@
         <f:content>
             <VBox class="sapUiNoMargin" height="100%" fitContainer="true">
                 <!-- <Title text="Elenco Fatture" class="sapUiSmallMarginBegin sapUiTinyMarginTop" /> -->
-                <table:Table rows="{fattureModel>/results}" selectionMode="MultiToggle" enableColumnReordering="true" fixedColumnCount="1" rowActionCount="1" rowSelectionChange="onRowSelectionChange" class="sapUiNoMargin">
+                <table:Table id="fattureArchiviate" rows="{fattureModel>/results}" selectionMode="MultiToggle" enableColumnReordering="true" fixedColumnCount="1" rowActionCount="1" rowSelectionChange="onRowSelectionChange" class="sapUiNoMargin" sap.ui.fl:flexibility="sap/m/flexibility/EngineFlex">
                     <table:extension>
                         <OverflowToolbar>
                             <Title text="Cruscotto fatture archiviate" />
@@ -69,11 +71,18 @@
 
                             <ToolbarSpacer />
 
-                            <Button icon="sap-icon://action-settings" text="Layout colonne" press=".onOpenColumnLayoutDialog" />
+                            <Button icon="sap-icon://action-settings" text="Layout colonne" press=".openPersoDialog" />
 
                             <Button icon="sap-icon://excel-attachment" text="Esporta Excel" press=".onExportExcel" />
                         </OverflowToolbar>
                     </table:extension>
+                    <table:rowActionTemplate>
+                        <table:RowAction>
+                            <table:items>
+                                <table:RowActionItem icon="sap-icon://navigation-right-arrow" text="Apri Dettaglio" type="Navigation" press=".onVisualizzaDati" />
+                            </table:items>
+                        </table:RowAction>
+                    </table:rowActionTemplate>
                     <!-- <table:rowActionTemplate>
                         <table:RowAction>
                             <table:items>
@@ -87,7 +96,34 @@
                     <!-- Colonne (lascia invariato) -->
 
                     <table:columns>
+                        <!-- colonne azione -->
                         <table:Column width="5rem">
+                            <table:label>
+                                <Label text="Allegato" />
+                            </table:label>
+                            <table:template>
+                                <Button type="Transparent" icon="sap-icon://attachment" enabled="{= Boolean(${fattureModel>TipoAllegato}) &amp;&amp; ${fattureModel>TipoAllegato} !== '0' }" tooltip="{path: 'fattureModel>TipoAllegato', formatter: '.formatter.allegatoText'}" press=".onVisualizzaAllegato" />
+                            </table:template>
+                        </table:Column>
+                        <table:Column width="4rem">
+                            <table:label>
+                                <Label text="XML" />
+                            </table:label>
+                            <table:template>
+                                <Button type="Transparent" icon="sap-icon://show" press=".onVisualizzaXML" />
+                            </table:template>
+                        </table:Column>
+
+                        <table:Column width="4rem">
+                            <table:label>
+                                <Label text="Fattura" />
+                            </table:label>
+                            <table:template>
+                                <Button type="Transparent" icon="sap-icon://pdf-attachment" tooltip="Visualizza Fattura" press=".onVisualizzaPDF" />
+                            </table:template>
+                        </table:Column>
+                        <!-- end colonne azione -->
+                        <table:Column width="5rem" app:p13nKey="societa_col">
                             <table:label>
                                 <Label text="Società" />
                             </table:label>
@@ -96,7 +132,7 @@
                             </table:template>
                         </table:Column>
 
-                        <table:Column width="14rem">
+                        <table:Column width="14rem" app:p13nKey="Nomesocieta_col">
                             <table:label>
                                 <Label text="Nome società" />
                             </table:label>
@@ -105,7 +141,7 @@
                             </table:template>
                         </table:Column>
 
-                        <table:Column width="7rem">
+                        <table:Column width="7rem" app:p13nKey="fornitore_col">
                             <table:label>
                                 <Label text="Fornitore" />
                             </table:label>
@@ -114,7 +150,7 @@
                             </table:template>
                         </table:Column>
 
-                        <table:Column width="14rem">
+                        <table:Column width="14rem" app:p13nKey="NomeFornitore_col">
                             <table:label>
                                 <Label text="Nome fornitore" />
                             </table:label>
@@ -123,7 +159,7 @@
                             </table:template>
                         </table:Column>
 
-                        <table:Column width="5rem">
+                        <table:Column width="5rem" app:p13nKey="tipoAdE_col">
                             <table:label>
                                 <Label text="Tipo AdE" />
                             </table:label>
@@ -132,7 +168,7 @@
                             </table:template>
                         </table:Column>
 
-                        <table:Column width="10rem">
+                        <table:Column width="10rem" app:p13nKey="NumFattForn_col">
                             <table:label>
                                 <Label text="N. fattura fornitore" />
                             </table:label>
@@ -141,7 +177,7 @@
                             </table:template>
                         </table:Column>
 
-                        <table:Column width="6rem">
+                        <table:Column width="6rem" app:p13nKey="DataFatt_col">
                             <table:label>
                                 <Label text="Data fattura" />
                             </table:label>
@@ -150,7 +186,7 @@
                             </table:template>
                         </table:Column>
 
-                        <table:Column width="10rem">
+                        <table:Column width="10rem" app:p13nKey="NumDoc_col">
                             <table:label>
                                 <Label text="N. doc." />
                             </table:label>
@@ -159,7 +195,7 @@
                             </table:template>
                         </table:Column>
 
-                        <table:Column width="6rem">
+                        <table:Column width="6rem" app:p13nKey="Esercizio_col">
                             <table:label>
                                 <Label text="Esercizio" />
                             </table:label>
@@ -168,7 +204,7 @@
                             </table:template>
                         </table:Column>
 
-                        <table:Column width="8rem">
+                        <table:Column width="8rem" app:p13nKey="DocContabile_col">
                             <table:label>
                                 <Label text="Doc contabile" />
                             </table:label>
@@ -177,7 +213,7 @@
                             </table:template>
                         </table:Column>
 
-                        <table:Column width="6rem">
+                        <table:Column width="6rem" app:p13nKey="DataReg_col">
                             <table:label>
                                 <Label text="Data registr." />
                             </table:label>
@@ -186,7 +222,7 @@
                             </table:template>
                         </table:Column>
 
-                        <table:Column width="7rem">
+                        <table:Column width="7rem" app:p13nKey="TipoSap_col">
                             <table:label>
                                 <Label text="Tipo SAP" />
                             </table:label>
