@@ -60,22 +60,22 @@
                 </fb:FilterBar>
             </f:DynamicPageHeader>
         </f:header>
+
         <f:content>
             <VBox class="sapUiNoMargin" height="100%" fitContainer="true">
-                <!-- <Title text="Elenco Fatture" class="sapUiSmallMarginBegin sapUiTinyMarginTop" /> -->
                 <table:Table id="fattureArchiviate" rows="{fattureModel>/results}" selectionMode="MultiToggle" enableColumnReordering="true" fixedColumnCount="1" rowActionCount="1" rowSelectionChange="onRowSelectionChange" class="sapUiNoMargin" sap.ui.fl:flexibility="sap/m/flexibility/EngineFlex">
                     <table:extension>
                         <OverflowToolbar>
                             <Title text="Cruscotto fatture archiviate" />
-                            <VariantManagement standardItemText="Standard" showSetAsDefault="true" save=".onVariantSave" select=".onVariantSelect" manage=".onVariantManage" />
+                            <VariantManagement id="idVariantManagement" standardItemText="Standard" showSetAsDefault="true" save=".onVariantSave" select=".onVariantSelect" manage=".onVariantManage" />
 
                             <ToolbarSpacer />
 
                             <Button icon="sap-icon://action-settings" text="Layout colonne" press=".openPersoDialog" />
-
                             <Button icon="sap-icon://excel-attachment" text="Esporta Excel" press=".onExportExcel" />
                         </OverflowToolbar>
                     </table:extension>
+
                     <table:rowActionTemplate>
                         <table:RowAction>
                             <table:items>
@@ -83,17 +83,6 @@
                             </table:items>
                         </table:RowAction>
                     </table:rowActionTemplate>
-                    <!-- <table:rowActionTemplate>
-                        <table:RowAction>
-                            <table:items>
-                                <table:RowActionItem icon="sap-icon://navigation-right-arrow" text="Apri Dettaglio" type="Navigation" press=".onVisualizzaDati" />
-                            </table:items>
-                        </table:RowAction>
-                    </table:rowActionTemplate> -->
-                    <!-- <table:rowSettingsTemplate>
-                        <table:RowSettings highlight="{path: 'status', formatter: '.getHighlight'}" />
-                    </table:rowSettingsTemplate> -->
-                    <!-- Colonne (lascia invariato) -->
 
                     <table:columns>
                         <!-- colonne azione -->
@@ -105,6 +94,7 @@
                                 <Button type="Transparent" icon="sap-icon://attachment" enabled="{= Boolean(${fattureModel>TipoAllegato}) &amp;&amp; ${fattureModel>TipoAllegato} !== '0' }" tooltip="{path: 'fattureModel>TipoAllegato', formatter: '.formatter.allegatoText'}" press=".onVisualizzaAllegato" />
                             </table:template>
                         </table:Column>
+
                         <table:Column width="4rem">
                             <table:label>
                                 <Label text="XML" />
@@ -123,6 +113,7 @@
                             </table:template>
                         </table:Column>
                         <!-- end colonne azione -->
+
                         <table:Column width="5rem" app:p13nKey="societa_col">
                             <table:label>
                                 <Label text="Società" />
@@ -234,6 +225,7 @@
                 </table:Table>
             </VBox>
         </f:content>
+
         <f:footer>
             <OverflowToolbar>
                 <Button icon="sap-icon://legend" type="Transparent" tooltip="Legenda icone" press=".onOpenLegendaPopover" />

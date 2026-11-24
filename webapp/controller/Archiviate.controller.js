@@ -1,28 +1,13 @@
-
 sap.ui.define([
     "./BaseController",
-    "sap/ui/core/Fragment",
-    "sap/ui/comp/variants/VariantItem",
+    "sap/m/VariantItem",
     "../model/API",
     "../model/formatter",
-    "sap/ui/model/Filter",
     "sap/m/p13n/MetadataHelper",
     "sap/m/p13n/Engine",
     "sap/m/p13n/SelectionController",
-    "sap/m/p13n/SortController",
-    "sap/m/p13n/GroupController"
 ], (
-    BaseController,
-    Fragment,
-    VariantItem,
-    API,
-    formatter,
-    Filter,
-    MetadataHelper,
-    Engine,
-    SelectionController,
-    SortController,
-    GroupController
+    BaseController, VariantItem, API, formatter, MetadataHelper, Engine, SelectionController,
 ) => {
     "use strict"
 
@@ -30,30 +15,48 @@ sap.ui.define([
         "com.zeim.fatturazionepassiva.controller.Archiviate",
         {
             formatter: formatter,
+
             onInit: function () {
                 this.getView().setModel(
                     new sap.ui.model.json.JSONModel(),
                     "fattureModel"
                 )
+                const oTable = this.byId("fattureArchiviate")
+                if (oTable) {
+                    this._aInitialColumnOrder = oTable.getColumns().slice()
+                }
+
+                this._registerForP13n()
+                this._initVariantManagement()
+
                 const oRouter = this.getOwnerComponent().getRouter()
                 oRouter
                     .getRoute("Archiviate")
                     .attachPatternMatched(this._onObjectMatched, this)
-
-                this._registerForP13n()
-                this._initVariantManagement()
             },
 
             _onObjectMatched: function () {
                 this._loadFatture(true)
-                const oData = this._getVariantData()
-                if (oData.defaultVariantKey) {
-                    const oVariant =
-                        oData.variants[oData.defaultVariantKey]
 
+                const oVM = this._getVariantManagementControl()
+                const oData = this._getVariantData()
+
+                if (
+                    oData.defaultVariantKey &&
+                    oData.variants[oData.defaultVariantKey]
+                ) {
+                    const oVariant = oData.variants[oData.defaultVariantKey]
+                    if (oVM) {
+                        oVM.setSelectedKey(oData.defaultVariantKey)
+                    }
                     if (oVariant && oVariant.layout) {
                         this._applyTableLayout(oVariant.layout)
                     }
+                } else {
+                    if (oVM) {
+                        oVM.setSelectedKey(oVM.getStandardVariantKey())
+                    }
+                    this._resetToStandardTableLayout()
                 }
             },
             //p13n
@@ -69,18 +72,9 @@ sap.ui.define([
                 this._mInitialWidth = {}
 
                 oTable.getColumns().forEach((oColumn) => {
-                    const sKey = this._getCustomDataValue(
-                        oColumn,
-                        "p13nKey"
-                    )
-                    if (!sKey) {
-                        return
-                    }
-                    const sPath = this._getCustomDataValue(
-                        oColumn,
-                        "p13nPath"
-                    )
-
+                    const sKey = this._getCustomDataValue(oColumn, "p13nKey")
+                    if (!sKey) return
+                    const sPath = this._getCustomDataValue(oColumn, "p13nPath")
                     const oHeader = oColumn.getLabel()
                     const sLabel = oHeader && oHeader.getText ? oHeader.getText() : sKey
 
@@ -135,31 +129,32 @@ sap.ui.define([
 
                 this._applyP13nColumnsState(oState.Columns)
             },
+
             _applyP13nColumnsState: function (aStateColumns) {
                 const oTable = this.byId("fattureArchiviate")
                 if (!oTable) return
+
                 const aCurrentColumns = oTable.getColumns().slice()
-                const aVisibleKeys = aStateColumns.map(o => o.key)
+                const aVisibleKeys = aStateColumns.map((o) => o.key)
+
                 aCurrentColumns.forEach((oColumn) => {
-                    const sKey = this._getCustomDataValue(
-                        oColumn,
-                        "p13nKey"
-                    )
+                    const sKey = this._getCustomDataValue(oColumn, "p13nKey")
                     if (sKey) {
                         oColumn.setVisible(aVisibleKeys.includes(sKey))
                     }
                 })
+
                 const aOrderedColumns = []
                 aStateColumns.forEach((oStateColumn) => {
                     const oColumn = aCurrentColumns.find(
                         (oCol) =>
-                            this._getCustomDataValue(oCol, "p13nKey") ===
-                            oStateColumn.key
+                            this._getCustomDataValue(oCol, "p13nKey") === oStateColumn.key
                     )
                     if (oColumn && !aOrderedColumns.includes(oColumn)) {
                         aOrderedColumns.push(oColumn)
                     }
                 })
+
                 aCurrentColumns.forEach((oColumn) => {
                     if (!aOrderedColumns.includes(oColumn)) {
                         aOrderedColumns.push(oColumn)
@@ -168,13 +163,13 @@ sap.ui.define([
 
                 this._reorderTableColumns(aOrderedColumns)
             },
-            //prime 3 colonne fisse
+
+            // Prime 3 colonne fisse
             _reorderTableColumns: function (aOrderedP13nColumns) {
                 const oTable = this.byId("fattureArchiviate")
                 const aCurrentColumns = oTable.getColumns()
 
                 const aFixedColumns = aCurrentColumns.slice(0, 3)
-
                 const aReorderableColumns = aCurrentColumns.slice(3)
 
                 const aNewColumns = [
@@ -192,15 +187,12 @@ sap.ui.define([
                     oTable.insertColumn(oColumn, iIndex)
                 })
             },
-            //Layout colonne
+
             _getCurrentTableLayout: function () {
                 const oTable = this.byId("fattureArchiviate")
                 return {
                     columns: oTable.getColumns().map((oColumn, iIndex) => ({
-                        key: this._getCustomDataValue(
-                            oColumn,
-                            "p13nKey"
-                        ),
+                        key: this._getCustomDataValue(oColumn, "p13nKey"),
                         visible: oColumn.getVisible(),
                         order: iIndex
                     }))
@@ -209,7 +201,6 @@ sap.ui.define([
 
             _applyTableLayout: function (oLayout) {
                 const oTable = this.byId("fattureArchiviate")
-
                 if (!oTable || !oLayout || !oLayout.columns) return
 
                 const aCurrentColumns = oTable.getColumns().slice()
@@ -223,7 +214,6 @@ sap.ui.define([
                     mColumns[sKey] = oColumn
                 })
 
-                // Ripristina la visibilità
                 oLayout.columns.forEach((oSavedColumn) => {
                     const oColumn = mColumns[oSavedColumn.key]
                     if (oColumn) {
@@ -231,17 +221,17 @@ sap.ui.define([
                     }
                 })
 
-                let aOrderedColumns = []
+                const aOrderedColumns = []
                 oLayout.columns
                     .slice()
                     .sort((a, b) => a.order - b.order)
                     .forEach((oSavedColumn) => {
                         const oColumn = mColumns[oSavedColumn.key]
-
                         if (oColumn) {
                             aOrderedColumns.push(oColumn)
                         }
                     })
+
                 aCurrentColumns.forEach((oColumn) => {
                     if (!aOrderedColumns.includes(oColumn)) {
                         aOrderedColumns.push(oColumn)
@@ -258,44 +248,44 @@ sap.ui.define([
                 const oTable = this.byId("fattureArchiviate")
                 if (!oTable) return
 
-                oTable.getColumns().forEach((oColumn) => {
-                    const sKey = this._getCustomDataValue(
-                        oColumn,
-                        "p13nKey"
-                    )
+                const aColumnsToRestore =
+                    this._aInitialColumnOrder || oTable.getColumns().slice()
+
+                oTable.removeAllColumns()
+                aColumnsToRestore.forEach((oColumn) => {
+                    const sKey = this._getCustomDataValue(oColumn, "p13nKey")
                     if (sKey) {
                         oColumn.setVisible(true)
                     }
+                    oTable.addColumn(oColumn)
                 })
             },
-            //gestione varianti
+            //varianti
             _getVariantManagementControl: function () {
-                const aControls = this.getView().findAggregatedObjects(
-                    true,
-                    function (oControl) {
-                        return oControl.isA("sap.m.VariantManagement")
-                    }
-                )
-                return aControls.length ? aControls[0] : null
+                return this.byId("idVariantManagement")
             },
+
             _initVariantManagement: function () {
-                debugger
                 const oVM = this._getVariantManagementControl()
                 if (!oVM) {
                     console.warn("sap.m.VariantManagement non trovato")
                     return
                 }
-                const oData = this._getVariantData()
-                console.log("Varianti lette dal localStorage:", oData)
 
-                oVM.destroyItems()
+                const oData = this._getVariantData()
+                const sStandardKey = oVM.getStandardVariantKey()
+
+                oVM.removeAllItems()
+
                 Object.keys(oData.variants || {}).forEach((sKey) => {
                     const oVariant = oData.variants[sKey]
-
                     oVM.addItem(
                         new VariantItem({
                             key: sKey,
-                            title: oVariant.name
+                            title: oVariant.name,
+                            remove: true,
+                            rename: true,
+                            changeable: true
                         })
                     )
                 })
@@ -304,9 +294,15 @@ sap.ui.define([
                     oData.defaultVariantKey &&
                     oData.variants[oData.defaultVariantKey]
                 ) {
+                    oVM.setDefaultKey(oData.defaultVariantKey)
                     oVM.setSelectedKey(oData.defaultVariantKey)
+                    this._applyTableLayout(oData.variants[oData.defaultVariantKey].layout)
+                } else {
+                    oVM.setDefaultKey(sStandardKey)
+                    oVM.setSelectedKey(sStandardKey)
                 }
             },
+
             onVariantSave: function (oEvent) {
                 const oVM = oEvent.getSource()
                 const oData = this._getVariantData()
@@ -314,16 +310,17 @@ sap.ui.define([
                 let sKey = oEvent.getParameter("key")
                 const bOverwrite = oEvent.getParameter("overwrite")
                 const bDefault = oEvent.getParameter("def")
+                const sStandardKey = oVM.getStandardVariantKey()
 
                 if (!sName) return
 
                 if (!sKey && bOverwrite) {
                     sKey = Object.keys(oData.variants).find(
-                        (sExistingKey) =>
-                            oData.variants[sExistingKey].name === sName
+                        (sExistingKey) => oData.variants[sExistingKey].name === sName
                     )
                 }
-                if (!sKey) {
+
+                if (!sKey || sKey === sStandardKey) {
                     sKey =
                         "VARIANT_" +
                         Date.now() +
@@ -331,13 +328,11 @@ sap.ui.define([
                         Math.floor(Math.random() * 10000)
                 }
 
-                const oVariant = {
+                oData.variants[sKey] = {
                     key: sKey,
                     name: sName,
                     layout: this._getCurrentTableLayout()
                 }
-
-                oData.variants[sKey] = oVariant
 
                 if (bDefault) {
                     oData.defaultVariantKey = sKey
@@ -345,12 +340,12 @@ sap.ui.define([
 
                 this._setVariantData(oData)
 
-                const oExistingItem = oVM.getItems().find(
-                    (oItem) => oItem.getKey() === sKey
-                )
+                const oExistingItem = oVM
+                    .getItems()
+                    .find((oItem) => oItem.getKey() === sKey)
 
                 if (oExistingItem) {
-                    oExistingItem.setText(sName)
+                    oExistingItem.setTitle(sName)
                 } else {
                     oVM.addItem(
                         new VariantItem({
@@ -362,16 +357,27 @@ sap.ui.define([
                         })
                     )
                 }
+
+                oVM.setSelectedKey(sKey)
                 if (oData.defaultVariantKey) {
                     oVM.setDefaultKey(oData.defaultVariantKey)
                 }
+
                 sap.m.MessageToast.show("Layout salvato.")
             },
 
             onVariantSelect: function (oEvent) {
+                const oVM = oEvent.getSource()
                 const sKey = oEvent.getParameter("key")
+                const sStandardKey = oVM.getStandardVariantKey()
+
                 if (!sKey) {
                     this._resetToStandardTableLayout()
+                    return
+                }
+                else if (sKey === sStandardKey) {
+                    const defaultVariant = this._getVariantData().variants[sKey]
+                    this._applyTableLayout(defaultVariant.layout)
                     return
                 }
 
@@ -389,19 +395,14 @@ sap.ui.define([
             onVariantManage: function (oEvent) {
                 const oVM = oEvent.getSource()
                 const oData = this._getVariantData()
+                const sStandardKey = oVM.getStandardVariantKey()
 
-                const aDeleted =
-                    oEvent.getParameter("deleted") || []
-
-                const aRenamed =
-                    oEvent.getParameter("renamed") || []
-
-                const sDefaultKey =
-                    oEvent.getParameter("def")
+                const aDeleted = oEvent.getParameter("deleted") || []
+                const aRenamed = oEvent.getParameter("renamed") || []
+                const sDefaultKey = oEvent.getParameter("def")
 
                 aDeleted.forEach((sKey) => {
                     delete oData.variants[sKey]
-
                     if (oData.defaultVariantKey === sKey) {
                         oData.defaultVariantKey = ""
                     }
@@ -413,31 +414,30 @@ sap.ui.define([
                         oRenamed.key &&
                         oData.variants[oRenamed.key]
                     ) {
-                        oData.variants[oRenamed.key].name =
-                            oRenamed.name
+                        oData.variants[oRenamed.key].name = oRenamed.name
                     }
                 })
 
-                if (
+                if (sDefaultKey === sStandardKey || sDefaultKey === false) {
+                    oData.defaultVariantKey = ""
+                } else if (
                     typeof sDefaultKey === "string" &&
                     oData.variants[sDefaultKey]
                 ) {
                     oData.defaultVariantKey = sDefaultKey
-                } else if (sDefaultKey === false) {
-                    oData.defaultVariantKey = ""
                 }
 
                 this._setVariantData(oData)
                 this._initVariantManagement()
 
-                sap.m.MessageToast.show(
-                    "Gestione layout aggiornata."
-                )
+                sap.m.MessageToast.show("Gestione layout aggiornata.")
             },
-            //gestione localstorage
+
+            //localestorage
             _getVariantStorageKey: function () {
                 return "ZEIM_FATTURAZIONE_PASSIVA_ARCH_VARIANTS"
             },
+
             _getVariantData: function () {
                 const sStorageKey = this._getVariantStorageKey()
                 try {
@@ -470,53 +470,40 @@ sap.ui.define([
                     )
                 } catch (error) {
                     console.error("Errore salvataggio varianti:", error)
-                    sap.m.MessageToast.show(
-                        "Impossibile salvare il layout."
-                    )
+                    sap.m.MessageToast.show("Impossibile salvare il layout.")
                 }
             },
 
+            //filtri
             onFilterBarClear: function (oEvent) {
                 const oFilterBar = oEvent.getSource()
 
-                oFilterBar.getFilterGroupItems().forEach(
-                    function (oItem) {
-                        const oControl = oItem.getControl()
+                oFilterBar.getFilterGroupItems().forEach(function (oItem) {
+                    const oControl = oItem.getControl()
 
-                        if (oControl.isA("sap.m.MultiInput")) {
-                            oControl.removeAllTokens()
-                            oControl.setValue("")
-
-                        } else if (
-                            oControl.isA("sap.m.DateRangeSelection")
-                        ) {
-                            oControl.setDateValue(null)
-                            oControl.setSecondDateValue(null)
-
-                        } else if (oControl.isA("sap.m.Select")) {
-                            oControl.setSelectedKey("")
-
-                        } else if (oControl.isA("sap.m.Input")) {
-                            oControl.setValue("")
-                        }
+                    if (oControl.isA("sap.m.MultiInput")) {
+                        oControl.removeAllTokens()
+                        oControl.setValue("")
+                    } else if (oControl.isA("sap.m.DateRangeSelection")) {
+                        oControl.setDateValue(null)
+                        oControl.setSecondDateValue(null)
+                    } else if (oControl.isA("sap.m.Select")) {
+                        oControl.setSelectedKey("")
+                    } else if (oControl.isA("sap.m.Input")) {
+                        oControl.setValue("")
                     }
-                )
+                })
 
-                const oTable = this.byId("idTreeTable")
-
+                const oTable = this.byId("fattureArchiviate")
                 if (oTable) {
                     oTable.clearSelection()
                 }
 
-                this._onObjectMatched()
+                this._loadFatture(true, [])
             },
 
-            _loadFatture: async function (
-                bReset = true,
-                aFilters = []
-            ) {
+            _loadFatture: async function (bReset = true, aFilters = []) {
                 const oODataModel = this.getOwnerComponent().getModel("mainService")
-
                 const oFattureModel = this.getView().getModel("fattureModel")
 
                 if (Array.isArray(aFilters)) {
@@ -524,7 +511,7 @@ sap.ui.define([
                 }
 
                 const aCurrentFilters = this._currentFilters || []
-                const sEntity = "/zeim_lista_fatture_archiviate"
+                const sEntity = "/zeim_lista_fatture_archiviate" //zeim_lista_fatture_passive
 
                 if (bReset) {
                     oFattureModel.setData({ results: [] })
@@ -548,7 +535,6 @@ sap.ui.define([
                     }
 
                     oFattureModel.refresh(true)
-
                 } catch (error) {
                     console.error("Errore caricamento fatture:", error)
                     sap.m.MessageToast.show("Errore nel caricamento fatture.")
@@ -562,118 +548,65 @@ sap.ui.define([
                 const FO = sap.ui.model.FilterOperator
                 const aFilters = []
 
-                oEvent.getSource()
-                    .getFilterGroupItems()
-                    .forEach(function (oItem) {
-                        const oControl = oItem.getControl()
-                        const sPath = oItem.getName()
+                oEvent.getSource().getFilterGroupItems().forEach(function (oItem) {
+                    const oControl = oItem.getControl()
+                    const sPath = oItem.getName()
 
-                        if (oControl.isA("sap.m.MultiInput")) {
-                            const aKeys = oControl
-                                .getTokens()
-                                .map((oToken) => oToken.getKey())
+                    if (oControl.isA("sap.m.MultiInput")) {
+                        const aKeys = oControl
+                            .getTokens()
+                            .map((oToken) => oToken.getKey())
 
-                            const sManualValue =
-                                oControl.getValue()
-
-                            if (
-                                sManualValue &&
-                                sManualValue.trim()
-                            ) {
-                                aKeys.push(sManualValue.trim())
-                            }
-
-                            if (aKeys.length === 1) {
-                                aFilters.push(
-                                    new Filter(
-                                        sPath,
-                                        FO.EQ,
-                                        aKeys[0]
-                                    )
-                                )
-                            } else if (aKeys.length > 1) {
-                                aFilters.push(
-                                    new Filter(
-                                        aKeys.map(
-                                            (sValue) =>
-                                                new Filter(
-                                                    sPath,
-                                                    FO.EQ,
-                                                    sValue
-                                                )
-                                        ),
-                                        false
-                                    )
-                                )
-                            }
-
-                        } else if (
-                            oControl.isA("sap.m.DateRangeSelection")
-                        ) {
-                            const dFrom = oControl.getDateValue()
-                            const dTo =
-                                oControl.getSecondDateValue()
-
-                            if (dFrom && dTo) {
-                                const d1 = new Date(dFrom.getTime())
-                                d1.setHours(0, 0, 0, 0)
-
-                                const d2 = new Date(dTo.getTime())
-                                d2.setHours(23, 59, 59, 999)
-
-                                aFilters.push(
-                                    new Filter(
-                                        sPath,
-                                        FO.BT,
-                                        d1,
-                                        d2
-                                    )
-                                )
-                            }
-
-                        } else if (
-                            oControl.isA("sap.m.Select")
-                        ) {
-                            const sKey =
-                                oControl.getSelectedKey()
-
-                            if (sKey) {
-                                aFilters.push(
-                                    new Filter(
-                                        sPath,
-                                        FO.EQ,
-                                        sKey
-                                    )
-                                )
-                            }
-
-                        } else if (
-                            oControl.isA("sap.m.Input")
-                        ) {
-                            let sValue =
-                                (oControl.getValue() || "").trim()
-
-                            if (sValue) {
-                                if (
-                                    sPath === "SupplierName" ||
-                                    sPath === "NumeroFattura"
-                                ) {
-                                    sValue = sValue.toUpperCase()
-                                }
-
-                                aFilters.push(
-                                    new Filter(
-                                        sPath,
-                                        FO.Contains,
-                                        sValue
-                                    )
-                                )
-                            }
+                        const sManualValue = oControl.getValue()
+                        if (sManualValue && sManualValue.trim()) {
+                            aKeys.push(sManualValue.trim())
                         }
-                    })
 
-                const oTable = this.byId("idTreeTable")
+                        if (aKeys.length === 1) {
+                            aFilters.push(new Filter(sPath, FO.EQ, aKeys[0]))
+                        } else if (aKeys.length > 1) {
+                            aFilters.push(
+                                new Filter(
+                                    aKeys.map(
+                                        (sValue) => new Filter(sPath, FO.EQ, sValue)
+                                    ),
+                                    false
+                                )
+                            )
+                        }
+                    } else if (oControl.isA("sap.m.DateRangeSelection")) {
+                        const dFrom = oControl.getDateValue()
+                        const dTo = oControl.getSecondDateValue()
 
+                        if (dFrom && dTo) {
+                            const d1 = new Date(dFrom.getTime())
+                            d1.setHours(0, 0, 0, 0)
+
+                            const d2 = new Date(dTo.getTime())
+                            d2.setHours(23, 59, 59, 999)
+
+                            aFilters.push(new Filter(sPath, FO.BT, d1, d2))
+                        }
+                    } else if (oControl.isA("sap.m.Select")) {
+                        const sKey = oControl.getSelectedKey()
+                        if (sKey) {
+                            aFilters.push(new Filter(sPath, FO.EQ, sKey))
+                        }
+                    } else if (oControl.isA("sap.m.Input")) {
+                        let sValue = (oControl.getValue() || "").trim()
+                        if (sValue) {
+                            if (
+                                sPath === "SupplierName" ||
+                                sPath === "NumeroFattura"
+                            ) {
+                                sValue = sValue.toUpperCase()
+                            }
+                            aFilters.push(new Filter(sPath, FO.Contains, sValue))
+                        }
+                    }
+                })
+
+                const oTable = this.byId("fattureArchiviate")
                 if (oTable) {
                     oTable.clearSelection()
                 }
@@ -681,7 +614,7 @@ sap.ui.define([
                 this._loadFatture(true, aFilters)
             },
 
-            //value help
+            //valuehelp
             onValueHelpFornitoreArch: function () {
                 sap.ui.require(
                     [
@@ -698,18 +631,9 @@ sap.ui.define([
                                 key: "Supplier",
                                 desc: "SupplierName",
                                 columns: [
-                                    {
-                                        label: "Fornitore",
-                                        path: "Supplier"
-                                    },
-                                    {
-                                        label: "Descrizione",
-                                        path: "SupplierName"
-                                    },
-                                    {
-                                        label: "Country",
-                                        path: "Country"
-                                    }
+                                    { label: "Fornitore", path: "Supplier" },
+                                    { label: "Descrizione", path: "SupplierName" },
+                                    { label: "Country", path: "Country" }
                                 ],
                                 targetModelName: "archFilters",
                                 tokensPath: "/SupplierTokens",
@@ -719,7 +643,6 @@ sap.ui.define([
                     }.bind(this)
                 )
             },
-
 
             onValueHelpTipoDocAdeArch: function () {
                 sap.ui.require(
@@ -738,19 +661,10 @@ sap.ui.define([
                                 desc: "Descrizione",
                                 keyProp: "BlartAde",
                                 maxKeyLength: 10,
-                                filterProps: [
-                                    "BlartAde",
-                                    "Descrizione"
-                                ],
+                                filterProps: ["BlartAde", "Descrizione"],
                                 columns: [
-                                    {
-                                        label: "Tipo Doc. AdE",
-                                        path: "BlartAde"
-                                    },
-                                    {
-                                        label: "Descrizione",
-                                        path: "Descrizione"
-                                    }
+                                    { label: "Tipo Doc. AdE", path: "BlartAde" },
+                                    { label: "Descrizione", path: "Descrizione" }
                                 ],
                                 targetModelName: "archFilters",
                                 tokensPath: "/TipoDocAdeTokens",
