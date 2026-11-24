@@ -1,7 +1,10 @@
 sap.ui.define([
     "./BaseController",
     "sap/m/MessageToast",
-], function (BaseController, MessageToast) {
+    "../model/API",
+    'sap/ui/model/Filter',
+
+], function (BaseController, MessageToast, API, Filter) {
     "use strict";
 
     return BaseController.extend("com.zeim.fatturazionepassiva.controller.Dettaglio", {
@@ -30,27 +33,31 @@ sap.ui.define([
 
         _handleRoute: async function (oEvent) {
             const sInvoiceId = oEvent.getParameter("arguments").invoiceId;
-            const oModel = sap.ui.getCore().getModel("SelectedInvoiceModel");
+            const model = this.getOwnerComponent().getModel("mainService");
             try {
                 sap.ui.core.BusyIndicator.show(0);
-                if (!oModel) {
-                    sap.m.MessageToast.show("Nessuna fattura selezionata, ritorno alla Home.");
-                    this.oRouter.navTo("RouteHome");
-                    return;
-                }
+                // if (!oModel) {
+                //     sap.m.MessageToast.show("Nessuna fattura selezionata, ritorno alla Home.");
+                //     this.oRouter.navTo("RouteHome");
+                //     return;
+                // }
 
-                const oSelected = oModel.getProperty("/SelectedInvoice");
-                if (!oSelected || oSelected.Id !== sInvoiceId) {
-                    sap.m.MessageToast.show("La fattura selezionata non è valida.");
-                    this.oRouter.navTo("RouteHome");
-                    return;
-                }
+                // const oSelected = oModel.getProperty("/SelectedInvoice");
+                // if (!oSelected || oSelected.Id !== sInvoiceId) {
+                //     sap.m.MessageToast.show("La fattura selezionata non è valida.");
+                //     this.oRouter.navTo("RouteHome");
+                //     return;
+                // }
+                var entity = "/zeim_lista_fatture_passive";
+                const data = await API._getData({
+                    model, entity, filterArray: [new Filter("Id", "EQ", sInvoiceId)]
+                })
 
-                this.getView().setModel(oModel);
+                this.getView().setModel(new sap.ui.model.json.JSONModel({ SelectedInvoice: data?.results?.[0] }));
                 this.getView().bindElement({ path: "/SelectedInvoice" });
 
 
-                await this._loadDettaglioFattura(oSelected.FileName);
+                await this._loadDettaglioFattura(sInvoiceId);
                 this._updateTotal();
             } catch (e) {
             } finally {
@@ -99,14 +106,40 @@ sap.ui.define([
             const oBody = oFattura.FatturaElettronicaBody;
             const oBeniServizi = oBody?.DatiBeniServizi;
 
+            const ddt = !oBody?.DatiGenerali?.DatiDDT ? [] : Array.isArray(oBody?.DatiGenerali?.DatiDDT) ? oBody?.DatiGenerali?.DatiDDT : [oBody?.DatiGenerali?.DatiDDT]
+            const toArray = (v) => (v == null ? [] : Array.isArray(v) ? v : [v]);
+            const DdtInfo = toArray(ddt).flatMap((ddt) => {
+                const rif = toArray(ddt.RiferimentoNumeroLinea);
+
+                // caso: numero linea assente -> un solo oggetto, senza riferimento
+                if (rif.length === 0) {
+                    return [{ ...ddt, RiferimentoNumeroLinea: null }];
+                }
+
+                // caso: 1 o più numeri linea -> un oggetto per ciascuno
+                return rif.map((n) => ({ ...ddt, RiferimentoNumeroLinea: Number(n) }));
+            });
+
             if (oBeniServizi?.DettaglioLinee) {
                 oBeniServizi.DettaglioLinee = Array.isArray(oBeniServizi.DettaglioLinee)
                     ? oBeniServizi.DettaglioLinee
                     : [oBeniServizi.DettaglioLinee];
+
+                oBeniServizi?.DettaglioLinee.forEach(x => {
+                    if (DdtInfo.length == 1 && !DdtInfo[0].hasOwnProperty("RiferimentoNumeroLinea")) {
+                        x['NumeroDDT'] = DdtInfo[0].NumeroDDT
+                        x['DataDDT'] = DdtInfo[0].DataDDT
+                    } else {
+                        const ddtForLine = DdtInfo.find(y => y.RiferimentoNumeroLinea == x.NumeroLinea)
+                        x['NumeroDDT'] = ddtForLine?.NumeroDDT || ''
+                        x['DataDDT'] = ddtForLine?.DataDDT || ''
+                    }
+                })
+
             }
 
-            this._mapOrdineAcquisto(oFattura);
-
+            // this._mapOrdineAcquisto(oFattura);
+            debugger
             const oJsonModel = new sap.ui.model.json.JSONModel(oFattura);
             this.getView().setModel(oJsonModel, "fattura");
             console.log('Modello:', oJsonModel);

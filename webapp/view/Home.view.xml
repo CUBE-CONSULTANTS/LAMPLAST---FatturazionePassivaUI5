@@ -1,4 +1,4 @@
-<mvc:View controllerName="com.zeim.fatturazionepassiva.controller.Home"
+<mvc:View xmlns:rowmodes="sap.ui.table.rowmodes" controllerName="com.zeim.fatturazionepassiva.controller.Home"
     xmlns:mvc="sap.ui.core.mvc"
     xmlns="sap.m"
     xmlns:f="sap.f"
@@ -109,6 +109,9 @@
                     </items>
                 </IconTabBar>
                 <table:Table id="idTreeTable" rows="{fattureModel>/results}" selectionMode="MultiToggle" enableColumnReordering="true" fixedColumnCount="1" rowActionCount="1" rowSelectionChange="onRowSelectionChange" class="sapUiNoMargin">
+                    <table:rowMode>
+                        <rowmodes:Auto rowContentHeight="64"/>
+                    </table:rowMode>
                     <table:extension>
                         <OverflowToolbar>
                             <Title text="Cruscotto fatture" />
@@ -487,28 +490,28 @@
                 <Button icon="sap-icon://legend" type="Transparent" tooltip="Legenda icone" press=".onOpenLegendaPopover" />
                 <ToolbarSpacer />
                 <!-- 1. OdA senza fattura -->
-                <Button type="Emphasized" text="Assegna Società" icon="sap-icon://add" enabled="{viewModel>/ui/enableAssignCompany}" press=".onAssegnaSocietaButtonPress" />
+                <Button type="Emphasized" text="Assegna Società" tooltip="Assegna Società" icon="sap-icon://add" enabled="{viewModel>/ui/enableAssignCompany}" press=".onAssegnaSocietaButtonPress" />
                 <!-- 2. Partitario Fornitori -->
-                <Button text="Partitario Fornitori" icon="sap-icon://supplier" press=".onPartitarioFornitoriButtonPress" type="Emphasized" />
+                <Button text="Partitario Fornitori" tooltip="Partitario Fornitori" icon="sap-icon://supplier" press=".onPartitarioFornitoriButtonPress" type="Emphasized" />
 
                 <!-- 3. Report saldi EM/EF -->
-                <Button text="Report saldi EM/EF" icon="sap-icon://supplier" press=".onPartitarioFornitoreButtonPress" type="Emphasized" />
+                <Button text="Report saldi EM/EF" tooltip="Report saldi EM/EF" icon="sap-icon://supplier" press=".onPartitarioFornitoreButtonPress" type="Emphasized" />
                 <!-- 4. Fattura Logistica -->
-                <Button text="Fattura Logistica" icon="sap-icon://shipping-status" press=".onFatturaLogisticaButtonPress" type="Emphasized" enabled="{viewModel>/ui/canOpenCreateApps}" />
+                <Button text="Fattura Logistica" tooltip="Fattura Logistica" icon="sap-icon://shipping-status" press=".onFatturaLogisticaButtonPress" type="Emphasized" enabled="{viewModel>/ui/canOpenCreateApps}" />
                 <!-- 5. Fattura Contabile -->
-                <Button text="Fattura Contabile" icon="sap-icon://expense-report" press=".onFatturaContabileButtonPress" type="Emphasized" enabled="{viewModel>/ui/canOpenCreateApps}" />
+                <Button text="Fattura Contabile" tooltip="Fattura Contabile" icon="sap-icon://expense-report" press=".onFatturaContabileButtonPress" type="Emphasized" enabled="{viewModel>/ui/canOpenCreateApps}" />
                 <!-- 6. Lucchetto Blocco -->
                 <Button text="Blocca" icon="sap-icon://locked" tooltip="Blocca" press=".onBloccaFatturaButtonPress" type="Emphasized" enabled="{= ${viewModel>/ui/canBlocca} }" />
                 <!-- 7. Lucchetto Sblocco -->
                 <Button text="Sblocca" icon="sap-icon://unlocked" tooltip="Sblocca" press=".onSbloccaFatturaButtonPress" type="Emphasized" />
                 <!-- 8. Archivia Fattura -->
-                <Button text="Nascondi Fattura" icon="sap-icon://save" press=".onArchiviaFatturaButtonPress" type="Emphasized" enabled="{= ${viewModel>/ui/canArchivia} }" />
+                <Button text="Nascondi Fattura" tooltip="Nascondi Fattura" icon="sap-icon://save" press=".onArchiviaFatturaButtonPress" type="Emphasized" enabled="{= ${viewModel>/ui/canArchivia} }" />
                 <!-- 9. Storno Fattura -->
-                <Button text="Storno Fattura" icon="sap-icon://reset" press=".onStornoFatturaButtonPress" type="Emphasized" enabled="{= ${viewModel>/ui/canStorno} }" />
+                <Button text="Storno Fattura" tooltip="Storno Fattura" icon="sap-icon://reset" press=".onStornoFatturaButtonPress" type="Emphasized" enabled="{= ${viewModel>/ui/canStorno} }" />
                 <!-- 10. Ripristina Fatture -->
-                <Button text="Ripristina Fatture" icon="sap-icon://sys-cancel-2" press=".onAnnullaArchiviazioneButtonPress" type="Emphasized" />
+                <Button text="Fatture Archiviate" tooltip="Fatture Archiviate" icon="sap-icon://folder-full" press=".onAnnullaArchiviazioneButtonPress" type="Emphasized" />
                 <!-- 11. Fattura logistica MIRO -->
-                <Button text="Fattura logistica MIRO" icon="sap-icon://doc-attachment" press=".onFatturaLogisticaMiroButtonPress" type="Emphasized" enabled="{viewModel>/ui/canOpenCreateApps}" />
+                <Button text="Fattura logistica MIRO" tooltip="Fattura logistica MIRO" icon="sap-icon://doc-attachment" press=".onFatturaLogisticaMiroButtonPress" type="Emphasized" enabled="{viewModel>/ui/canOpenCreateApps}" />
             </OverflowToolbar>
         </f:footer>
     </f:DynamicPage>

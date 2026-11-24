@@ -58,7 +58,7 @@ sap.ui.define([
             }
 
             const filterArray = this._currentFilters || [];
-            const entity = "/zeim_lista_fatture_archiviate"; //zeim_lista_fatture_archiviate
+            const entity = "/zeim_lista_fatture_passive"; //zeim_lista_fatture_archiviate
 
             if (bReset) {
                 oFattureModel.setData({ results: [] });

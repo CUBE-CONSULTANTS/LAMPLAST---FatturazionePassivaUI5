@@ -502,7 +502,7 @@ sap.ui.define([
                 );
 
                 const oRouter = sap.ui.core.UIComponent.getRouterFor(this);
-
+                debugger
                 if (oRow) {
                     oRouter.navTo("DettaglioDisplay", { invoiceId: String(oSelectedWithChoice.Id) });
                 } else {
@@ -2517,7 +2517,7 @@ sap.ui.define([
 
             sap.m.MessageToast.show("Gestione layout aggiornata.");
         },
-//value help 
+        //value help 
         onValueHelpSocieta: function () {
             sap.ui.require([
                 "com/zeim/fatturazionepassiva/controller/helpers/ValueHelpHandler"

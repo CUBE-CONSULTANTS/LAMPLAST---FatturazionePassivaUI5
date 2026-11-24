@@ -122,7 +122,7 @@
                         >
                             <fb:control>
                                 <DateRangeSelection
-                                    id="archDrsDataFattura"
+                                    id="archDrsDataFattura2"
                                     delimiter=" - "
                                     width="300px"
                                     displayFormat="dd/MM/yyyy"

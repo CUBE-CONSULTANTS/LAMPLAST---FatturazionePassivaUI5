@@ -1,9 +1,10 @@
-<mvc:View controllerName="com.zeim.fatturazionepassiva.controller.Dettaglio"
+<mvc:View xmlns:rowmodes="sap.ui.table.rowmodes" controllerName="com.zeim.fatturazionepassiva.controller.Dettaglio"
     xmlns:mvc="sap.ui.core.mvc"
     xmlns:m="sap.m"
     xmlns:uxap="sap.uxap"
     xmlns:layout="sap.ui.layout"
     xmlns:form="sap.ui.layout.form"
+    xmlns:table="sap.ui.table"
     xmlns:core="sap.ui.core">
     <!-- <m:Page id="paginaDettaglio" showFooter="true" class="sapUiSizeCompact">
         <m:content> -->
@@ -13,12 +14,12 @@
                 <uxap:expandedHeading>
                     <m:HBox width="100%" justifyContent="SpaceBetween" alignItems="Center">
                         <!-- NumeroFattura  -->
-                        <m:Title text="{= 'Fattura ' + (${DocumentNumber} || '')}" wrapping="true" />
+                        <m:Title text='Fattura {fattura>/FatturaElettronicaBody/DatiGenerali/DatiGeneraliDocumento/Numero}' wrapping="true" />
                     </m:HBox>
                 </uxap:expandedHeading>
                 <uxap:snappedHeading>
                     <m:FlexBox fitContainer="true" alignItems="Center">
-                        <m:Title text="{= 'Fattura ' + (${DocumentNumber} || '')}" wrapping="true" />
+                        <m:Title text='Fattura {fattura>/FatturaElettronicaBody/DatiGenerali/DatiGeneraliDocumento/Numero}' wrapping="true" />
                     </m:FlexBox>
                 </uxap:snappedHeading>
             </uxap:ObjectPageDynamicHeaderTitle>
@@ -132,160 +133,240 @@
                     <uxap:ObjectPageSubSection>
                         <uxap:blocks>
                             <m:ScrollContainer horizontal="true" vertical="false" width="100%" focusable="true">
-                                <m:Table id="detailTable" items="{path: 'fattura>/FatturaElettronicaBody/DatiBeniServizi/DettaglioLinee'}" inset="false" width="100%">
-                                    <m:columns>
-                                        <m:Column width="6rem">
-                                            <m:Text text="Posizione" />
-                                        </m:Column>
-                                        <m:Column width="6rem">
-                                            <m:Text text="M.For/CACC" />
-                                        </m:Column>
-                                        <m:Column width="7rem">
-                                            <m:Text text="Codice Materiale SAP" />
-                                        </m:Column>
-                                        <m:Column width="12rem">
-                                            <m:Text text="Descrizione Materiale" />
-                                        </m:Column>
-                                        <m:Column width="8rem">
-                                            <m:Text text="Unità di misura" />
-                                        </m:Column>
-                                        <m:Column width="6rem">
-                                            <m:Text text="Quantità" />
-                                        </m:Column>
-                                        <m:Column width="6rem">
-                                            <m:Text text="Prezzo Unitario" />
-                                        </m:Column>
-                                        <m:Column width="7rem">
-                                            <m:Text text="Prezzo Totale" />
-                                        </m:Column>
-                                        <m:Column width="5rem">
-                                            <m:Text text="Cod. IVA (%)" />
-                                        </m:Column>
-                                        <m:Column width="6rem" hAlign="Center">
-                                            <m:Text text="Assegna documenti SAP" />
-                                        </m:Column>
-                                        <m:Column width="7rem">
-                                            <m:Text text="Doc. Acquisto" />
-                                        </m:Column>
-                                        <m:Column width="7rem">
-                                            <m:Text text="Posizione Oda" />
-                                        </m:Column>
-                                        <m:Column width="7rem">
-                                            <m:Text text="Data Doc." />
-                                        </m:Column>
-                                        <!-- <m:Column width="5rem">
-                                            <m:Text text="DDT" />
-                                        </m:Column> -->
-                                        <m:Column width="7rem">
-                                            <m:Text text="Doc. Mat./SES" />
-                                            <!--Doc.Materiale-->
-                                        </m:Column>
-                                        <m:Column width="5rem">
-                                            <m:Text text="Posizione" />
-                                        </m:Column>
-                                        <m:Column width="7rem">
-                                            <m:Text text="Es.doc.mat" />
-                                        </m:Column>
-                                        <m:Column width="4rem">
-                                            <m:Text text="CUP" />
-                                        </m:Column>
-                                        <m:Column width="4rem">
-                                            <m:Text text="CIG" />
-                                        </m:Column>
-                                        <m:Column width="6rem">
-                                            <m:Text text="Commessa" />
-                                        </m:Column>
-                                        <m:Column width="7rem">
-                                            <m:Text text="Bolla consegna" />
-                                        </m:Column>
-                                        <m:Column width="7rem">
-                                            <m:Text text="Data di registrazione" />
-                                        </m:Column>
-                                        <m:Column width="7rem">
-                                            <m:Text text="N. Doc" />
-                                        </m:Column>
-                                    </m:columns>
+                                <table:Table rows="{fattura>/FatturaElettronicaBody/DatiBeniServizi/DettaglioLinee}" selectionMode="None" enableColumnReordering="false" width="100%">
+                                    <table:rowMode>
+                                        <!-- <rowmodes:Fixed xmlns:rowmodes="sap.ui.table.rowmodes" rowCount="10" /> -->
+                                        <rowmodes:Auto rowContentHeight="64" minRowCount="10"/>
+                                    </table:rowMode>
+                                    <table:columns>
 
-                                    <m:items>
-                                        <m:ColumnListItem>
-                                            <m:cells>
-                                                <m:Text text="{fattura>NumeroLinea}" />
-                                                <m:Text text="{matFornCcac}" />
+                                        <table:Column width="6rem">
+                                            <table:label>
+                                                <m:Label text="Posizione" />
+                                            </table:label>
+                                            <table:template>
+                                                <m:Text text="{fattura>NumeroLinea}" wrapping="false" />
+                                            </table:template>
+                                        </table:Column>
 
+                                        <table:Column width="6rem">
+                                            <table:label>
+                                                <m:Label text="M.For/CACC" />
+                                            </table:label>
+                                            <table:template>
+                                                <m:Text text="{matFornCcac}" wrapping="false" />
+                                            </table:template>
+                                        </table:Column>
+
+                                        <table:Column width="7rem">
+                                            <table:label>
+                                                <m:Label text="Codice Materiale SAP" />
+                                            </table:label>
+                                            <table:template>
                                                 <m:VBox renderType="Bare">
-                                                    <m:Input value="{materialCode}" valueState="{= ${materialCode} ? 'Success' : 'Error' }" visible="{= ${viewModel>/ui/mode} === 'edit' 
-                                                                    &amp;&amp; (parseFloat(${fattura>Quantita}) || 0) !== 0 
-                                                                    &amp;&amp; (parseFloat(${fattura>PrezzoUnitario}) || 0) !== 0 
-                                                                }" width="100%" />
+                                                    <m:Input value="{materialCode}" valueState="{= ${materialCode} ? 'Success' : 'Error' }" visible="{= ${viewModel>/ui/mode} === 'edit' &amp;&amp; (parseFloat(${fattura>Quantita}) || 0) !== 0 &amp;&amp; (parseFloat(${fattura>PrezzoUnitario}) || 0) !== 0 }" width="100%" />
                                                     <m:Text text="{materialCode}" visible="{= ${viewModel>/ui/mode} !== 'edit' }" />
                                                 </m:VBox>
+                                            </table:template>
+                                        </table:Column>
 
-                                                <m:Text text="{fattura>Descrizione}" />
+                                        <table:Column width="20rem">
+                                            <table:label>
+                                                <m:Label text="Descrizione Materiale" />
+                                            </table:label>
+                                            <table:template>
+                                                <m:Text text="{fattura>Descrizione}" wrapping="true" wrappingType="Hyphenated"/>
+                                            </table:template>
+                                        </table:Column>
 
+                                        <table:Column width="8rem">
+                                            <table:label>
+                                                <m:Label text="Unità di misura" />
+                                            </table:label>
+                                            <table:template>
                                                 <m:VBox renderType="Bare">
-                                                    <m:Input value="{fattura>UnitaMisura}" valueState="{= ${fattura>UnitaMisura} ? 'Success' : 'Error' }" visible="{= ${viewModel>/ui/mode} === 'edit' 
-                                                                    &amp;&amp; (parseFloat(${fattura>Quantita}) || 0) !== 0 
-                                                                    &amp;&amp; (parseFloat(${fattura>PrezzoUnitario}) || 0) !== 0     
-                                                                }" width="100%" />
+                                                    <m:Input value="{fattura>UnitaMisura}" valueState="{= ${fattura>UnitaMisura} ? 'Success' : 'Error' }" visible="{= ${viewModel>/ui/mode} === 'edit' &amp;&amp; (parseFloat(${fattura>Quantita}) || 0) !== 0 &amp;&amp; (parseFloat(${fattura>PrezzoUnitario}) || 0) !== 0 }" width="100%" />
                                                     <m:Text text="{fattura>UnitaMisura}" visible="{= ${viewModel>/ui/mode} !== 'edit' }" />
                                                 </m:VBox>
+                                            </table:template>
+                                        </table:Column>
 
-                                                <m:Text text="{fattura>Quantita}" />
-                                                <m:Text text="{fattura>PrezzoUnitario}" />
-                                                <m:Text text="{fattura>PrezzoTotale}" />
-                                                <m:Text text="{fattura>AliquotaIVA}" />
+                                        <table:Column width="6rem">
+                                            <table:label>
+                                                <m:Label text="Quantità" />
+                                            </table:label>
+                                            <table:template>
+                                                <m:Text text="{fattura>Quantita}" wrapping="false" />
+                                            </table:template>
+                                        </table:Column>
 
-                                                <m:Button icon="sap-icon://action" tooltip="Assegna documenti SAP" visible="{= ${viewModel>/ui/mode} === 'edit' 
-                                                                    &amp;&amp; (parseFloat(${fattura>Quantita}) || 0) !== 0 
-                                                                    &amp;&amp; (parseFloat(${fattura>PrezzoUnitario}) || 0) !== 0 }" enabled="{= ${viewModel>/ui/mode} === 'edit' }" />
-                                                <m:Link text="{fattura>odaIdDocumento}" href="https://example.com/docAcq/{docAcq}" tooltip="{fattura>odaIdDocumento}"/>
+                                        <table:Column width="6rem">
+                                            <table:label>
+                                                <m:Label text="Prezzo Unitario" />
+                                            </table:label>
+                                            <table:template>
+                                                <m:Text text="{fattura>PrezzoUnitario}" wrapping="false" />
+                                            </table:template>
+                                        </table:Column>
 
+                                        <table:Column width="7rem">
+                                            <table:label>
+                                                <m:Label text="Prezzo Totale" />
+                                            </table:label>
+                                            <table:template>
+                                                <m:Text text="{fattura>PrezzoTotale}" wrapping="false" />
+                                            </table:template>
+                                        </table:Column>
+
+                                        <table:Column width="5rem">
+                                            <table:label>
+                                                <m:Label text="Cod. IVA (%)" />
+                                            </table:label>
+                                            <table:template>
+                                                <m:Text text="{fattura>AliquotaIVA}" wrapping="false" />
+                                            </table:template>
+                                        </table:Column>
+
+                                        <table:Column width="6rem" hAlign="Center">
+                                            <table:label>
+                                                <m:Label text="Assegna documenti SAP" />
+                                            </table:label>
+                                            <table:template>
+                                                <m:Button icon="sap-icon://action" tooltip="Assegna documenti SAP" visible="{= ${viewModel>/ui/mode} === 'edit' &amp;&amp; (parseFloat(${fattura>Quantita}) || 0) !== 0 &amp;&amp; (parseFloat(${fattura>PrezzoUnitario}) || 0) !== 0 }" enabled="{= ${viewModel>/ui/mode} === 'edit' }" />
+                                            </table:template>
+                                        </table:Column>
+
+                                        <table:Column width="7rem">
+                                            <table:label>
+                                                <m:Label text="Doc. Acquisto" />
+                                            </table:label>
+                                            <table:template>
+                                                <m:Link text="{fattura>odaIdDocumento}" href="https://example.com/docAcq/{docAcq}" tooltip="{fattura>odaIdDocumento}" />
+                                            </table:template>
+                                        </table:Column>
+
+                                        <table:Column width="7rem">
+                                            <table:label>
+                                                <m:Label text="Posizione Oda" />
+                                            </table:label>
+                                            <table:template>
                                                 <m:VBox renderType="Bare">
-                                                    <m:Input value="{fattura>odaPosOda}" valueState="{= ${fattura>odaPosOda} ? 'Success' : 'Error' }" visible="{= ${viewModel>/ui/mode} === 'edit' 
-                                                                    &amp;&amp; (parseFloat(${fattura>Quantita}) || 0) !== 0 
-                                                                    &amp;&amp; (parseFloat(${fattura>PrezzoUnitario}) || 0) !== 0
-                                                                }" width="100%" />
+                                                    <m:Input value="{fattura>odaPosOda}" valueState="{= ${fattura>odaPosOda} ? 'Success' : 'Error' }" visible="{= ${viewModel>/ui/mode} === 'edit' &amp;&amp; (parseFloat(${fattura>Quantita}) || 0) !== 0 &amp;&amp; (parseFloat(${fattura>PrezzoUnitario}) || 0) !== 0 }" width="100%" />
                                                     <m:Text text="{fattura>odaPosOda}" visible="{= ${viewModel>/ui/mode} !== 'edit' }" />
                                                 </m:VBox>
+                                            </table:template>
+                                        </table:Column>
 
-                                                <m:Text text="{fattura>odaDataDoc}" />
+                                        <table:Column width="7rem">
+                                            <table:label>
+                                                <m:Label text="Data Doc." />
+                                            </table:label>
+                                            <table:template>
+                                                <m:Text text="{fattura>odaDataDoc}" wrapping="false" />
+                                            </table:template>
+                                        </table:Column>
 
-                                                <!-- <m:Button icon="sap-icon://action" tooltip="DDT" enabled="{= ${viewModel>/ui/mode} === 'edit' }" /> -->
-
+                                        <table:Column width="7rem">
+                                            <table:label>
+                                                <m:Label text="Doc. Mat./SES" />
+                                            </table:label>
+                                            <table:template>
                                                 <m:VBox renderType="Bare">
-                                                    <m:Input value="{docMat}" valueState="{= ${docMat} ? 'Success' : 'Error' }" visible="{= ${viewModel>/ui/mode} === 'edit' 
-                                                                    &amp;&amp; (parseFloat(${fattura>Quantita}) || 0) !== 0 
-                                                                    &amp;&amp; (parseFloat(${fattura>PrezzoUnitario}) || 0) !== 0
-                                                                }" width="100%" />
+                                                    <m:Input value="{docMat}" valueState="{= ${docMat} ? 'Success' : 'Error' }" visible="{= ${viewModel>/ui/mode} === 'edit' &amp;&amp; (parseFloat(${fattura>Quantita}) || 0) !== 0 &amp;&amp; (parseFloat(${fattura>PrezzoUnitario}) || 0) !== 0 }" width="100%" />
                                                     <m:Text text="{docMat}" visible="{= ${viewModel>/ui/mode} !== 'edit' }" />
                                                 </m:VBox>
+                                            </table:template>
+                                        </table:Column>
 
+                                        <table:Column width="5rem">
+                                            <table:label>
+                                                <m:Label text="Posizione" />
+                                            </table:label>
+                                            <table:template>
                                                 <m:VBox renderType="Bare">
-                                                    <m:Input value="{posDocMat}" valueState="{= ${posDocMat} ? 'Success' : 'Error' }" visible="{= ${viewModel>/ui/mode} === 'edit' 
-                                                                    &amp;&amp; (parseFloat(${fattura>Quantita}) || 0) !== 0 
-                                                                    &amp;&amp; (parseFloat(${fattura>PrezzoUnitario}) || 0) !== 0
-                                                                }" width="100%" />
+                                                    <m:Input value="{posDocMat}" valueState="{= ${posDocMat} ? 'Success' : 'Error' }" visible="{= ${viewModel>/ui/mode} === 'edit' &amp;&amp; (parseFloat(${fattura>Quantita}) || 0) !== 0 &amp;&amp; (parseFloat(${fattura>PrezzoUnitario}) || 0) !== 0 }" width="100%" />
                                                     <m:Text text="{posDocMat}" visible="{= ${viewModel>/ui/mode} !== 'edit' }" />
                                                 </m:VBox>
+                                            </table:template>
+                                        </table:Column>
 
+                                        <table:Column width="7rem">
+                                            <table:label>
+                                                <m:Label text="Es.doc.mat" />
+                                            </table:label>
+                                            <table:template>
                                                 <m:VBox renderType="Bare">
-                                                    <m:Input value="{esDocMat}" valueState="{= ${esDocMat} ? 'Success' : 'Error' }" visible="{= ${viewModel>/ui/mode} === 'edit' 
-                                                                    &amp;&amp; (parseFloat(${fattura>Quantita}) || 0) !== 0 
-                                                                    &amp;&amp; (parseFloat(${fattura>PrezzoUnitario}) || 0) !== 0
-                                                                }" width="100%" />
+                                                    <m:Input value="{esDocMat}" valueState="{= ${esDocMat} ? 'Success' : 'Error' }" visible="{= ${viewModel>/ui/mode} === 'edit' &amp;&amp; (parseFloat(${fattura>Quantita}) || 0) !== 0 &amp;&amp; (parseFloat(${fattura>PrezzoUnitario}) || 0) !== 0 }" width="100%" />
                                                     <m:Text text="{esDocMat}" visible="{= ${viewModel>/ui/mode} !== 'edit' }" />
                                                 </m:VBox>
+                                            </table:template>
+                                        </table:Column>
 
-                                                <m:Text text="{cup}" />
-                                                <m:Text text="{cig}" />
-                                                <m:Text text="{commessa}" />
-                                                <m:Text text="{bolla}" />
+                                        <table:Column width="4rem">
+                                            <table:label>
+                                                <m:Label text="CUP" />
+                                            </table:label>
+                                            <table:template>
+                                                <m:Text text="{cup}" wrapping="false" />
+                                            </table:template>
+                                        </table:Column>
+
+                                        <table:Column width="4rem">
+                                            <table:label>
+                                                <m:Label text="CIG" />
+                                            </table:label>
+                                            <table:template>
+                                                <m:Text text="{cig}" wrapping="false" />
+                                            </table:template>
+                                        </table:Column>
+
+                                        <table:Column width="6rem">
+                                            <table:label>
+                                                <m:Label text="Commessa" />
+                                            </table:label>
+                                            <table:template>
+                                                <m:Text text="{commessa}" wrapping="false" />
+                                            </table:template>
+                                        </table:Column>
+
+                                        <table:Column width="7rem">
+                                            <table:label>
+                                                <m:Label text="Bolla consegna" />
+                                            </table:label>
+                                            <table:template>
+                                                <m:Text text="{fattura>NumeroDDT}" wrapping="false" />
+                                            </table:template>
+                                        </table:Column>
+
+                                        <table:Column width="7rem">
+                                            <table:label>
+                                                <m:Label text="Data bolla consegna" />
+                                            </table:label>
+                                            <table:template>
+                                                <m:Text text="{path:'fattura>DataDDT',formatter:'.formatter.formatDate'}" wrapping="false" />
+                                            </table:template>
+                                        </table:Column>
+
+                                        <table:Column width="7rem">
+                                            <table:label>
+                                                <m:Label text="Data di registrazione" />
+                                            </table:label>
+                                            <table:template>
                                                 <m:Text text="-" />
+                                            </table:template>
+                                        </table:Column>
+
+                                        <table:Column width="7rem">
+                                            <table:label>
+                                                <m:Label text="N. Doc" />
+                                            </table:label>
+                                            <table:template>
                                                 <m:Text text="-" />
-                                            </m:cells>
-                                        </m:ColumnListItem>
-                                    </m:items>
-                                </m:Table>
+                                            </table:template>
+                                        </table:Column>
+
+                                    </table:columns>
+                                </table:Table>
                             </m:ScrollContainer>
                         </uxap:blocks>
                     </uxap:ObjectPageSubSection>
