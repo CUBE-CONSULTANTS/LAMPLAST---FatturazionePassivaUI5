@@ -6,6 +6,9 @@ sap.ui.define([
     "sap/m/Dialog",
     "sap/m/Button",
     "sap/m/VBox",
+    "sap/m/p13n/MetadataHelper",
+    "sap/m/p13n/Engine",
+    "sap/m/p13n/SelectionController",
 
 
 ], function (
@@ -13,7 +16,7 @@ sap.ui.define([
     Spreadsheet,
     JSONModel,
     CodeEditor,
-    Dialog, Button, VBox
+    Dialog, Button, VBox, MetadataHelper, Engine, SelectionController,
 ) {
     "use strict";
 
@@ -900,5 +903,204 @@ sap.ui.define([
             }
         },
 
+        //TEST P13N
+        _registerForP13n: function (oTable) {
+
+            if (!oTable) {
+                console.error("Tabella fattureArchiviate non trovata")
+                return
+            }
+
+            const aMetadata = []
+            this._mInitialWidth = {}
+
+            oTable.getColumns().forEach((oColumn) => {
+                const sKey = this._getCustomDataValue(oColumn, "p13nKey")
+                if (!sKey) return
+                const sPath = this._getCustomDataValue(oColumn, "p13nPath")
+                const oHeader = oColumn.getLabel()
+                const sLabel = oHeader && oHeader.getText ? oHeader.getText() : sKey
+
+                aMetadata.push({
+                    key: sKey,
+                    label: sLabel,
+                    path: sPath
+                })
+                this._mInitialWidth[sKey] = oColumn.getWidth() || "11rem"
+            })
+
+            this.oMetadataHelper = new MetadataHelper(aMetadata)
+
+            Engine.getInstance().register(oTable, {
+                helper: this.oMetadataHelper,
+                controller: {
+                    Columns: new SelectionController({
+                        targetAggregation: "columns",
+                        control: oTable
+                    })
+                }
+            })
+
+            Engine.getInstance().attachStateChange(this.handleStateChange, this)
+        },
+        _getCustomDataValue: function (oControl, sKey) {
+            const oData = oControl.getCustomData().find(
+                (oItem) => oItem.getKey() === sKey
+            )
+            return oData ? oData.getValue() : undefined
+        },
+        openPersoDialog: function (oEvent) {
+            const oTable = oEvent.getSource().getParent().getParent()
+            if (!oTable) return
+
+            Engine.getInstance().show(
+                oTable,
+                ["Columns"],
+                {
+                    contentHeight: "35rem",
+                    contentWidth: "32rem",
+                    source: oEvent.getSource()
+                }
+            )
+        },
+        handleStateChange: function (oEvent) {
+            const oTable = oEvent.getParameter("control")
+            const oState = oEvent.getParameter("state")
+            if (!oState || !oState.Columns) return
+
+            this._applyP13nColumnsState(oState.Columns, oTable)
+        },
+
+        _applyP13nColumnsState: function (aStateColumns, oTable) {
+            if (!oTable) return
+
+            const aCurrentColumns = oTable.getColumns().slice()
+            const aVisibleKeys = aStateColumns.map((o) => o.key)
+
+            aCurrentColumns.forEach((oColumn) => {
+                const sKey = this._getCustomDataValue(oColumn, "p13nKey")
+                if (sKey) {
+                    oColumn.setVisible(aVisibleKeys.includes(sKey))
+                }
+            })
+
+            const aOrderedColumns = []
+            aStateColumns.forEach((oStateColumn) => {
+                const oColumn = aCurrentColumns.find(
+                    (oCol) =>
+                        this._getCustomDataValue(oCol, "p13nKey") === oStateColumn.key
+                )
+                if (oColumn && !aOrderedColumns.includes(oColumn)) {
+                    aOrderedColumns.push(oColumn)
+                }
+            })
+
+            aCurrentColumns.forEach((oColumn) => {
+                if (!aOrderedColumns.includes(oColumn)) {
+                    aOrderedColumns.push(oColumn)
+                }
+            })
+
+            this._reorderTableColumns(aOrderedColumns, oTable)
+        },
+
+        // Prime 3 colonne fisse
+        _reorderTableColumns: function (aOrderedP13nColumns, oTable) {
+
+            const aCurrentColumns = oTable.getColumns()
+
+            const aFixedColumns = aCurrentColumns.slice(0, 3)
+            const aReorderableColumns = aCurrentColumns.slice(3)
+
+            const aNewColumns = [
+                ...aFixedColumns,
+                ...aOrderedP13nColumns.filter(function (oColumn) {
+                    return aReorderableColumns.includes(oColumn)
+                }),
+                ...aReorderableColumns.filter(function (oColumn) {
+                    return !aOrderedP13nColumns.includes(oColumn)
+                })
+            ]
+
+            aNewColumns.forEach(function (oColumn, iIndex) {
+                oTable.removeColumn(oColumn)
+                oTable.insertColumn(oColumn, iIndex)
+            })
+        },
+
+        _getCurrentTableLayout: function (oTable) {
+            // const oTable = this.byId("fattureArchiviate")
+            return {
+                columns: oTable.getColumns().map((oColumn, iIndex) => ({
+                    key: this._getColumnKey(oColumn),
+                    visible: oColumn.getVisible(),
+                    order: iIndex
+                }))
+            }
+        },
+        _applyTableLayout: function (oLayout, oTable) {
+            if (!oTable || !oLayout || !oLayout.columns) return
+
+            const aSavedColumns = oLayout.columns.map((oSaved) => ({
+                ...oSaved,
+                key: oSaved.key || "__column_" + oSaved.order
+            }))
+
+            const aCurrentColumns = oTable.getColumns().slice()
+            const mColumns = {}
+            aCurrentColumns.forEach((oColumn) => {
+                mColumns[this._getColumnKey(oColumn)] = oColumn
+            })
+
+            oLayout.columns.forEach((oSaved) => {
+                const oColumn = mColumns[oSaved.key]
+                if (oColumn) oColumn.setVisible(!!oSaved.visible)
+            })
+            aSavedColumns.forEach((oSaved) => {
+                const oColumn = mColumns[oSaved.key]
+                if (oColumn) oColumn.setVisible(!!oSaved.visible)
+            })
+
+            const aOrdered = oLayout.columns
+                .slice()
+                .sort((a, b) => a.order - b.order)
+                .map((oSaved) => mColumns[oSaved.key])
+                .filter(Boolean)
+
+            aCurrentColumns.forEach((oColumn) => {
+                if (!aOrdered.includes(oColumn)) aOrdered.push(oColumn)
+            })
+
+            aOrdered.forEach((oColumn, iIndex) => {
+                oTable.removeColumn(oColumn)
+                oTable.insertColumn(oColumn, iIndex)
+            })
+
+            oTable.invalidate()
+        },
+
+        _resetToStandardTableLayout: function () {
+
+            const oTable = this.byId("fattureArchiviate")
+            if (!oTable) return
+
+            const aColumnsToRestore =
+                this._aInitialColumnOrder || oTable.getColumns().slice()
+
+            oTable.removeAllColumns()
+            aColumnsToRestore.forEach((oColumn) => {
+                const sKey = this._getCustomDataValue(oColumn, "p13nKey")
+                if (sKey) {
+                    oColumn.setVisible(true)
+                }
+                oTable.addColumn(oColumn)
+            })
+        },
+        _getColumnKey: function (oColumn) {
+            const sKey = this._getCustomDataValue(oColumn, "p13nKey")
+            if (sKey) return sKey
+            const aInitial = this._aInitialColumnOrder || oColumn.getParent().getColumns()
+            return "__column_" + aInitial.indexOf(oColumn)
+        },
     });
 });

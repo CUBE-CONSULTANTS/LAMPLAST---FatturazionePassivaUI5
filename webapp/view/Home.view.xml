@@ -8,6 +8,8 @@
     xmlns:core="sap.ui.core"
     xmlns:fb="sap.ui.comp.filterbar"
     xmlns:layout="sap.ui.layout"
+    xmlns:sap.ui.fl="sap.ui.fl"
+    xmlns:app="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1"
     xmlns:table="sap.ui.table">
     <f:DynamicPage id="page" showFooter="true" fitContent="true" class="sapUiNoContentPadding">
         <!-- DynamicPage Header -->
@@ -108,7 +110,7 @@
                         <IconTabFilter key="Processed" text="Contabilizzate" icon="sap-icon://accept" iconColor="Positive" count="{viewModel>/counts/Processed}" />
                     </items>
                 </IconTabBar>
-                <table:Table id="idTreeTable" rows="{fattureModel>/results}" selectionMode="MultiToggle" enableColumnReordering="true" fixedColumnCount="1" rowActionCount="1" rowSelectionChange="onRowSelectionChange" class="sapUiNoMargin">
+                <table:Table id="idTreeTable" rows="{fattureModel>/results}" selectionMode="MultiToggle" enableColumnReordering="true" fixedColumnCount="1" rowActionCount="1" rowSelectionChange="onRowSelectionChange" class="sapUiNoMargin" sap.ui.fl:flexibility="sap/m/flexibility/EngineFlex">
                     <table:rowMode>
                         <rowmodes:Auto rowContentHeight="64"/>
                     </table:rowMode>
@@ -119,7 +121,7 @@
 
                             <ToolbarSpacer />
 
-                            <Button icon="sap-icon://action-settings" text="Layout colonne" press=".onOpenColumnLayoutDialog" />
+                            <Button icon="sap-icon://action-settings" text="Layout colonne" press=".openPersoDialog" />
 
                             <Button icon="sap-icon://excel-attachment" text="Esporta Excel" press=".onExportExcel" />
                         </OverflowToolbar>
@@ -136,7 +138,7 @@
                     </table:rowSettingsTemplate>
                     <!-- Colonne (lascia invariato) -->
                     <table:columns>
-                        <table:Column id="idTipoAllegatoColumn" width="5rem">
+                        <table:Column width="5rem">
                             <table:label>
                                 <Label text="Allegato" />
                             </table:label>
@@ -144,7 +146,7 @@
                                 <Button type="Transparent" icon="sap-icon://attachment" enabled="{= Boolean(${fattureModel>TipoAllegato}) &amp;&amp; ${fattureModel>TipoAllegato} !== '0' }" tooltip="{path: 'fattureModel>TipoAllegato', formatter: '.formatter.allegatoText'}" press=".onVisualizzaAllegato" />
                             </table:template>
                         </table:Column>
-                        <table:Column id="idXmlColumn" width="4rem">
+                        <table:Column width="4rem">
                             <table:label>
                                 <Label text="XML" />
                             </table:label>
@@ -153,7 +155,7 @@
                             </table:template>
                         </table:Column>
 
-                        <table:Column id="idPdfColumn" width="4rem">
+                        <table:Column width="4rem">
                             <table:label>
                                 <Label text="Fattura" />
                             </table:label>
@@ -163,7 +165,7 @@
                         </table:Column>
 
                         <!-- N. doc. (presente su padre e figlio) -->
-                        <table:Column id="idNumeroDocumentoColumn" width="7rem">
+                        <table:Column app:p13nKey="NumDoc_col" width="7rem">
                             <table:label>
                                 <Label text="N. doc." />
                             </table:label>
@@ -176,7 +178,7 @@
                         </table:Column>
 
                         <!-- Esercizio (solo testata, le righe figlie non ce l'hanno) -->
-                        <table:Column id="idEsercizioColumn" width="6rem">
+                        <table:Column app:p13nKey="Esercizio_col" width="6rem">
                             <table:label>
                                 <Label text="Esercizio" />
                             </table:label>
@@ -185,7 +187,7 @@
                             </table:template>
                         </table:Column>
                         <!-- Eser St. (semaforo) -> visible solo se esiste 'status' -->
-                        <table:Column id="idSemaforoColumn" width="6rem">
+                        <table:Column app:p13nKey="Stato_col" width="6rem">
                             <table:label>
                                 <Label text="Stato" />
                             </table:label>
@@ -207,7 +209,7 @@
                         </table:Column>
 
                         <!-- Posizione (Figlio) -->
-                        <table:Column id="idTipoFatturaColumn" width="9rem">
+                        <table:Column app:p13nKey="TipoFatt_col" width="9rem">
                             <table:label>
                                 <Label text="Tipo Fattura" />
                             </table:label>
@@ -216,7 +218,7 @@
                             </table:template>
                         </table:Column>
                         <!-- Società -->
-                        <table:Column id="idSocietaColumn" width="6rem">
+                        <table:Column app:p13nKey="Societa_col" width="6rem">
                             <table:label>
                                 <Label text="Società" />
                             </table:label>
@@ -225,7 +227,7 @@
                             </table:template>
                         </table:Column>
                         <!-- Nome Società-->
-                        <table:Column id="idNomeSocietaColumn" width="14rem">
+                        <table:Column app:p13nKey="NomeSoc_col" width="14rem">
                             <table:label>
                                 <Label text="Nome della società" />
                             </table:label>
@@ -234,7 +236,7 @@
                             </table:template>
                         </table:Column>
                         <!-- S. Fornitore -->
-                        <table:Column id="idStatoColumn" width="4rem">
+                        <table:Column app:p13nKey="State_col" width="4rem">
                             <table:label>
                                 <Label text="Stato" />
                             </table:label>
@@ -243,7 +245,7 @@
                             </table:template>
                         </table:Column>
                         <!-- Codice Fornitore -->
-                        <table:Column id="idCodiceFornitoreColumn" width="6rem">
+                        <table:Column app:p13nKey="Fornitore_col" width="6rem">
                             <table:label>
                                 <Label text="Fornitore" />
                             </table:label>
@@ -252,7 +254,7 @@
                             </table:template>
                         </table:Column>
                         <!-- Nome Fornitore -->
-                        <table:Column id="idNomeFornitoreColumn" width="14rem">
+                        <table:Column app:p13nKey="NomeFornitore_col" width="14rem">
                             <table:label>
                                 <Label text="Nome Fornitore" />
                             </table:label>
@@ -260,17 +262,8 @@
                                 <Text text="{fattureModel>SupplierName}" />
                             </table:template>
                         </table:Column>
-                        <!-- Gruppo Conti -->
-                        <!-- <table:Column width="14rem">
-                        <table:label>
-                            <Label text="Gruppo Conti" />
-                        </table:label>
-                        <table:template>
-                            <Text text="{fattureModel>SupplAcctGroup}" />
-                        </table:template>
-                    </table:Column> -->
                         <!-- Tipo Documento Cod. -->
-                        <table:Column id="idTipoDocumentoColumn" width="20rem">
+                        <table:Column app:p13nKey="TypeFatt_col" width="20rem">
                             <table:label>
                                 <Label text="Tipo Fatt" />
                             </table:label>
@@ -278,17 +271,8 @@
                                 <ObjectIdentifier title="{fattureModel>TipoDocAdE}" text="{fattureModel>TipoDocText}"/>
                             </table:template>
                         </table:Column>
-                        <!-- Tipo Documento Descr. -->
-                        <!-- <table:Column id="idTipoDocumentoDescrColumn" width="6rem">
-                            <table:label>
-                                <Label text="Descrizione" />
-                            </table:label>
-                            <table:template>
-                                <Text text="{fattureModel>TipoDocText}" />
-                            </table:template>
-                        </table:Column> -->
                         <!-- numero fattura fornitore. -->
-                        <table:Column id="idNumeroFatturaColumn" width="14rem">
+                        <table:Column app:p13nKey="NumFatFornitore_col" width="14rem">
                             <table:label>
                                 <Label text="N. Fat Fornitore" />
                             </table:label>
@@ -297,7 +281,7 @@
                             </table:template>
                         </table:Column>
                         <!-- Data Fattura -->
-                        <table:Column id="idDataFatturaColumn" width="6rem">
+                        <table:Column app:p13nKey="DataFat_col" width="6rem">
                             <table:label>
                                 <Label text="Data Fat" />
                             </table:label>
@@ -306,7 +290,7 @@
                             </table:template>
                         </table:Column>
                         <!-- Divisa -->
-                        <table:Column id="idDivisaColumn" width="6rem">
+                        <table:Column app:p13nKey="Divisa_col" width="6rem">
                             <table:label>
                                 <Label text="Divisa" />
                             </table:label>
@@ -316,7 +300,7 @@
                         </table:Column>
 
                         <!-- Causale -->
-                        <table:Column id="idCausaleColumn" width="14rem">
+                        <table:Column app:p13nKey="Causale_col" width="14rem">
                             <table:label>
                                 <Label text="Causale" />
                             </table:label>
@@ -325,7 +309,7 @@
                             </table:template>
                         </table:Column>
                         <!-- Importo totale -->
-                        <table:Column id="idImportoTotaleColumn" width="10rem">
+                        <table:Column app:p13nKey="ImportoTot_col" width="10rem">
                             <table:label>
                                 <Label text="Importo totale" />
                             </table:label>
@@ -334,7 +318,7 @@
                             </table:template>
                         </table:Column>
                         <!-- Imponibile -->
-                        <table:Column id="idImponibileColumn" width="10rem">
+                        <table:Column app:p13nKey="Imponibile_col" width="10rem">
                             <table:label>
                                 <Label text="Imponibile" />
                             </table:label>
@@ -343,7 +327,7 @@
                             </table:template>
                         </table:Column>
                         <!-- Doc Contabile -->
-                        <table:Column id="idDocContabileColumn" width="7rem">
+                        <table:Column app:p13nKey="DocContabile_col" width="7rem">
                             <table:label>
                                 <Label text="Doc Contabile" />
                             </table:label>
@@ -356,7 +340,7 @@
                         </table:Column>
 
                         <!-- Data registrazione -->
-                        <table:Column id="idDataRegistrazioneColumn" width="8rem">
+                        <table:Column app:p13nKey="DataReg_col" width="8rem">
                             <table:label>
                                 <Label text="Data registr." />
                             </table:label>
@@ -365,7 +349,7 @@
                             </table:template>
                         </table:Column>
                         <!-- Tipo Documento SAP -->
-                        <table:Column id="idTipoDocumentoSAPColumn" width="5rem">
+                        <table:Column app:p13nKey="TipiSAP_col" width="5rem">
                             <table:label>
                                 <Label text="Tipo SAP" />
                             </table:label>
@@ -446,7 +430,7 @@
                         </table:template>
                     </table:Column> -->
                         <!-- Scadenza Pagamento -->
-                        <table:Column id="idDataPagamentoColumn" width="8rem">
+                        <table:Column app:p13nKey="DataPagamento_col" width="8rem">
                             <table:label>
                                 <Label text="Data Pagamento" />
                             </table:label>
@@ -455,7 +439,7 @@
                             </table:template>
                         </table:Column>
                         <!-- Motivazione Blocco -->
-                        <table:Column id="idMotivazioneBloccoColumn" width="14rem">
+                        <table:Column app:p13nKey="MotivBlocco_col" width="14rem">
                             <table:label>
                                 <Label text="Motivazione Blocco" />
                             </table:label>
@@ -464,7 +448,7 @@
                             </table:template>
                         </table:Column>
                         <!-- Blocco -->
-                        <table:Column id="idBloccoColumn" width="4rem">
+                        <table:Column app:p13nKey="Blocco_col" width="4rem">
                             <table:label>
                                 <Label text="Blocco" />
                             </table:label>

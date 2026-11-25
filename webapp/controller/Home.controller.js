@@ -66,30 +66,18 @@ sap.ui.define([
             // Primo caricamento
             this._bindTable();
 
-            // layout standard iniziale della tabella
-            this._oStandardTableLayout = this._getCurrentTableLayout();
+            this._registerForP13n(this.byId("idTreeTable"));
+
+            const oTable = this.byId("idTreeTable");
+            if (oTable) {
+                this._aInitialColumnOrder = oTable.getColumns().slice(); // come in Archiviate
+            }
 
             this._initVariantManagement();
+            this._applyInitialVariant();
         },
 
-        _resetToStandardTableLayout: function () {
-            if (this._oStandardTableLayout) {
-                this._applyTableLayout(this._oStandardTableLayout);
-                return;
-            }
 
-            // fallback di sicurezza
-            var oTable = this.byId("idTreeTable");
-            if (!oTable) {
-                return;
-            }
-
-            oTable.getColumns().forEach(function (oColumn) {
-                oColumn.setVisible(true);
-            });
-
-            oTable.invalidate();
-        },
 
         _onClearSelection: function () {
             const oTable = this.byId("idTreeTable");
@@ -2315,233 +2303,192 @@ sap.ui.define([
             oDialog.open();
         },
 
+        //varianti
+        _getVariantManagementControl: function () {
+            return this.byId("variantManagement");
+        },
+
         _getVariantStorageKey: function () {
             return "ZEIM_FATTURAZIONE_PASSIVA_VARIANTS";
         },
 
         _getVariantData: function () {
-            var sKey = this._getVariantStorageKey();
-            var sValue = localStorage.getItem(sKey);
-
-            if (!sValue) {
-                return {
-                    variants: {},
-                    defaultVariantKey: ""
-                };
-            }
-
+            const sStorageKey = this._getVariantStorageKey();
             try {
-                return JSON.parse(sValue);
-            } catch (e) {
+                const sValue = localStorage.getItem(sStorageKey);
+                if (!sValue) {
+                    return { variants: {}, defaultVariantKey: "", lastSelectedKey: "" };
+                }
+                const oData = JSON.parse(sValue);
                 return {
-                    variants: {},
-                    defaultVariantKey: ""
+                    variants: oData.variants || {},
+                    defaultVariantKey: oData.defaultVariantKey || "",
+                    lastSelectedKey: oData.lastSelectedKey || ""
                 };
+            } catch (error) {
+                console.error("Errore lettura varianti:", error);
+                return { variants: {}, defaultVariantKey: "", lastSelectedKey: "" };
             }
         },
 
         _setVariantData: function (oData) {
-            var sKey = this._getVariantStorageKey();
-            localStorage.setItem(sKey, JSON.stringify(oData));
+            try {
+                localStorage.setItem(this._getVariantStorageKey(), JSON.stringify(oData));
+            } catch (error) {
+                console.error("Errore salvataggio varianti:", error);
+                sap.m.MessageToast.show("Impossibile salvare il layout.");
+            }
         },
 
         _initVariantManagement: function () {
-            var oVariantManagement = this.byId("variantManagement");
-
-            if (!oVariantManagement) {
+            const oVM = this._getVariantManagementControl();
+            if (!oVM) {
+                console.warn("VariantManagement non trovato");
                 return;
             }
 
-            oVariantManagement.removeAllItems();
+            const oData = this._getVariantData();
+            oVM.removeAllItems();
 
-            var oVariantData = this._getVariantData();
-            var aVariantKeys = Object.keys(oVariantData.variants || {});
-
-            aVariantKeys.forEach(function (sKey) {
-                var oVariant = oVariantData.variants[sKey];
-
-                oVariantManagement.addItem(new VariantItem({
+            Object.keys(oData.variants || {}).forEach((sKey) => {
+                const oVariant = oData.variants[sKey];
+                oVM.addItem(new VariantItem({
                     key: sKey,
-                    text: oVariant.name,
+                    title: oVariant.name,
                     remove: true,
                     rename: true,
                     changeable: true
                 }));
             });
 
-            if (oVariantData.defaultVariantKey && oVariantData.variants[oVariantData.defaultVariantKey]) {
-                oVariantManagement.setDefaultKey(oVariantData.defaultVariantKey);
-                oVariantManagement.setSelectedKey(oVariantData.defaultVariantKey);
+            const sSelected =
+                (oData.defaultVariantKey && oData.variants[oData.defaultVariantKey] && oData.defaultVariantKey) ||
+                (oData.lastSelectedKey && oData.variants[oData.lastSelectedKey] && oData.lastSelectedKey) ||
+                "";
 
-                this._applyTableLayout(oVariantData.variants[oVariantData.defaultVariantKey].layout);
+            if (oData.defaultVariantKey && oData.variants[oData.defaultVariantKey]) {
+                oVM.setDefaultKey(oData.defaultVariantKey);
+            }
+            if (sSelected) {
+                oVM.setSelectedKey(sSelected);
+            }
+        },
+
+        _applyInitialVariant: function () {
+            const oVM = this._getVariantManagementControl();
+            const oData = this._getVariantData();
+            const oTable = this.byId("idTreeTable");
+            const sKey = oData.defaultVariantKey || oData.lastSelectedKey;
+
+            if (sKey && oData.variants[sKey]) {
+                oVM.setSelectedKey(sKey);
+                this._applyTableLayout(oData.variants[sKey].layout, oTable);
             } else {
-                oVariantManagement.setDefaultKey("");
-                oVariantManagement.setSelectedKey("");
-
-                // questa è la parte che mancava
                 this._resetToStandardTableLayout();
             }
         },
 
-        _getCurrentTableLayout: function () {
-            var oTable = this.byId("idTreeTable");
-
-            return {
-                columns: oTable.getColumns().map(function (oColumn, iIndex) {
-                    return {
-                        id: oColumn.getId().split("--").pop(),
-                        index: iIndex,
-                        visible: oColumn.getVisible(),
-                        width: oColumn.getWidth()
-                    };
-                })
-            };
-        },
-
-        _applyTableLayout: function (oLayout) {
-            if (!oLayout || !oLayout.columns) {
-                return;
-            }
-
-            var oTable = this.byId("idTreeTable");
-
-            oLayout.columns.forEach(function (oColumnLayout) {
-                var oColumn = this.byId(oColumnLayout.id);
-
-                if (!oColumn) {
-                    return;
-                }
-
-                if (typeof oColumnLayout.visible === "boolean") {
-                    oColumn.setVisible(oColumnLayout.visible);
-                }
-
-                if (oColumnLayout.width) {
-                    oColumn.setWidth(oColumnLayout.width);
-                }
-            }.bind(this));
-
-            oLayout.columns
-                .slice()
-                .sort(function (a, b) {
-                    return a.index - b.index;
-                })
-                .forEach(function (oColumnLayout, iTargetIndex) {
-                    var oColumn = this.byId(oColumnLayout.id);
-
-                    if (!oColumn) {
-                        return;
-                    }
-
-                    oTable.removeColumn(oColumn);
-                    oTable.insertColumn(oColumn, iTargetIndex);
-                }.bind(this));
-        },
-
         onVariantSave: function (oEvent) {
-            var oVariantManagement = this.byId("variantManagement");
-            var oVariantData = this._getVariantData();
+            const oVM = oEvent.getSource();
+            const oData = this._getVariantData();
+            const sName = oEvent.getParameter("name");
+            let sKey = oEvent.getParameter("key");
+            const bOverwrite = oEvent.getParameter("overwrite");
+            const bDefault = oEvent.getParameter("def");
 
-            var sName = oEvent.getParameter("name");
-            var sKey = oEvent.getParameter("key");
-            var bOverwrite = oEvent.getParameter("overwrite");
-            var bDefault = oEvent.getParameter("def");
+            if (!sName) return;
 
-            if (!sName && !sKey) {
-                return;
+            if (!sKey && bOverwrite) {
+                sKey = Object.keys(oData.variants).find(
+                    (sExistingKey) => oData.variants[sExistingKey].name === sName
+                );
+            }
+            if (!sKey) {
+                sKey = "VARIANT_" + Date.now() + "_" + Math.floor(Math.random() * 10000);
             }
 
-            if (!sKey || !bOverwrite) {
-                sKey = "VARIANT_" + Date.now();
-            }
-
-            oVariantData.variants[sKey] = {
+            oData.variants[sKey] = {
                 key: sKey,
-                name: sName || oVariantData.variants[sKey]?.name || "Layout",
-                layout: this._getCurrentTableLayout()
+                name: sName,
+                layout: this._getCurrentTableLayout(this.byId("idTreeTable"))
             };
 
             if (bDefault) {
-                oVariantData.defaultVariantKey = sKey;
+                oData.defaultVariantKey = sKey;
+            }
+            oData.lastSelectedKey = sKey;
+            this._setVariantData(oData);
+
+            const oExistingItem = oVM.getItems().find((oItem) => oItem.getKey() === sKey);
+            if (oExistingItem) {
+                oExistingItem.setTitle(sName);
+            } else {
+                oVM.addItem(new VariantItem({
+                    key: sKey,
+                    title: sName,
+                    remove: true,
+                    rename: true,
+                    changeable: true
+                }));
             }
 
-            this._setVariantData(oVariantData);
-            this._initVariantManagement();
-
-            oVariantManagement.setSelectedKey(sKey);
+            oVM.setSelectedKey(sKey);
+            if (oData.defaultVariantKey) {
+                oVM.setDefaultKey(oData.defaultVariantKey);
+            }
 
             sap.m.MessageToast.show("Layout salvato.");
         },
 
         onVariantSelect: function (oEvent) {
-            var sKey = oEvent.getParameter("key");
+            const sKey = oEvent.getParameter("key");
+            const oData = this._getVariantData();
+            const oVariant = oData.variants[sKey];
 
-            // Se seleziono Standard
-            if (!sKey) {
+            if (!sKey || !oVariant || !oVariant.layout) {
+                oData.lastSelectedKey = "";
+                this._setVariantData(oData);
                 this._resetToStandardTableLayout();
                 return;
             }
 
-            var oVariantData = this._getVariantData();
-            var oVariant = oVariantData.variants[sKey];
-
-            if (!oVariant) {
-                this._resetToStandardTableLayout();
-                return;
-            }
-
-            this._applyTableLayout(oVariant.layout);
+            oData.lastSelectedKey = sKey;
+            this._setVariantData(oData);
+            this._applyTableLayout(oVariant.layout, this.byId("idTreeTable"));
         },
 
         onVariantManage: function (oEvent) {
-            var oVariantManagement = this.byId("variantManagement");
-            var sCurrentKey = oVariantManagement && oVariantManagement.getSelectedKey();
+            const oData = this._getVariantData();
 
-            var oVariantData = this._getVariantData();
+            const aDeleted = oEvent.getParameter("deleted") || [];
+            const aRenamed = oEvent.getParameter("renamed") || [];
+            const sDefaultKey = oEvent.getParameter("def");
 
-            var aDeleted = oEvent.getParameter("deleted") || [];
-            var aRenamed = oEvent.getParameter("renamed") || [];
-            var sDefaultKey = oEvent.getParameter("def");
+            aDeleted.forEach((sKey) => {
+                delete oData.variants[sKey];
+                if (oData.defaultVariantKey === sKey) oData.defaultVariantKey = "";
+                if (oData.lastSelectedKey === sKey) oData.lastSelectedKey = "";
+            });
 
-            var bDeletedCurrent = false;
-
-            aDeleted.forEach(function (sKey) {
-                delete oVariantData.variants[sKey];
-
-                if (oVariantData.defaultVariantKey === sKey) {
-                    oVariantData.defaultVariantKey = "";
-                }
-
-                if (sCurrentKey === sKey) {
-                    bDeletedCurrent = true;
+            aRenamed.forEach((oRenamed) => {
+                if (typeof oRenamed === "object" && oRenamed.key && oData.variants[oRenamed.key]) {
+                    oData.variants[oRenamed.key].name = oRenamed.name;
                 }
             });
 
-            aRenamed.forEach(function (oRenamed) {
-                if (oVariantData.variants[oRenamed.key]) {
-                    oVariantData.variants[oRenamed.key].name = oRenamed.name;
-                }
-            });
-
-            if (sDefaultKey && oVariantData.variants[sDefaultKey]) {
-                oVariantData.defaultVariantKey = sDefaultKey;
-            } else if (!sDefaultKey) {
-                oVariantData.defaultVariantKey = "";
+            if (sDefaultKey === false) {
+                oData.defaultVariantKey = "";
+            } else if (typeof sDefaultKey === "string" && oData.variants[sDefaultKey]) {
+                oData.defaultVariantKey = sDefaultKey;
             }
 
-            this._setVariantData(oVariantData);
+            this._setVariantData(oData);
             this._initVariantManagement();
-
-            if (bDeletedCurrent || !oVariantData.defaultVariantKey) {
-                this._resetToStandardTableLayout();
-                if (oVariantManagement) {
-                    oVariantManagement.setSelectedKey("");
-                }
-            }
 
             sap.m.MessageToast.show("Gestione layout aggiornata.");
         },
-        //value help 
+        //end varianti
+
         onValueHelpSocieta: function () {
             sap.ui.require([
                 "com/zeim/fatturazionepassiva/controller/helpers/ValueHelpHandler"
