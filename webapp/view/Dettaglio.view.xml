@@ -31,93 +31,6 @@
                 <uxap:subSections>
                     <uxap:ObjectPageSubSection>
                         <uxap:blocks>
-                            <!-- <form:SimpleForm editable="false" labelSpanXL="4" labelSpanL="4" labelSpanM="4" labelSpanS="12" adjustLabelSpan="false" emptySpanXL="0" emptySpanL="0" emptySpanM="0" emptySpanS="0" columnsXL="4" columnsL="3" columnsM="2" columnsS="1" width="100%">
-                                <core:Title text="Documento" />
-
-                                <m:Label text="Società" />
-                                <m:Text text="{CompanyCode}" />
-
-                                <m:Label text="Nome società" />
-                                <m:Text text="{CompanyName}" />
-
-                                <m:Label text="Tipo Doc. AdE" />
-                                <m:Text text="{TipoDocAdE}" />
-
-                                <m:Label text="Descrizione Tipo Doc." />
-                                <m:Text text="{TipoDocText}" />
-
-                                <m:Label text="Tipo fattura" />
-                                <m:Text text="{= ${TipoFattura} === 'M' ? 'Fattura Logistica' : 'Fattura Contabile' }" />
-
-                                <m:Label text="Esercizio" />
-                                <m:Text text="{FiscalYear}" />
-
-                                <m:Label text="Tipo documento SAP" />
-                                <m:Text text="{DocumentType}" />
-
-                                <m:Label text="Doc. contabile" />
-                                <m:Link text="{FinanceDocument}" press="onFinanceDocumentLinkPress" />
-
-                                <m:Label text="Data registrazione" />
-                                <m:Text text="{path: 'PostingDate', formatter: '.formatter.formatDate'}" />
-
-                                <core:Title text="Fornitore" />
-
-                                <m:Label text="Codice" />
-                                <m:Link text="{= ${SelectedSupplierCode} ? ${SelectedSupplierCode} : ${SupplierCode} }" press="onNavToFornitore" />
-
-                                <m:Label text="Nome" />
-                                <m:Text text="{= ${SupplierName} }" />
-
-                                <m:Label text="Partita IVA" />
-                                <m:Text text="{PartitaIVAcee}" />
-
-                                <m:Label text="Codice fiscale" />
-                                <m:Text text="{CodiceFiscale}" />
-
-                                <m:Label text="N. fattura fornitore" />
-                                <m:Text text="{NumeroFattura}" />
-
-                                <m:Label text="Data fattura" />
-                                <m:Text text="{path: 'DataFattura', formatter: '.formatter.formatDate'}" />
-
-                                <m:Label text="Causale" />
-                                <m:Text text="{Causale}" />
-
-                                <core:Title text="SDI e Stato" />
-
-                                <m:Label text="Codice destinatario" />
-                                <m:Text text="{CodDestinatario}" />
-
-                                <m:Label text="Numero SDI" />
-                                <m:Text text="{NumeroSDI}" />
-
-                                <m:Label text="Data ricezione SDI" />
-                                <m:Text text="{path: 'DataSDI', formatter: '.formatter.formatDate'}" />
-
-                                <m:Label text="Paese" />
-                                <m:Text text="{Paese}" />
-
-                                <m:Label text="Blocco" />
-                                <m:Text text="{= ${CodBlocco} ? 'Bloccato' : 'Sbloccato' }" />
-
-                                <m:Label text="Motivo blocco" />
-                                <m:Text text="{MotivoBlocco}" />
-
-                                <core:Title text="Importi" />
-
-                                <m:Label text="Imponibile" />
-                                <m:Text text="{Imponibile}" />
-
-                                <m:Label text="Totale" />
-                                <m:Text text="{Totale}" />
-
-                                <m:Label text="Divisa" />
-                                <m:Text text="{Divisa}" />
-
-                                <m:Label text="Data pagamento" />
-                                <m:Text text="{path: 'DataPagamento', formatter: '.formatter.formatDate'}" />
-                            </form:SimpleForm> -->
                             <form:Form editable="false" width="100%">
                                 <form:layout>
                                     <form:ResponsiveGridLayout labelSpanXL="4" labelSpanL="4" labelSpanM="4" labelSpanS="12" adjustLabelSpan="false" emptySpanXL="0" emptySpanL="0" emptySpanM="0" emptySpanS="0" columnsXL="4" columnsL="3" columnsM="2" singleContainerFullSize="false" />
@@ -263,14 +176,14 @@
                                             </table:template>
                                         </table:Column>
 
-                                        <table:Column width="7rem">
+                                        <table:Column width="7rem" visible="{= ${viewModel>/ui/mode} === 'edit' }">
                                             <table:label>
                                                 <m:Label text="Codice Materiale SAP" wrapping="true" />
                                             </table:label>
                                             <table:template>
                                                 <m:VBox renderType="Bare">
                                                     <m:Input value="{materialCode}" valueState="{= ${materialCode} ? 'Success' : 'Error' }" visible="{= ${viewModel>/ui/mode} === 'edit' &amp;&amp; (parseFloat(${fattura>Quantita}) || 0) !== 0 &amp;&amp; (parseFloat(${fattura>PrezzoUnitario}) || 0) !== 0 }" width="100%" />
-                                                    <m:Text text="{materialCode}" visible="{= ${viewModel>/ui/mode} !== 'edit' }" />
+                                                    <!-- <m:Text text="{materialCode}" /> -->
                                                 </m:VBox>
                                             </table:template>
                                         </table:Column>
@@ -284,14 +197,14 @@
                                             </table:template>
                                         </table:Column>
 
-                                        <table:Column width="8rem">
+                                        <table:Column width="8rem" visible="{= ${viewModel>/ui/mode} === 'edit' }">
                                             <table:label>
                                                 <m:Label text="Unità di misura" />
                                             </table:label>
                                             <table:template>
                                                 <m:VBox renderType="Bare">
                                                     <m:Input value="{fattura>UnitaMisura}" valueState="{= ${fattura>UnitaMisura} ? 'Success' : 'Error' }" visible="{= ${viewModel>/ui/mode} === 'edit' &amp;&amp; (parseFloat(${fattura>Quantita}) || 0) !== 0 &amp;&amp; (parseFloat(${fattura>PrezzoUnitario}) || 0) !== 0 }" width="100%" />
-                                                    <m:Text text="{fattura>UnitaMisura}" visible="{= ${viewModel>/ui/mode} !== 'edit' }" />
+                                                    <!-- <m:Text text="{fattura>UnitaMisura}" visible="{= ${viewModel>/ui/mode} !== 'edit' }" /> -->
                                                 </m:VBox>
                                             </table:template>
                                         </table:Column>
@@ -332,12 +245,12 @@
                                             </table:template>
                                         </table:Column>
 
-                                        <table:Column width="6rem" hAlign="Center">
+                                        <table:Column width="6rem" hAlign="Center" visible="{= ${viewModel>/ui/mode} === 'edit'}">
                                             <table:label>
                                                 <m:Label text="Assegna documenti SAP" wrapping="true" />
                                             </table:label>
                                             <table:template>
-                                                <m:Button icon="sap-icon://action" tooltip="Assegna documenti SAP" press="onOpenDialogAssignSAPDocument" visible="{= ${viewModel>/ui/mode} === 'edit' &amp;&amp; (parseFloat(${fattura>Quantita}) || 0) !== 0 &amp;&amp; (parseFloat(${fattura>PrezzoUnitario}) || 0) !== 0 }" enabled="{= ${viewModel>/ui/mode} === 'edit' }" />
+                                                <m:Button icon="sap-icon://action" tooltip="Assegna documenti SAP" press="onOpenDialogAssignSAPDocument" visible="{= (parseFloat(${fattura>Quantita}) || 0) !== 0 &amp;&amp; (parseFloat(${fattura>PrezzoUnitario}) || 0) !== 0 }" enabled="{= ${viewModel>/ui/mode} === 'edit' }" />
                                             </table:template>
                                         </table:Column>
 
@@ -349,7 +262,7 @@
                                                 <m:Link text="{fattura>odaIdDocumento}" tooltip="{fattura>odaIdDocumento}" press="navToOrdineAcquisto" />
                                             </table:template>
                                         </table:Column>
-                                        <table:Column width="7rem">
+                                        <table:Column width="7rem" visible="{= ${viewModel>/ui/mode} === 'edit' }">
                                             <table:label>
                                                 <m:Label text="OdA SAP" />
                                             </table:label>
@@ -357,19 +270,19 @@
                                                 <m:VBox renderType="Bare">
                                                     <!-- Cambiare il -->
                                                     <m:Input value="{fattura>OdaSap}" valueState="{= ${fattura>OdaSap} ? 'Success' : 'Error' }" visible="{= ${viewModel>/ui/mode} === 'edit' &amp;&amp; (parseFloat(${fattura>Quantita}) || 0) !== 0 &amp;&amp; (parseFloat(${fattura>PrezzoUnitario}) || 0) !== 0 }" width="100%" />
-                                                    <m:Text text="{fattura>OdaSap}" visible="{= ${viewModel>/ui/mode} !== 'edit' }" />
+                                                    <!-- <m:Text text="{fattura>OdaSap}" visible="{= ${viewModel>/ui/mode} !== 'edit' }" /> -->
                                                 </m:VBox>
                                             </table:template>
                                         </table:Column>
 
-                                        <table:Column width="7rem">
+                                        <table:Column width="7rem" visible="{= ${viewModel>/ui/mode} === 'edit' }">
                                             <table:label>
                                                 <m:Label text="Posizione Oda" />
                                             </table:label>
                                             <table:template>
                                                 <m:VBox renderType="Bare">
                                                     <m:Input value="{fattura>odaPosOda}" valueState="{= ${fattura>odaPosOda} ? 'Success' : 'Error' }" visible="{= ${viewModel>/ui/mode} === 'edit' &amp;&amp; (parseFloat(${fattura>Quantita}) || 0) !== 0 &amp;&amp; (parseFloat(${fattura>PrezzoUnitario}) || 0) !== 0 }" width="100%" />
-                                                    <m:Text text="{fattura>odaPosOda}" visible="{= ${viewModel>/ui/mode} !== 'edit' }" />
+                                                    <!-- <m:Text text="{fattura>odaPosOda}" visible="{= ${viewModel>/ui/mode} !== 'edit' }" /> -->
                                                 </m:VBox>
                                             </table:template>
                                         </table:Column>
@@ -384,38 +297,38 @@
                                             </table:template>
                                         </table:Column>
 
-                                        <table:Column width="7rem">
+                                        <table:Column width="7rem" visible="{= ${viewModel>/ui/mode} === 'edit' }">
                                             <table:label>
                                                 <m:Label text="Doc. Mat./SES" />
                                             </table:label>
                                             <table:template>
                                                 <m:VBox renderType="Bare">
                                                     <m:Input value="{docMat}" valueState="{= ${docMat} ? 'Success' : 'Error' }" visible="{= ${viewModel>/ui/mode} === 'edit' &amp;&amp; (parseFloat(${fattura>Quantita}) || 0) !== 0 &amp;&amp; (parseFloat(${fattura>PrezzoUnitario}) || 0) !== 0 }" width="100%" />
-                                                    <m:Text text="{docMat}" visible="{= ${viewModel>/ui/mode} !== 'edit' }" />
+                                                    <!-- <m:Text text="{docMat}" visible="{= ${viewModel>/ui/mode} !== 'edit' }" /> -->
                                                 </m:VBox>
                                             </table:template>
                                         </table:Column>
 
-                                        <table:Column width="5rem">
+                                        <table:Column width="5rem" visible="{= ${viewModel>/ui/mode} === 'edit' }">
                                             <table:label>
                                                 <m:Label text="Posizione" />
                                             </table:label>
                                             <table:template>
                                                 <m:VBox renderType="Bare">
                                                     <m:Input value="{posDocMat}" valueState="{= ${posDocMat} ? 'Success' : 'Error' }" visible="{= ${viewModel>/ui/mode} === 'edit' &amp;&amp; (parseFloat(${fattura>Quantita}) || 0) !== 0 &amp;&amp; (parseFloat(${fattura>PrezzoUnitario}) || 0) !== 0 }" width="100%" />
-                                                    <m:Text text="{posDocMat}" visible="{= ${viewModel>/ui/mode} !== 'edit' }" />
+                                                    <!-- <m:Text text="{posDocMat}" visible="{= ${viewModel>/ui/mode} !== 'edit' }" /> -->
                                                 </m:VBox>
                                             </table:template>
                                         </table:Column>
 
-                                        <table:Column width="7rem">
+                                        <table:Column width="7rem" visible="{= ${viewModel>/ui/mode} === 'edit' }">
                                             <table:label>
                                                 <m:Label text="Es.doc.mat" />
                                             </table:label>
                                             <table:template>
                                                 <m:VBox renderType="Bare">
                                                     <m:Input value="{esDocMat}" valueState="{= ${esDocMat} ? 'Success' : 'Error' }" visible="{= ${viewModel>/ui/mode} === 'edit' &amp;&amp; (parseFloat(${fattura>Quantita}) || 0) !== 0 &amp;&amp; (parseFloat(${fattura>PrezzoUnitario}) || 0) !== 0 }" width="100%" />
-                                                    <m:Text text="{esDocMat}" visible="{= ${viewModel>/ui/mode} !== 'edit' }" />
+                                                    <!-- <m:Text text="{esDocMat}" visible="{= ${viewModel>/ui/mode} !== 'edit' }" /> -->
                                                 </m:VBox>
                                             </table:template>
                                         </table:Column>
