@@ -9,6 +9,8 @@ sap.ui.define([
     "sap/m/p13n/MetadataHelper",
     "sap/m/p13n/Engine",
     "sap/m/p13n/SelectionController",
+    'sap/m/p13n/SortController',
+
 
 
 ], function (
@@ -16,7 +18,7 @@ sap.ui.define([
     Spreadsheet,
     JSONModel,
     CodeEditor,
-    Dialog, Button, VBox, MetadataHelper, Engine, SelectionController,
+    Dialog, Button, VBox, MetadataHelper, Engine, SelectionController, SortController
 ) {
     "use strict";
 
@@ -937,7 +939,11 @@ sap.ui.define([
                     Columns: new SelectionController({
                         targetAggregation: "columns",
                         control: oTable
-                    })
+                    }),
+                    Sorter: new SortController({
+                        control: oTable
+                    }),
+                    
                 }
             })
 

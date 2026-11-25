@@ -265,7 +265,7 @@
 
                                         <table:Column width="7rem">
                                             <table:label>
-                                                <m:Label text="Codice Materiale SAP" />
+                                                <m:Label text="Codice Materiale SAP" wrapping="true" />
                                             </table:label>
                                             <table:template>
                                                 <m:VBox renderType="Bare">
@@ -277,7 +277,7 @@
 
                                         <table:Column width="20rem">
                                             <table:label>
-                                                <m:Label text="Descrizione Materiale" />
+                                                <m:Label text="Testo riga fattura" wrapping="true" />
                                             </table:label>
                                             <table:template>
                                                 <m:Text text="{fattura>Descrizione}" wrapping="true" wrappingType="Hyphenated"/>
@@ -307,10 +307,10 @@
 
                                         <table:Column width="6rem">
                                             <table:label>
-                                                <m:Label text="Prezzo Unitario" />
+                                                <m:Label text="Prezzo Unitario" wrapping="true"/>
                                             </table:label>
                                             <table:template>
-                                                <m:Text text="{fattura>PrezzoUnitario}" wrapping="false" />
+                                                <m:Text text="{fattura>PrezzoUnitario}" visible="{= (parseFloat(${fattura>Quantita}) || 0) !== 0 &amp;&amp; (parseFloat(${fattura>PrezzoUnitario}) || 0) !== 0}" wrapping="false" />
                                             </table:template>
                                         </table:Column>
 
@@ -319,13 +319,13 @@
                                                 <m:Label text="Prezzo Totale" />
                                             </table:label>
                                             <table:template>
-                                                <m:Text text="{fattura>PrezzoTotale}" wrapping="false" />
+                                                <m:Text text="{fattura>PrezzoTotale}" visible="{= (parseFloat(${fattura>Quantita}) || 0) !== 0 &amp;&amp; (parseFloat(${fattura>PrezzoUnitario}) || 0) !== 0}" wrapping="false" />
                                             </table:template>
                                         </table:Column>
 
                                         <table:Column width="5rem">
                                             <table:label>
-                                                <m:Label text="Cod. IVA (%)" />
+                                                <m:Label text="Cod. IVA (%)" wrapping="true"/>
                                             </table:label>
                                             <table:template>
                                                 <m:Text text="{fattura>AliquotaIVA}" wrapping="false" />
@@ -334,7 +334,7 @@
 
                                         <table:Column width="6rem" hAlign="Center">
                                             <table:label>
-                                                <m:Label text="Assegna documenti SAP" />
+                                                <m:Label text="Assegna documenti SAP" wrapping="true" />
                                             </table:label>
                                             <table:template>
                                                 <m:Button icon="sap-icon://action" tooltip="Assegna documenti SAP" press="onOpenDialogAssignSAPDocument" visible="{= ${viewModel>/ui/mode} === 'edit' &amp;&amp; (parseFloat(${fattura>Quantita}) || 0) !== 0 &amp;&amp; (parseFloat(${fattura>PrezzoUnitario}) || 0) !== 0 }" enabled="{= ${viewModel>/ui/mode} === 'edit' }" />
@@ -349,18 +349,6 @@
                                                 <m:Link text="{fattura>odaIdDocumento}" tooltip="{fattura>odaIdDocumento}" press="navToOrdineAcquisto" />
                                             </table:template>
                                         </table:Column>
-
-                                        <table:Column width="7rem">
-                                            <table:label>
-                                                <m:Label text="Posizione Oda" />
-                                            </table:label>
-                                            <table:template>
-                                                <m:VBox renderType="Bare">
-                                                    <m:Input value="{fattura>odaPosOda}" valueState="{= ${fattura>odaPosOda} ? 'Success' : 'Error' }" visible="{= ${viewModel>/ui/mode} === 'edit' &amp;&amp; (parseFloat(${fattura>Quantita}) || 0) !== 0 &amp;&amp; (parseFloat(${fattura>PrezzoUnitario}) || 0) !== 0 }" width="100%" />
-                                                    <m:Text text="{fattura>odaPosOda}" visible="{= ${viewModel>/ui/mode} !== 'edit' }" />
-                                                </m:VBox>
-                                            </table:template>
-                                        </table:Column>
                                         <table:Column width="7rem">
                                             <table:label>
                                                 <m:Label text="OdA SAP" />
@@ -373,6 +361,19 @@
                                                 </m:VBox>
                                             </table:template>
                                         </table:Column>
+
+                                        <table:Column width="7rem">
+                                            <table:label>
+                                                <m:Label text="Posizione Oda" />
+                                            </table:label>
+                                            <table:template>
+                                                <m:VBox renderType="Bare">
+                                                    <m:Input value="{fattura>odaPosOda}" valueState="{= ${fattura>odaPosOda} ? 'Success' : 'Error' }" visible="{= ${viewModel>/ui/mode} === 'edit' &amp;&amp; (parseFloat(${fattura>Quantita}) || 0) !== 0 &amp;&amp; (parseFloat(${fattura>PrezzoUnitario}) || 0) !== 0 }" width="100%" />
+                                                    <m:Text text="{fattura>odaPosOda}" visible="{= ${viewModel>/ui/mode} !== 'edit' }" />
+                                                </m:VBox>
+                                            </table:template>
+                                        </table:Column>
+
 
                                         <table:Column width="7rem">
                                             <table:label>
@@ -457,7 +458,7 @@
 
                                         <table:Column width="7rem">
                                             <table:label>
-                                                <m:Label text="Data bolla consegna" />
+                                                <m:Label text="Data bolla consegna" wrapping="true"/>
                                             </table:label>
                                             <table:template>
                                                 <m:Text text="{path:'fattura>DataDDT',formatter:'.formatter.formatDate'}" wrapping="false" />
@@ -466,7 +467,7 @@
 
                                         <table:Column width="7rem">
                                             <table:label>
-                                                <m:Label text="Data di registrazione" />
+                                                <m:Label text="Data di registrazione" wrapping="true"/>
                                             </table:label>
                                             <table:template>
                                                 <m:Text text="-" />

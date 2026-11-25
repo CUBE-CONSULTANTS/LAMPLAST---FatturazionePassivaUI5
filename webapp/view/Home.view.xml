@@ -9,6 +9,7 @@
     xmlns:fb="sap.ui.comp.filterbar"
     xmlns:layout="sap.ui.layout"
     xmlns:sap.ui.fl="sap.ui.fl"
+    xmlns:columnmenu="sap.m.table.columnmenu"
     xmlns:app="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1"
     xmlns:table="sap.ui.table">
     <f:DynamicPage id="page" showFooter="true" fitContent="true" class="sapUiNoContentPadding">
@@ -133,6 +134,10 @@
                             </table:items>
                         </table:RowAction>
                     </table:rowActionTemplate>
+                    <table:dependents>
+                        <columnmenu:Menu id="menu" showTableSettingsButton="true" tableSettingsPressed=".openPersoDialog">
+                        </columnmenu:Menu>
+                    </table:dependents>
                     <table:rowSettingsTemplate>
                         <table:RowSettings highlight="{path: 'status', formatter: '.getHighlight'}" />
                     </table:rowSettingsTemplate>
@@ -227,7 +232,7 @@
                             </table:template>
                         </table:Column>
                         <!-- Nome Società-->
-                        <table:Column app:p13nKey="NomeSoc_col" width="14rem">
+                        <table:Column app:p13nKey="NomeSoc_col" sortProperty="CompanyName" headerMenu="menu" width="14rem">
                             <table:label>
                                 <Label text="Nome della società" />
                             </table:label>
