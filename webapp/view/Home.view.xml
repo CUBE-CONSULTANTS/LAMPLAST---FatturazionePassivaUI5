@@ -170,7 +170,7 @@
                         </table:Column>
 
                         <!-- N. doc. (presente su padre e figlio) -->
-                        <table:Column app:p13nKey="NumDoc_col" width="7rem">
+                        <table:Column app:p13nKey="NumDoc_col" width="7rem" sortProperty="DocumentNumber" filterProperty="DocumentNumber" headerMenu="menu">
                             <table:label>
                                 <Label text="N. doc." />
                             </table:label>
@@ -232,7 +232,7 @@
                             </table:template>
                         </table:Column>
                         <!-- Nome Società-->
-                        <table:Column app:p13nKey="NomeSoc_col" sortProperty="CompanyName" headerMenu="menu" width="14rem">
+                        <table:Column app:p13nKey="NomeSoc_col" width="14rem">
                             <table:label>
                                 <Label text="Nome della società" />
                             </table:label>
@@ -277,7 +277,7 @@
                             </table:template>
                         </table:Column>
                         <!-- numero fattura fornitore. -->
-                        <table:Column app:p13nKey="NumFatFornitore_col" width="14rem">
+                        <table:Column app:p13nKey="NumFatFornitore_col" width="14rem" sortProperty="NumeroFattura" filterProperty="NumeroFattura" headerMenu="menu">
                             <table:label>
                                 <Label text="N. Fat Fornitore" />
                             </table:label>
@@ -286,7 +286,7 @@
                             </table:template>
                         </table:Column>
                         <!-- Data Fattura -->
-                        <table:Column app:p13nKey="DataFat_col" width="6rem">
+                        <table:Column app:p13nKey="DataFat_col" width="6rem" sortProperty="DataFattura" filterProperty="DataFattura" headerMenu="menu">
                             <table:label>
                                 <Label text="Data Fat" />
                             </table:label>
@@ -332,7 +332,7 @@
                             </table:template>
                         </table:Column>
                         <!-- Doc Contabile -->
-                        <table:Column app:p13nKey="DocContabile_col" width="7rem">
+                        <table:Column app:p13nKey="DocContabile_col" width="7rem" sortProperty="FinanceDocument" filterProperty="FinanceDocument" headerMenu="menu">
                             <table:label>
                                 <Label text="Doc Contabile" />
                             </table:label>
@@ -345,7 +345,7 @@
                         </table:Column>
 
                         <!-- Data registrazione -->
-                        <table:Column app:p13nKey="DataReg_col" width="8rem">
+                        <table:Column app:p13nKey="DataReg_col" width="8rem" sortProperty="PostingDate" filterProperty="PostingDate" headerMenu="menu">
                             <table:label>
                                 <Label text="Data registr." />
                             </table:label>
@@ -372,23 +372,23 @@
                         </table:template>
                     </table:Column> -->
                         <!-- Numerdo SDI-->
-                        <!-- <table:Column width="14rem">
-                        <table:label>
-                            <Label text="Numero SDI" />
-                        </table:label>
-                        <table:template>
-                            <Text text="{fattureModel>NumeroSDI}" />
-                        </table:template>
-                    </table:Column> -->
+                        <table:Column width="14rem" app:p13nKey="NumeroSDI_col">
+                            <table:label>
+                                <Label text="Numero SDI" />
+                            </table:label>
+                            <table:template>
+                                <Text text="{fattureModel>NumeroSDI}" />
+                            </table:template>
+                        </table:Column>
                         <!-- Data ricevimento -->
-                        <!-- <table:Column width="10rem">
-                        <table:label>
-                            <Label text="Data ricevimento" />
-                        </table:label>
-                        <table:template>
-                            <Text text="{path: 'fattureModel>DataSDI', formatter: '.formatter.formatDate'}" />
-                        </table:template>
-                    </table:Column> -->
+                        <table:Column width="10rem" app:p13nKey="DataRicezioneSDI_col">
+                            <table:label>
+                                <Label text="Data Ricezione" />
+                            </table:label>
+                            <table:template>
+                                <Text text="{path: 'fattureModel>DataSDI', formatter: '.formatter.formatDate'}" />
+                            </table:template>
+                        </table:Column>
                         <!-- PIVA -->
                         <!-- <table:Column width="10rem">
                         <table:label>
