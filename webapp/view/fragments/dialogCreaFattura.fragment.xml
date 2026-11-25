@@ -7,25 +7,59 @@
             <VBox>
                 <fb:FilterBar persistencyKey="myPersKey" useToolbar="false" search=".onFilterBarSearch" showGoOnFB="true" showClearOnFB="true" clear=".onFilterBarClear" isRunningInValueHelpDialog="false">
                     <fb:filterGroupItems>
+                        <fb:FilterGroupItem name="Doc. Acquisto" label="Documento" groupName="Group1" visibleInFilterBar="true">
+                            <fb:control>
+                                <Input />
+                            </fb:control>
+                        </fb:FilterGroupItem>
+                        <fb:FilterGroupItem name="Data" label="Data" groupName="Group1" visibleInFilterBar="true">
+                            <fb:control>
+                                <DateRangeSelection delimiter=" - " width="300px" displayFormat="dd/MM/yyyy" valueFormat="yyyy-MM-dd" />
+
+                            </fb:control>
+                        </fb:FilterGroupItem>
                     </fb:filterGroupItems>
                 </fb:FilterBar>
                 <ScrollContainer horizontal="true" vertical="false" width="100%">
 
-                    <Table inset="false" width="100%" mode="SingleSelectLeft" growing="true" sticky="ColumnHeaders" growingScrollToLoad="false" items="{ path: 'assignSAPDocument>/info' }">
+                    <Table inset="false" width="100%" mode="MultiSelect" growing="true" sticky="ColumnHeaders" growingScrollToLoad="false" items="{ path: 'createInvoice>/data/purchaseOrders' }" selectionChange="onChangeSelectionCreateInvoice">
                         <columns>
                             <Column width="10rem">
-                                <Text text="Col1" />
+                                <Text text="Doc. Acquisto" />
                             </Column>
                             <Column width="10rem">
-                                <Text text="Col2" />
+                                <Text text="Data ordine" />
+                            </Column>
+                            <Column width="10rem">
+                                <Text text="N. posizioni" />
+                            </Column>
+                            <Column width="10rem">
+                                <Text text="Descrizione" />
+                            </Column>
+                            <Column width="10rem">
+                                <Text text="Importo ordine" />
+                            </Column>
+                            <Column width="10rem">
+                                <Text text="Importo da fatturare" />
+                            </Column>
+                            <Column width="10rem">
+                                <Text text="Divisa" />
+                            </Column>
+                            <Column width="10rem">
+                                <Text text="Stato" />
                             </Column>
                         </columns>
                         <items>
                             <ColumnListItem>
                                 <cells>
-                                    <Text text="{assignSAPDocument>gjahr}" />
-                                    <Text text="{assignSAPDocument>gjahr}" />
-
+                                    <Text text="{createInvoice>purchaseOrder}" />
+                                    <Text text="{path:'createInvoice>orderDate',formatter:'.formatter.formatDate'}" />
+                                    <Text text="{createInvoice>positionsCount}" />
+                                    <Text text="{createInvoice>description}" />
+                                    <Text text="{createInvoice>orderAmount}" />
+                                    <Text text="{createInvoice>amountToInvoice}" />
+                                    <Text text="{createInvoice>currency}" />
+                                    <Text text="{createInvoice>statusText}" />
                                 </cells>
                             </ColumnListItem>
                         </items>
@@ -34,7 +68,7 @@
             </VBox>
         </content>
         <beginButton>
-            <Button text="Crea Fattura" type="Emphasized" press="onSaveAssignSapDocument" />
+            <Button text="Crea Fattura" type="Emphasized" press="onSavecreateInvoice" enabled="{= !!${createInvoice>/objSelected}}" />
         </beginButton>
         <endButton>
             <Button text="Chiudi" press="onCloseUploadDialog" />

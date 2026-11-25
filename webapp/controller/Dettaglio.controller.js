@@ -3,9 +3,10 @@ sap.ui.define([
     "sap/m/MessageToast",
     "../model/API",
     'sap/ui/model/Filter',
-    "../model/formatter"
+    "../model/formatter",
+    "../model/mockData"
 
-], function (BaseController, MessageToast, API, Filter, formatter) {
+], function (BaseController, MessageToast, API, Filter, formatter, mockData) {
     "use strict";
 
     return BaseController.extend("com.zeim.fatturazionepassiva.controller.Dettaglio", {
@@ -285,6 +286,7 @@ sap.ui.define([
         onCloseUploadDialog: function () {
             this._assegnaDocumentiSAP.close();
         },
+        //mock
         onCreaFatturaDaSAP: async function (oEvent) {
             if (!this._creaFattura) {
                 this._creaFattura = await this.loadFragment({
@@ -293,10 +295,19 @@ sap.ui.define([
                 this.getView().addDependent(this._creaFattura);
             }
             this.getView().setModel(new sap.ui.model.json.JSONModel({
-                info: []
+                data: mockData.getMockDataCreateInvoiceSap()
             }), "createInvoice")
             this._creaFattura.open();
 
+        },
+        onChangeSelectionCreateInvoice: function (oEvent) {
+            const objSelect = oEvent.getSource().getSelectedItem().getBindingContext('createInvoice').getObject()
+            this.getView().getModel("createInvoice").setProperty("/objSelected", objSelect)
+        },
+        onSavecreateInvoice: function () {
+            const { purchaseOrder } = this.getView().getModel("createInvoice").getProperty("/objSelected")
+            const oRouter = sap.ui.core.UIComponent.getRouterFor(this);
+            oRouter.navTo("OrdineAcquistoDettaglio", { purchaseOrder: encodeURIComponent(purchaseOrder) });
         }
     });
 });

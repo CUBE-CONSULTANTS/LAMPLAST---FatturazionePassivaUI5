@@ -99,7 +99,7 @@ sap.ui.define([], function () {
             hasWarning: false,
             warningText: "",
             docType: "ZP02 TD01 Fattura",
-           
+
             reference: "0003829204",
             currency: "EUR",
             date: "2024-12-07",
@@ -110,7 +110,7 @@ sap.ui.define([], function () {
               {
                 docType: "TD02",
                 posizione: "10",
-                 udmXml: "Confezione",
+                udmXml: "Confezione",
                 DscTpDoc: "Fattura",
                 soc: "S200",
                 fornitore: "12000245",
@@ -139,7 +139,7 @@ sap.ui.define([], function () {
               {
                 docType: "TD02",
                 posizione: "20",
-                 udmXml: "Confezione",
+                udmXml: "Confezione",
                 DscTpDoc: "Fattura",
                 soc: "S200",
                 fornitore: "13000178",
@@ -181,7 +181,7 @@ sap.ui.define([], function () {
             hasWarning: false,
             warningText: "",
             docType: "ZP03 TD01 Fattura",
-            
+
             reference: "0003829205",
             currency: "EUR",
             date: "2025-01-10",
@@ -193,7 +193,7 @@ sap.ui.define([], function () {
                 docType: "TD03",
                 posizione: "10",
                 DscTpDoc: "Fattura",
-                 udmXml: "Confezione",
+                udmXml: "Confezione",
                 soc: "S300",
                 fornitore: "13000178",
                 nome1: "Recordati Industria Chimica",
@@ -222,7 +222,7 @@ sap.ui.define([], function () {
                 docType: "TD03",
                 posizione: "20",
                 DscTpDoc: "Fattura",
-                 udmXml: "Confezione",
+                udmXml: "Confezione",
                 soc: "S300",
                 fornitore: "13000178",
                 nome1: "Recordati Industria Chimica",
@@ -251,6 +251,222 @@ sap.ui.define([], function () {
           }
         ]
       };
+    },
+    getMockDataCreateInvoiceSap: function () {
+      return {
+        "request": {
+          "invoice": {
+            "number": "454/26",
+            "date": "2026-04-17",
+            "companyCode": "S001",
+            "supplierCode": "603482",
+            "supplierName": "MD PLAST S.P.A.",
+            "taxableAmount": 36000.00,
+            "totalAmount": 43920.00,
+            "currency": "EUR",
+            "xmlPurchaseOrderRefs": ["438/000"]
+          }
+        },
+        "meta": {
+          "source": "SAP",
+          "totalOrders": 4,
+          "totalSelectable": 3
+        },
+        "purchaseOrders": [
+          {
+            "purchaseOrder": "438/000",
+            "orderDate": "2026-03-10",
+            "supplierCode": "603482",
+            "supplierName": "MD PLAST S.P.A.",
+            "description": "ESSICCANTE MD512156D MASTER",
+            "positionsCount": 3,
+            "orderAmount": 36000.00,
+            "amountToInvoice": 36000.00,
+            "currency": "EUR",
+            "status": "OPEN",
+            "statusText": "Aperto",
+            "selectable": true,
+            "preselected": true,
+            "matchesXml": true,
+            "matchNote": "Importo coincidente con la fattura",
+            "paymentTerms": {
+              "code": "Z060",
+              "description": "60 gg data fattura"
+            },
+            "items": [
+              {
+                "position": "10",
+                "material": "MAT-512156",
+                "description": "ESSICCANTE MD512156D MASTER",
+                "unit": "KG",
+                "qtyOrdered": 9000.00,
+                "qtyReceived": 9000.00,
+                "qtyInvoiced": 0.00,
+                "qtyOpen": 9000.00,
+                "unitPrice": 1.20,
+                "amountOpen": 10800.00,
+                "taxCode": "22",
+                "matchedXmlPosition": "1"
+              },
+              {
+                "position": "20",
+                "material": "MAT-512156",
+                "description": "ESSICCANTE MD512156 D PE 3/41/140426",
+                "unit": "KG",
+                "qtyOrdered": 12000.00,
+                "qtyReceived": 12000.00,
+                "qtyInvoiced": 0.00,
+                "qtyOpen": 12000.00,
+                "unitPrice": 1.20,
+                "amountOpen": 14400.00,
+                "taxCode": "22",
+                "matchedXmlPosition": "2"
+              },
+              {
+                "position": "30",
+                "material": "MAT-512157",
+                "description": "ESSICCANTE MD512157D MASTER",
+                "unit": "KG",
+                "qtyOrdered": 9000.00,
+                "qtyReceived": 9000.00,
+                "qtyInvoiced": 0.00,
+                "qtyOpen": 9000.00,
+                "unitPrice": 1.20,
+                "amountOpen": 10800.00,
+                "taxCode": "22",
+                "matchedXmlPosition": "3"
+              }
+            ]
+          },
+          {
+            "purchaseOrder": "412/000",
+            "orderDate": "2026-02-20",
+            "supplierCode": "603482",
+            "supplierName": "MD PLAST S.P.A.",
+            "description": "ADDITIVO ANTIURTO / COLORANTE",
+            "positionsCount": 2,
+            "orderAmount": 15350.00,
+            "amountToInvoice": 9450.00,
+            "currency": "EUR",
+            "status": "PARTIALLY_INVOICED",
+            "statusText": "Parzialmente fatturato",
+            "selectable": true,
+            "preselected": false,
+            "matchesXml": false,
+            "matchNote": "Importo diverso dalla fattura",
+            "paymentTerms": {
+              "code": "Z060",
+              "description": "60 gg data fattura"
+            },
+            "items": [
+              {
+                "position": "10",
+                "material": "MAT-330010",
+                "description": "ADDITIVO ANTIURTO",
+                "unit": "KG",
+                "qtyOrdered": 5000.00,
+                "qtyReceived": 5000.00,
+                "qtyInvoiced": 2000.00,
+                "qtyOpen": 3000.00,
+                "unitPrice": 1.15,
+                "amountOpen": 3450.00,
+                "taxCode": "22",
+                "matchedXmlPosition": null
+              },
+              {
+                "position": "20",
+                "material": "MAT-330020",
+                "description": "COLORANTE BLU MASTER",
+                "unit": "KG",
+                "qtyOrdered": 4000.00,
+                "qtyReceived": 2500.00,
+                "qtyInvoiced": 0.00,
+                "qtyOpen": 2500.00,
+                "unitPrice": 2.40,
+                "amountOpen": 6000.00,
+                "taxCode": "22",
+                "matchedXmlPosition": null
+              }
+            ]
+          },
+          {
+            "purchaseOrder": "501/000",
+            "orderDate": "2026-04-02",
+            "supplierCode": "603482",
+            "supplierName": "MD PLAST S.P.A.",
+            "description": "ESSICCANTE MD600100 MASTER",
+            "positionsCount": 1,
+            "orderAmount": 12500.00,
+            "amountToInvoice": 12500.00,
+            "currency": "EUR",
+            "status": "OPEN",
+            "statusText": "Aperto",
+            "selectable": true,
+            "preselected": false,
+            "matchesXml": false,
+            "matchNote": "Importo diverso dalla fattura",
+            "paymentTerms": {
+              "code": "Z060",
+              "description": "60 gg data fattura"
+            },
+            "items": [
+              {
+                "position": "10",
+                "material": "MAT-600100",
+                "description": "ESSICCANTE MD600100 MASTER",
+                "unit": "KG",
+                "qtyOrdered": 10000.00,
+                "qtyReceived": 10000.00,
+                "qtyInvoiced": 0.00,
+                "qtyOpen": 10000.00,
+                "unitPrice": 1.25,
+                "amountOpen": 12500.00,
+                "taxCode": "22",
+                "matchedXmlPosition": null
+              }
+            ]
+          },
+          {
+            "purchaseOrder": "455/000",
+            "orderDate": "2026-03-25",
+            "supplierCode": "603482",
+            "supplierName": "MD PLAST S.P.A.",
+            "description": "STABILIZZANTE UV",
+            "positionsCount": 1,
+            "orderAmount": 12300.00,
+            "amountToInvoice": 12300.00,
+            "currency": "EUR",
+            "status": "BLOCKED",
+            "statusText": "Bloccato",
+            "selectable": false,
+            "blockReason": "Ordine bloccato dall'ufficio acquisti",
+            "preselected": false,
+            "matchesXml": false,
+            "matchNote": "Non selezionabile",
+            "paymentTerms": {
+              "code": "Z060",
+              "description": "60 gg data fattura"
+            },
+            "items": [
+              {
+                "position": "10",
+                "material": "MAT-770010",
+                "description": "STABILIZZANTE UV",
+                "unit": "KG",
+                "qtyOrdered": 3000.00,
+                "qtyReceived": 3000.00,
+                "qtyInvoiced": 0.00,
+                "qtyOpen": 3000.00,
+                "unitPrice": 4.10,
+                "amountOpen": 12300.00,
+                "taxCode": "22",
+                "matchedXmlPosition": null
+              }
+            ]
+          }
+        ]
+
+      }
     }
   };
 });

@@ -1,0 +1,271 @@
+<mvc:View xmlns:rowmodes="sap.ui.table.rowmodes" controllerName="com.zeim.fatturazionepassiva.controller.OrdineAcquistoDettaglio"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns:m="sap.m"
+    xmlns:uxap="sap.uxap"
+    xmlns:layout="sap.ui.layout"
+    xmlns:form="sap.ui.layout.form"
+    xmlns:table="sap.ui.table"
+    xmlns:core="sap.ui.core">
+
+    <uxap:ObjectPageLayout showFooter="true" showTitleInHeaderContent="true" alwaysShowContentHeader="false" preserveHeaderStateOnScroll="false" headerContentPinnable="true" isChildPage="true" upperCaseAnchorBar="false">
+        <uxap:headerTitle>
+            <uxap:ObjectPageDynamicHeaderTitle>
+                <uxap:expandedHeading>
+                    <m:HBox width="100%" justifyContent="SpaceBetween" alignItems="Center">
+                        <m:Title text="Ordine d'acquisto {ordine>/purchaseOrder}" wrapping="true" />
+                    </m:HBox>
+                </uxap:expandedHeading>
+                <uxap:snappedHeading>
+                    <m:FlexBox fitContainer="true" alignItems="Center">
+                        <m:Title text="Ordine d'acquisto {ordine>/purchaseOrder}" wrapping="true" />
+                    </m:FlexBox>
+                </uxap:snappedHeading>
+            </uxap:ObjectPageDynamicHeaderTitle>
+        </uxap:headerTitle>
+
+        <uxap:sections>
+
+            <!-- SEZIONE DATI TESTATA -->
+            <uxap:ObjectPageSection title="Dati testata">
+                <uxap:subSections>
+                    <uxap:ObjectPageSubSection>
+                        <uxap:blocks>
+                            <form:Form editable="false" width="100%">
+                                <form:layout>
+                                    <form:ResponsiveGridLayout labelSpanXL="4" labelSpanL="4" labelSpanM="4" labelSpanS="12" adjustLabelSpan="false" emptySpanXL="0" emptySpanL="0" emptySpanM="0" emptySpanS="0" columnsXL="4" columnsL="2" columnsM="2" singleContainerFullSize="false" />
+                                </form:layout>
+                                <form:formContainers>
+
+                                    <!-- DOCUMENTO -->
+                                    <form:FormContainer title="Documento">
+                                        <form:formElements>
+                                            <form:FormElement label="Doc. Acquisto">
+                                                <m:Text text="{ordine>/purchaseOrder}" />
+                                            </form:FormElement>
+                                            <form:FormElement label="Data ordine">
+                                                <m:Text text="{path: 'ordine>/orderDate', formatter: '.formatter.formatDate'}" />
+                                            </form:FormElement>
+                                            <form:FormElement label="Descrizione">
+                                                <m:Text text="{ordine>/description}" />
+                                            </form:FormElement>
+                                            <form:FormElement label="N. posizioni">
+                                                <m:Text text="{ordine>/positionsCount}" />
+                                            </form:FormElement>
+                                            <form:FormElement label="Società">
+                                                <m:Text text="{viewModel>/companyCode}" />
+                                            </form:FormElement>
+                                        </form:formElements>
+                                    </form:FormContainer>
+
+                                    <!-- FORNITORE -->
+                                    <form:FormContainer title="Fornitore">
+                                        <form:formElements>
+                                            <form:FormElement label="Codice">
+                                                <m:Link text="{ordine>/supplierCode}" press="onNavToFornitore" />
+                                            </form:FormElement>
+                                            <form:FormElement label="Nome">
+                                                <m:Text text="{ordine>/supplierName}" />
+                                            </form:FormElement>
+                                            <form:FormElement label="Condizioni di pagamento">
+                                                <m:Text text="{ordine>/paymentTerms/code} - {ordine>/paymentTerms/description}" />
+                                            </form:FormElement>
+                                        </form:formElements>
+                                    </form:FormContainer>
+
+                                    <!-- IMPORTI -->
+                                    <form:FormContainer title="Importi">
+                                        <form:formElements>
+                                            <form:FormElement label="Importo ordine">
+                                                <m:Text text="{path: 'ordine>/orderAmount', type: 'sap.ui.model.type.Float', formatOptions: {minFractionDigits: 2, maxFractionDigits: 2}}" />
+                                            </form:FormElement>
+                                            <form:FormElement label="Importo da fatturare">
+                                                <m:Text text="{path: 'ordine>/amountToInvoice', type: 'sap.ui.model.type.Float', formatOptions: {minFractionDigits: 2, maxFractionDigits: 2}}" />
+                                            </form:FormElement>
+                                            <form:FormElement label="Divisa">
+                                                <m:Text text="{ordine>/currency}" />
+                                            </form:FormElement>
+                                        </form:formElements>
+                                    </form:FormContainer>
+
+                                    <!-- STATO -->
+                                    <form:FormContainer title="Stato">
+                                        <form:formElements>
+                                            <form:FormElement label="Stato">
+                                                <m:ObjectStatus text="{ordine>/statusText}" state="{= ${ordine>/status} === 'BLOCKED' ? 'Error' : ${ordine>/status} === 'PARTIALLY_INVOICED' ? 'Warning' : 'Success' }" />
+                                            </form:FormElement>
+                                            <form:FormElement label="Selezionabile">
+                                                <m:Text text="{= ${ordine>/selectable} ? 'Sì' : 'No' }" />
+                                            </form:FormElement>
+                                            <form:FormElement label="Motivo blocco" visible="{= !!${ordine>/blockReason} }">
+                                                <m:Text text="{ordine>/blockReason}" />
+                                            </form:FormElement>
+                                            <form:FormElement label="Corrispondenza con fattura">
+                                                <m:ObjectStatus text="{ordine>/matchNote}" state="{= ${ordine>/matchesXml} ? 'Success' : 'Warning' }" />
+                                            </form:FormElement>
+                                        </form:formElements>
+                                    </form:FormContainer>
+
+                                </form:formContainers>
+                            </form:Form>
+                        </uxap:blocks>
+                    </uxap:ObjectPageSubSection>
+                </uxap:subSections>
+            </uxap:ObjectPageSection>
+
+            <!-- SEZIONE DETTAGLIO RIGHE -->
+            <uxap:ObjectPageSection title="Dettaglio righe">
+                <uxap:subSections>
+                    <uxap:ObjectPageSubSection>
+                        <uxap:blocks>
+                            <m:ScrollContainer horizontal="true" vertical="false" width="100%" focusable="true">
+                                <table:Table rows="{ordine>/items}" selectionMode="None" enableColumnReordering="false" width="100%">
+                                    <table:rowMode>
+                                        <rowmodes:Auto rowContentHeight="48" minRowCount="5"/>
+                                    </table:rowMode>
+                                    <table:columns>
+
+                                        <table:Column width="5rem">
+                                            <table:label>
+                                                <m:Label text="Posizione" />
+                                            </table:label>
+                                            <table:template>
+                                                <m:Text text="{ordine>position}" wrapping="false" />
+                                            </table:template>
+                                        </table:Column>
+
+                                        <table:Column width="8rem">
+                                            <table:label>
+                                                <m:Label text="Codice materiale" />
+                                            </table:label>
+                                            <table:template>
+                                                <m:Text text="{ordine>material}" wrapping="false" />
+                                            </table:template>
+                                        </table:Column>
+
+                                        <table:Column width="20rem">
+                                            <table:label>
+                                                <m:Label text="Descrizione materiale" />
+                                            </table:label>
+                                            <table:template>
+                                                <m:Text text="{ordine>description}" wrapping="true" wrappingType="Hyphenated"/>
+                                            </table:template>
+                                        </table:Column>
+
+                                        <table:Column width="5rem">
+                                            <table:label>
+                                                <m:Label text="UM" />
+                                            </table:label>
+                                            <table:template>
+                                                <m:Text text="{ordine>unit}" wrapping="false" />
+                                            </table:template>
+                                        </table:Column>
+
+                                        <table:Column width="8rem" hAlign="End">
+                                            <table:label>
+                                                <m:Label text="Qtà ordinata" />
+                                            </table:label>
+                                            <table:template>
+                                                <m:Text text="{path: 'ordine>qtyOrdered', type: 'sap.ui.model.type.Float', formatOptions: {minFractionDigits: 2, maxFractionDigits: 2}}" wrapping="false" />
+                                            </table:template>
+                                        </table:Column>
+
+                                        <table:Column width="8rem" hAlign="End">
+                                            <table:label>
+                                                <m:Label text="Qtà ricevuta (EM)" />
+                                            </table:label>
+                                            <table:template>
+                                                <m:Text text="{path: 'ordine>qtyReceived', type: 'sap.ui.model.type.Float', formatOptions: {minFractionDigits: 2, maxFractionDigits: 2}}" wrapping="false" />
+                                            </table:template>
+                                        </table:Column>
+
+                                        <table:Column width="8rem" hAlign="End">
+                                            <table:label>
+                                                <m:Label text="Qtà già fatturata" />
+                                            </table:label>
+                                            <table:template>
+                                                <m:Text text="{path: 'ordine>qtyInvoiced', type: 'sap.ui.model.type.Float', formatOptions: {minFractionDigits: 2, maxFractionDigits: 2}}" wrapping="false" />
+                                            </table:template>
+                                        </table:Column>
+
+                                        <table:Column width="8rem" hAlign="End">
+                                            <table:label>
+                                                <m:Label text="Qtà residua" />
+                                            </table:label>
+                                            <table:template>
+                                                <m:ObjectNumber number="{path: 'ordine>qtyOpen', type: 'sap.ui.model.type.Float', formatOptions: {minFractionDigits: 2, maxFractionDigits: 2}}" emphasized="true" />
+                                            </table:template>
+                                        </table:Column>
+
+                                        <table:Column width="7rem" hAlign="End">
+                                            <table:label>
+                                                <m:Label text="Prezzo unitario" />
+                                            </table:label>
+                                            <table:template>
+                                                <m:Text text="{path: 'ordine>unitPrice', type: 'sap.ui.model.type.Float', formatOptions: {minFractionDigits: 2, maxFractionDigits: 2}}" wrapping="false" />
+                                            </table:template>
+                                        </table:Column>
+
+                                        <table:Column width="8rem" hAlign="End">
+                                            <table:label>
+                                                <m:Label text="Importo residuo" />
+                                            </table:label>
+                                            <table:template>
+                                                <m:Text text="{path: 'ordine>amountOpen', type: 'sap.ui.model.type.Float', formatOptions: {minFractionDigits: 2, maxFractionDigits: 2}}" wrapping="false" />
+                                            </table:template>
+                                        </table:Column>
+
+                                        <table:Column width="5rem">
+                                            <table:label>
+                                                <m:Label text="Cod. IVA" />
+                                            </table:label>
+                                            <table:template>
+                                                <m:Text text="{ordine>taxCode}" wrapping="false" />
+                                            </table:template>
+                                        </table:Column>
+
+                                        <!-- CONFRONTO CON LA FATTURA XML -->
+                                        <table:Column width="7rem">
+                                            <table:label>
+                                                <m:Label text="Pos. fattura XML" />
+                                            </table:label>
+                                            <table:template>
+                                                <m:Text text="{= ${ordine>matchedXmlPosition} ? ${ordine>matchedXmlPosition} : '-' }" wrapping="false" />
+                                            </table:template>
+                                        </table:Column>
+
+                                        <table:Column width="7rem" hAlign="End">
+                                            <table:label>
+                                                <m:Label text="Prezzo XML" />
+                                            </table:label>
+                                            <table:template>
+                                                <m:Text text="{= ${ordine>prezzoXml} === null || ${ordine>prezzoXml} === undefined ? '-' : ${ordine>prezzoXml} }" wrapping="false" />
+                                            </table:template>
+                                        </table:Column>
+
+                                        <table:Column width="7rem" hAlign="End">
+                                            <table:label>
+                                                <m:Label text="Delta prezzo" />
+                                            </table:label>
+                                            <table:template>
+                                                <m:ObjectStatus text="{= ${ordine>deltaPrezzo} === null || ${ordine>deltaPrezzo} === undefined ? '-' : ${ordine>deltaPrezzo} }" state="{= ${ordine>deltaPrezzo} ? 'Error' : 'None' }" />
+                                            </table:template>
+                                        </table:Column>
+
+                                    </table:columns>
+                                </table:Table>
+                            </m:ScrollContainer>
+                        </uxap:blocks>
+                    </uxap:ObjectPageSubSection>
+                </uxap:subSections>
+            </uxap:ObjectPageSection>
+        </uxap:sections>
+
+        <uxap:footer>
+            <m:OverflowToolbar>
+                <m:ToolbarSpacer />
+                <!-- <m:Button text="Seleziona questo ordine" tooltip="Seleziona questo ordine" icon="sap-icon://accept" type="Emphasized" press=".onSelezionaOrdine" enabled="{ordine>/selectable}" /> -->
+                <m:Button text="Indietro" tooltip="Indietro" icon="sap-icon://nav-back" press=".onNavBack" />
+            </m:OverflowToolbar>
+        </uxap:footer>
+    </uxap:ObjectPageLayout>
+</mvc:View>

@@ -163,6 +163,11 @@
           "name": "Archiviate",
           "pattern": "Archiviate",
           "target": ["TargetArchiviate"]
+        },
+        {
+          "name": "OrdineAcquistoDettaglio",
+          "pattern": "OrdineAcquistoDettaglio/{purchaseOrder}",
+          "target": ["TargetOrdineAcquistoDettaglio"]
         }
       ],
       "targets": {
@@ -177,6 +182,10 @@
         "TargetArchiviate": {
           "id": "Archiviate",
           "name": "Archiviate"
+        },
+        "TargetOrdineAcquistoDettaglio": {
+          "id": "OrdineAcquistoDettaglio",
+          "name": "OrdineAcquistoDettaglio"
         }
       }
     },
