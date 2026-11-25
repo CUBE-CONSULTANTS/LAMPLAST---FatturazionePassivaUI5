@@ -166,7 +166,7 @@
         },
         {
           "name": "OrdineAcquistoDettaglio",
-          "pattern": "OrdineAcquistoDettaglio/{purchaseOrder}",
+          "pattern": "OrdineAcquistoDettaglio/{invoiceId}/:supplierCode:",
           "target": ["TargetOrdineAcquistoDettaglio"]
         }
       ],

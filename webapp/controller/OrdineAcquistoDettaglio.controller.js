@@ -19,76 +19,47 @@ sap.ui.define([
         },
 
         _onObjectMatched: function (oEvent) {
-            const { purchaseOrder } = oEvent.getParameter("arguments");
-            const sPO = decodeURIComponent(purchaseOrder);
-
-            const oData = mockData.getMockDataCreateInvoiceSap();
-            const oOrdine = oData.purchaseOrders.find(x => x.purchaseOrder === sPO);
-
-            if (!oOrdine) {
-                MessageToast.show("Ordine d'acquisto " + sPO + " non trovato");
-                return;
-            }
-
-            const oOrdineCopia = JSON.parse(JSON.stringify(oOrdine));
-            this._arricchisciRighe(oOrdineCopia);
-
-            this.getView().setModel(new JSONModel(oOrdineCopia), "ordine");
-
-            this.getView().setModel(new JSONModel({
-                companyCode: oData.request.invoice.companyCode
-            }), "viewModel");
+            this._handleRoute(oEvent)
         },
+        _handleRoute: async function (oEvent) {
+            const { invoiceId: sInvoiceId, supplierCode = '' } = oEvent.getParameter("arguments");
+            const model = this.getOwnerComponent().getModel("mainService");
+            let supplier = {}
+            try {
+                sap.ui.core.BusyIndicator.show(0);
+                var entity = "/zeim_lista_fatture_passive";
+                let filterArray = [
+                    new Filter("Id", "EQ", sInvoiceId),
+                ]
 
-        _getRigheXml: function () {
-            const oModelloXml = this.getOwnerComponent().getModel("modello");
-            return (oModelloXml &&
-                oModelloXml.getProperty("/FatturaElettronicaBody/DatiBeniServizi/DettaglioLinee")) || [];
-        },
+                const data = await API._getData({
+                    model, entity, filterArray
+                })
+                const row = data?.results?.[0];
 
-        _arricchisciRighe: function (oOrdine) {
-            const aXml = this._getRigheXml();
+                if (supplierCode) {
+                    const { PartitaIVAcee = "", CodiceFiscale = "", CompanyCode = "" } = row || {}
+                    const entity = `/zeim_get_supplier_codeSet(CompanyCode='${CompanyCode}',PartitaIVA='${PartitaIVAcee}',CodiceFiscale='${CodiceFiscale}',SupplierCode='${supplierCode}')`;
+                    supplier = await API._getData({
+                        model, entity
+                    })
+                    row.SelectedSupplierCode = supplier.SupplierCode;
+                    row.SupplierName = supplier.SupplierName;
 
-            oOrdine.items.forEach(function (oItem) {
-                const oRigaXml = aXml.find(function (l) {
-                    return String(l.NumeroLinea) === String(oItem.matchedXmlPosition);
-                });
-
-                if (oRigaXml) {
-                    oItem.prezzoXml = parseFloat(oRigaXml.PrezzoUnitario);
-                    oItem.deltaPrezzo = Math.round((oItem.prezzoXml - oItem.unitPrice) * 100) / 100;
-                } else {
-                    oItem.prezzoXml = null;
-                    oItem.deltaPrezzo = null;
                 }
-            });
-        },
 
-        /**
-         * "Seleziona questo ordine": avvisa la popup tramite EventBus e torna indietro.
-         * La popup (o la pagina che la apre) deve sottoscrivere:
-         *   getEventBus().subscribe("creaFatturaSap", "ordineSelezionato", handler)
-         */
-        onSelezionaOrdine: function () {
-            const sPO = this.getView().getModel("ordine").getProperty("/purchaseOrder");
-            this.getOwnerComponent().getEventBus().publish("creaFatturaSap", "ordineSelezionato", {
-                purchaseOrder: sPO
-            });
-            this.onNavBack();
-        },
+                this.getView().setModel(new sap.ui.model.json.JSONModel({ SelectedInvoice: data?.results?.[0], SupplierInfo: supplier }));
+                this.getView().bindElement({ path: "/SelectedInvoice" });
 
-        onNavBack: function () {
-            const sPreviousHash = History.getInstance().getPreviousHash();
-            if (sPreviousHash !== undefined) {
-                window.history.go(-1);
-            } else {
-                MessageToast.show("Nessuna pagina precedente");
+
+                await this._loadDettaglioFattura(sInvoiceId);
+                this._updateTotal();
+            } catch (e) {
+            } finally {
+                sap.ui.core.BusyIndicator.hide(0);
             }
-        },
 
-        onNavToFornitore: function () {
-            MessageToast.show("Navigazione al fornitore da implementare");
-        }
+        },
 
     });
 });

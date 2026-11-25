@@ -286,28 +286,15 @@ sap.ui.define([
         onCloseUploadDialog: function () {
             this._assegnaDocumentiSAP.close();
         },
-        //mock
         onCreaFatturaDaSAP: async function (oEvent) {
-            if (!this._creaFattura) {
-                this._creaFattura = await this.loadFragment({
-                    name: "com.zeim.fatturazionepassiva.view.fragments.dialogCreaFattura"
-                });
-                this.getView().addDependent(this._creaFattura);
-            }
-            this.getView().setModel(new sap.ui.model.json.JSONModel({
-                data: mockData.getMockDataCreateInvoiceSap()
-            }), "createInvoice")
-            this._creaFattura.open();
-
-        },
-        onChangeSelectionCreateInvoice: function (oEvent) {
-            const objSelect = oEvent.getSource().getSelectedItem().getBindingContext('createInvoice').getObject()
-            this.getView().getModel("createInvoice").setProperty("/objSelected", objSelect)
-        },
-        onSavecreateInvoice: function () {
-            const { purchaseOrder } = this.getView().getModel("createInvoice").getProperty("/objSelected")
+            const { Id = '', SelectedSupplierCode = '' } = this.getView().getModel().getProperty("/SelectedInvoice")
             const oRouter = sap.ui.core.UIComponent.getRouterFor(this);
-            oRouter.navTo("OrdineAcquistoDettaglio", { purchaseOrder: encodeURIComponent(purchaseOrder) });
-        }
+            const objNav = { invoiceId: Id }
+            if (SelectedSupplierCode) {
+                Object.assign(objNav, { supplierCode: SelectedSupplierCode })
+            }
+            oRouter.navTo("OrdineAcquistoDettaglio", objNav);
+        },
+
     });
 });

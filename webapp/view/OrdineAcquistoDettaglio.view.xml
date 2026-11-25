@@ -12,12 +12,12 @@
             <uxap:ObjectPageDynamicHeaderTitle>
                 <uxap:expandedHeading>
                     <m:HBox width="100%" justifyContent="SpaceBetween" alignItems="Center">
-                        <m:Title text="Ordine d'acquisto {ordine>/purchaseOrder}" wrapping="true" />
+                        <m:Title text="Crea fattura" wrapping="true" />
                     </m:HBox>
                 </uxap:expandedHeading>
                 <uxap:snappedHeading>
                     <m:FlexBox fitContainer="true" alignItems="Center">
-                        <m:Title text="Ordine d'acquisto {ordine>/purchaseOrder}" wrapping="true" />
+                        <m:Title text="Crea fattura" wrapping="true" />
                     </m:FlexBox>
                 </uxap:snappedHeading>
             </uxap:ObjectPageDynamicHeaderTitle>
@@ -32,42 +32,89 @@
                         <uxap:blocks>
                             <form:Form editable="false" width="100%">
                                 <form:layout>
-                                    <form:ResponsiveGridLayout labelSpanXL="4" labelSpanL="4" labelSpanM="4" labelSpanS="12" adjustLabelSpan="false" emptySpanXL="0" emptySpanL="0" emptySpanM="0" emptySpanS="0" columnsXL="4" columnsL="2" columnsM="2" singleContainerFullSize="false" />
+                                    <form:ResponsiveGridLayout labelSpanXL="4" labelSpanL="4" labelSpanM="4" labelSpanS="12" adjustLabelSpan="false" emptySpanXL="0" emptySpanL="0" emptySpanM="0" emptySpanS="0" columnsXL="4" columnsL="3" columnsM="2" singleContainerFullSize="false" />
                                 </form:layout>
                                 <form:formContainers>
 
                                     <!-- DOCUMENTO -->
                                     <form:FormContainer title="Documento">
                                         <form:formElements>
-                                            <form:FormElement label="Doc. Acquisto">
-                                                <m:Text text="{ordine>/purchaseOrder}" />
-                                            </form:FormElement>
-                                            <form:FormElement label="Data ordine">
-                                                <m:Text text="{path: 'ordine>/orderDate', formatter: '.formatter.formatDate'}" />
-                                            </form:FormElement>
-                                            <form:FormElement label="Descrizione">
-                                                <m:Text text="{ordine>/description}" />
-                                            </form:FormElement>
-                                            <form:FormElement label="N. posizioni">
-                                                <m:Text text="{ordine>/positionsCount}" />
-                                            </form:FormElement>
                                             <form:FormElement label="Società">
-                                                <m:Text text="{viewModel>/companyCode}" />
+                                                <m:Text text="{CompanyCode}" />
+                                            </form:FormElement>
+                                            <form:FormElement label="Nome società">
+                                                <m:Text text="{CompanyName}" />
+                                            </form:FormElement>
+                                            <form:FormElement label="Tipo Doc. AdE">
+                                                <m:Text text="{TipoDocAdE}" />
+                                            </form:FormElement>
+                                            <form:FormElement label="Descrizione Tipo Doc.">
+                                                <m:Text text="{TipoDocText}" />
+                                            </form:FormElement>
+                                            <form:FormElement label="Tipo fattura">
+                                                <m:Text text="{= ${TipoFattura} === 'M' ? 'Fattura Logistica' : 'Fattura Contabile' }" />
+                                            </form:FormElement>
+                                            <form:FormElement label="Esercizio">
+                                                <m:Text text="{FiscalYear}" />
+                                            </form:FormElement>
+                                            <form:FormElement label="Tipo documento SAP">
+                                                <m:Text text="{DocumentType}" />
+                                            </form:FormElement>
+                                            <form:FormElement label="Doc. contabile">
+                                                <m:Link text="{FinanceDocument}" press="onFinanceDocumentLinkPress" />
+                                            </form:FormElement>
+                                            <form:FormElement label="Data registrazione">
+                                                <m:Text text="{path: 'PostingDate', formatter: '.formatter.formatDate'}" />
                                             </form:FormElement>
                                         </form:formElements>
                                     </form:FormContainer>
 
-                                    <!-- FORNITORE -->
-                                    <form:FormContainer title="Fornitore">
+                                    <form:FormContainer title="Fornitore" visible="{= !!${SelectedSupplierCode}}">
                                         <form:formElements>
                                             <form:FormElement label="Codice">
-                                                <m:Link text="{ordine>/supplierCode}" press="onNavToFornitore" />
+                                                <m:Link text="{= ${SelectedSupplierCode} ? ${SelectedSupplierCode} : ${SupplierCode} }" press="onNavToFornitore" />
                                             </form:FormElement>
                                             <form:FormElement label="Nome">
-                                                <m:Text text="{ordine>/supplierName}" />
+                                                <m:Text text="{SupplierName}" />
                                             </form:FormElement>
-                                            <form:FormElement label="Condizioni di pagamento">
-                                                <m:Text text="{ordine>/paymentTerms/code} - {ordine>/paymentTerms/description}" />
+                                            <form:FormElement label="Partita IVA">
+                                                <m:Text text="{PartitaIVAcee}" />
+                                            </form:FormElement>
+                                            <form:FormElement label="Codice fiscale">
+                                                <m:Text text="{CodiceFiscale}" />
+                                            </form:FormElement>
+                                            <form:FormElement label="N. fattura fornitore">
+                                                <m:Text text="{NumeroFattura}" />
+                                            </form:FormElement>
+                                            <form:FormElement label="Data fattura">
+                                                <m:Text text="{path: 'DataFattura', formatter: '.formatter.formatDate'}" />
+                                            </form:FormElement>
+                                            <form:FormElement label="Causale">
+                                                <m:Text text="{Causale}" />
+                                            </form:FormElement>
+                                        </form:formElements>
+                                    </form:FormContainer>
+
+                                    <!-- SDI E STATO -->
+                                    <form:FormContainer title="SDI e Stato">
+                                        <form:formElements>
+                                            <form:FormElement label="Codice destinatario">
+                                                <m:Text text="{CodDestinatario}" />
+                                            </form:FormElement>
+                                            <form:FormElement label="Numero SDI">
+                                                <m:Text text="{NumeroSDI}" />
+                                            </form:FormElement>
+                                            <form:FormElement label="Data ricezione SDI">
+                                                <m:Text text="{path: 'DataSDI', formatter: '.formatter.formatDate'}" />
+                                            </form:FormElement>
+                                            <form:FormElement label="Paese">
+                                                <m:Text text="{Paese}" />
+                                            </form:FormElement>
+                                            <form:FormElement label="Blocco">
+                                                <m:Text text="{= ${CodBlocco} ? 'Bloccato' : 'Sbloccato' }" />
+                                            </form:FormElement>
+                                            <form:FormElement label="Motivo blocco">
+                                                <m:Text text="{MotivoBlocco}" />
                                             </form:FormElement>
                                         </form:formElements>
                                     </form:FormContainer>
@@ -75,32 +122,17 @@
                                     <!-- IMPORTI -->
                                     <form:FormContainer title="Importi">
                                         <form:formElements>
-                                            <form:FormElement label="Importo ordine">
-                                                <m:Text text="{path: 'ordine>/orderAmount', type: 'sap.ui.model.type.Float', formatOptions: {minFractionDigits: 2, maxFractionDigits: 2}}" />
+                                            <form:FormElement label="Imponibile">
+                                                <m:Text text="{Imponibile}" />
                                             </form:FormElement>
-                                            <form:FormElement label="Importo da fatturare">
-                                                <m:Text text="{path: 'ordine>/amountToInvoice', type: 'sap.ui.model.type.Float', formatOptions: {minFractionDigits: 2, maxFractionDigits: 2}}" />
+                                            <form:FormElement label="Totale">
+                                                <m:Text text="{Totale}" />
                                             </form:FormElement>
                                             <form:FormElement label="Divisa">
-                                                <m:Text text="{ordine>/currency}" />
+                                                <m:Text text="{Divisa}" />
                                             </form:FormElement>
-                                        </form:formElements>
-                                    </form:FormContainer>
-
-                                    <!-- STATO -->
-                                    <form:FormContainer title="Stato">
-                                        <form:formElements>
-                                            <form:FormElement label="Stato">
-                                                <m:ObjectStatus text="{ordine>/statusText}" state="{= ${ordine>/status} === 'BLOCKED' ? 'Error' : ${ordine>/status} === 'PARTIALLY_INVOICED' ? 'Warning' : 'Success' }" />
-                                            </form:FormElement>
-                                            <form:FormElement label="Selezionabile">
-                                                <m:Text text="{= ${ordine>/selectable} ? 'Sì' : 'No' }" />
-                                            </form:FormElement>
-                                            <form:FormElement label="Motivo blocco" visible="{= !!${ordine>/blockReason} }">
-                                                <m:Text text="{ordine>/blockReason}" />
-                                            </form:FormElement>
-                                            <form:FormElement label="Corrispondenza con fattura">
-                                                <m:ObjectStatus text="{ordine>/matchNote}" state="{= ${ordine>/matchesXml} ? 'Success' : 'Warning' }" />
+                                            <form:FormElement label="Data pagamento">
+                                                <m:Text text="{path: 'DataPagamento', formatter: '.formatter.formatDate'}" />
                                             </form:FormElement>
                                         </form:formElements>
                                     </form:FormContainer>
