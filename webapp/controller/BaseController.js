@@ -232,7 +232,7 @@ sap.ui.define([
             if (oRow) {
                 oRouter.navTo("DettaglioDisplay", { invoiceId: String(oSelected.Id) });
             } else {
-                oRouter.navTo("Dettaglio", { invoiceId: String(oSelected.Id) });
+                oRouter.navTo("Dettaglio", { invoiceId: String(oSelected.Id), supplierCode: oSelected?.SelectedSupplierCode });
             }
         },
 
@@ -899,6 +899,6 @@ sap.ui.define([
                 console.error("Errore nella navigazione Cross-App:", err);
             }
         },
-        
+
     });
 });

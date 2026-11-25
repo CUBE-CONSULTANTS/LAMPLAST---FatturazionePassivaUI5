@@ -31,8 +31,7 @@
                 <uxap:subSections>
                     <uxap:ObjectPageSubSection>
                         <uxap:blocks>
-                            <form:SimpleForm editable="false" labelSpanXL="4" labelSpanL="4" labelSpanM="4" labelSpanS="12" adjustLabelSpan="false" emptySpanXL="0" emptySpanL="0" emptySpanM="0" emptySpanS="0" columnsXL="4" columnsL="3" columnsM="2" columnsS="1" width="100%">
-                                <!-- DOCUMENTO -->
+                            <!-- <form:SimpleForm editable="false" labelSpanXL="4" labelSpanL="4" labelSpanM="4" labelSpanS="12" adjustLabelSpan="false" emptySpanXL="0" emptySpanL="0" emptySpanM="0" emptySpanS="0" columnsXL="4" columnsL="3" columnsM="2" columnsS="1" width="100%">
                                 <core:Title text="Documento" />
 
                                 <m:Label text="Società" />
@@ -62,7 +61,6 @@
                                 <m:Label text="Data registrazione" />
                                 <m:Text text="{path: 'PostingDate', formatter: '.formatter.formatDate'}" />
 
-                                <!-- FORNITORE -->
                                 <core:Title text="Fornitore" />
 
                                 <m:Label text="Codice" />
@@ -86,7 +84,6 @@
                                 <m:Label text="Causale" />
                                 <m:Text text="{Causale}" />
 
-                                <!-- SDI E STATO -->
                                 <core:Title text="SDI e Stato" />
 
                                 <m:Label text="Codice destinatario" />
@@ -107,7 +104,6 @@
                                 <m:Label text="Motivo blocco" />
                                 <m:Text text="{MotivoBlocco}" />
 
-                                <!-- IMPORTI -->
                                 <core:Title text="Importi" />
 
                                 <m:Label text="Imponibile" />
@@ -121,7 +117,116 @@
 
                                 <m:Label text="Data pagamento" />
                                 <m:Text text="{path: 'DataPagamento', formatter: '.formatter.formatDate'}" />
-                            </form:SimpleForm>
+                            </form:SimpleForm> -->
+                            <form:Form editable="false" width="100%">
+                                <form:layout>
+                                    <form:ResponsiveGridLayout labelSpanXL="4" labelSpanL="4" labelSpanM="4" labelSpanS="12" adjustLabelSpan="false" emptySpanXL="0" emptySpanL="0" emptySpanM="0" emptySpanS="0" columnsXL="4" columnsL="3" columnsM="2" singleContainerFullSize="false" />
+                                </form:layout>
+                                <form:formContainers>
+
+                                    <!-- DOCUMENTO -->
+                                    <form:FormContainer title="Documento">
+                                        <form:formElements>
+                                            <form:FormElement label="Società">
+                                                <m:Text text="{CompanyCode}" />
+                                            </form:FormElement>
+                                            <form:FormElement label="Nome società">
+                                                <m:Text text="{CompanyName}" />
+                                            </form:FormElement>
+                                            <form:FormElement label="Tipo Doc. AdE">
+                                                <m:Text text="{TipoDocAdE}" />
+                                            </form:FormElement>
+                                            <form:FormElement label="Descrizione Tipo Doc.">
+                                                <m:Text text="{TipoDocText}" />
+                                            </form:FormElement>
+                                            <form:FormElement label="Tipo fattura">
+                                                <m:Text text="{= ${TipoFattura} === 'M' ? 'Fattura Logistica' : 'Fattura Contabile' }" />
+                                            </form:FormElement>
+                                            <form:FormElement label="Esercizio">
+                                                <m:Text text="{FiscalYear}" />
+                                            </form:FormElement>
+                                            <form:FormElement label="Tipo documento SAP">
+                                                <m:Text text="{DocumentType}" />
+                                            </form:FormElement>
+                                            <form:FormElement label="Doc. contabile">
+                                                <m:Link text="{FinanceDocument}" press="onFinanceDocumentLinkPress" />
+                                            </form:FormElement>
+                                            <form:FormElement label="Data registrazione">
+                                                <m:Text text="{path: 'PostingDate', formatter: '.formatter.formatDate'}" />
+                                            </form:FormElement>
+                                        </form:formElements>
+                                    </form:FormContainer>
+
+                                    <form:FormContainer title="Fornitore" visible="{viewModel>/showSupplierInfo}">
+                                        <form:formElements>
+                                            <form:FormElement label="Codice">
+                                                <m:Link text="{= ${SelectedSupplierCode} ? ${SelectedSupplierCode} : ${SupplierCode} }" press="onNavToFornitore" />
+                                            </form:FormElement>
+                                            <form:FormElement label="Nome">
+                                                <m:Text text="{SupplierName}" />
+                                            </form:FormElement>
+                                            <form:FormElement label="Partita IVA">
+                                                <m:Text text="{PartitaIVAcee}" />
+                                            </form:FormElement>
+                                            <form:FormElement label="Codice fiscale">
+                                                <m:Text text="{CodiceFiscale}" />
+                                            </form:FormElement>
+                                            <form:FormElement label="N. fattura fornitore">
+                                                <m:Text text="{NumeroFattura}" />
+                                            </form:FormElement>
+                                            <form:FormElement label="Data fattura">
+                                                <m:Text text="{path: 'DataFattura', formatter: '.formatter.formatDate'}" />
+                                            </form:FormElement>
+                                            <form:FormElement label="Causale">
+                                                <m:Text text="{Causale}" />
+                                            </form:FormElement>
+                                        </form:formElements>
+                                    </form:FormContainer>
+
+                                    <!-- SDI E STATO -->
+                                    <form:FormContainer title="SDI e Stato">
+                                        <form:formElements>
+                                            <form:FormElement label="Codice destinatario">
+                                                <m:Text text="{CodDestinatario}" />
+                                            </form:FormElement>
+                                            <form:FormElement label="Numero SDI">
+                                                <m:Text text="{NumeroSDI}" />
+                                            </form:FormElement>
+                                            <form:FormElement label="Data ricezione SDI">
+                                                <m:Text text="{path: 'DataSDI', formatter: '.formatter.formatDate'}" />
+                                            </form:FormElement>
+                                            <form:FormElement label="Paese">
+                                                <m:Text text="{Paese}" />
+                                            </form:FormElement>
+                                            <form:FormElement label="Blocco">
+                                                <m:Text text="{= ${CodBlocco} ? 'Bloccato' : 'Sbloccato' }" />
+                                            </form:FormElement>
+                                            <form:FormElement label="Motivo blocco">
+                                                <m:Text text="{MotivoBlocco}" />
+                                            </form:FormElement>
+                                        </form:formElements>
+                                    </form:FormContainer>
+
+                                    <!-- IMPORTI -->
+                                    <form:FormContainer title="Importi">
+                                        <form:formElements>
+                                            <form:FormElement label="Imponibile">
+                                                <m:Text text="{Imponibile}" />
+                                            </form:FormElement>
+                                            <form:FormElement label="Totale">
+                                                <m:Text text="{Totale}" />
+                                            </form:FormElement>
+                                            <form:FormElement label="Divisa">
+                                                <m:Text text="{Divisa}" />
+                                            </form:FormElement>
+                                            <form:FormElement label="Data pagamento">
+                                                <m:Text text="{path: 'DataPagamento', formatter: '.formatter.formatDate'}" />
+                                            </form:FormElement>
+                                        </form:formElements>
+                                    </form:FormContainer>
+
+                                </form:formContainers>
+                            </form:Form>
                         </uxap:blocks>
                     </uxap:ObjectPageSubSection>
                 </uxap:subSections>
@@ -232,7 +337,7 @@
                                                 <m:Label text="Assegna documenti SAP" />
                                             </table:label>
                                             <table:template>
-                                                <m:Button icon="sap-icon://action" tooltip="Assegna documenti SAP" visible="{= ${viewModel>/ui/mode} === 'edit' &amp;&amp; (parseFloat(${fattura>Quantita}) || 0) !== 0 &amp;&amp; (parseFloat(${fattura>PrezzoUnitario}) || 0) !== 0 }" enabled="{= ${viewModel>/ui/mode} === 'edit' }" />
+                                                <m:Button icon="sap-icon://action" tooltip="Assegna documenti SAP" press="onOpenDialogAssignSAPDocument" visible="{= ${viewModel>/ui/mode} === 'edit' &amp;&amp; (parseFloat(${fattura>Quantita}) || 0) !== 0 &amp;&amp; (parseFloat(${fattura>PrezzoUnitario}) || 0) !== 0 }" enabled="{= ${viewModel>/ui/mode} === 'edit' }" />
                                             </table:template>
                                         </table:Column>
 
@@ -392,7 +497,7 @@
                 <m:Button text="Crea fattura da dati xml" tooltip="Crea fattura da dati xml" icon="sap-icon://attachment-html" type="Emphasized" press=".onPreAcquisireFile" visible="{= ${viewModel>/ui/mode} === 'edit' }" />
                 <!-- <m:Button text="PreAcquisire dati da Oda Sap" icon="sap-icon://download" press=".onPreAcquisireOdaSap" type="Emphasized" visible="{= ${viewModel>/ui/mode} === 'edit' }" />
                 <m:Button text="PreAcquisire dati da DDT Sap" icon="sap-icon://download" press=".onPreAcquisireDdtSap" type="Emphasized" visible="{= ${viewModel>/ui/mode} === 'edit' }" /> -->
-                <m:Button text="Crea fattura da dati SAP" tooltip="Crea fattura da dati SAP" icon="sap-icon://download" type="Emphasized" press=".onPreAcquisireFile" visible="{= ${viewModel>/ui/mode} === 'edit' }" />
+                <m:Button text="Crea fattura da dati SAP" tooltip="Crea fattura da dati SAP" icon="sap-icon://download" type="Emphasized" press=".onCreaFatturaDaSAP" visible="{= ${viewModel>/ui/mode} === 'edit' }" />
 
                 <m:Button icon="sap-icon://decline" text="Annulla / Esci" press="onBackToHome" />
             </m:OverflowToolbar>

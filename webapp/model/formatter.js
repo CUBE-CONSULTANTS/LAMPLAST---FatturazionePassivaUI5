@@ -61,7 +61,11 @@ sap.ui.define([], function () {
                 case "2": return "Più fornitori";
                 default: return "";
             }
-        }
+        },
+        formatCurrency: function (v) {
+            return new Intl.NumberFormat("it-IT", { style: "currency", currency: "EUR" })
+                .format(Number(v) || 0);
+        },
 
     };
 });

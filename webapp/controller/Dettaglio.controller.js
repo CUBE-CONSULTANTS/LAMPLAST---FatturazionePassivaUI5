@@ -3,12 +3,13 @@ sap.ui.define([
     "sap/m/MessageToast",
     "../model/API",
     'sap/ui/model/Filter',
+    "../model/formatter"
 
-], function (BaseController, MessageToast, API, Filter) {
+], function (BaseController, MessageToast, API, Filter, formatter) {
     "use strict";
 
     return BaseController.extend("com.zeim.fatturazionepassiva.controller.Dettaglio", {
-
+        formatter: formatter,
         onInit: function () {
             this.oRouter = sap.ui.core.UIComponent.getRouterFor(this);
 
@@ -23,11 +24,14 @@ sap.ui.define([
 
         _onObjectMatchedEdit: function (oEvent) {
             this.getView().getModel("viewModel").setProperty("/ui/mode", "edit");
+            this.getView().getModel("viewModel").setProperty("/showSupplierInfo", true);
+
             this._handleRoute(oEvent);
         },
 
         _onObjectMatchedDisplay: function (oEvent) {
             this.getView().getModel("viewModel").setProperty("/ui/mode", "display");
+            this.getView().getModel("viewModel").setProperty("/showSupplierInfo", false);
             this._handleRoute(oEvent);
         },
 
@@ -220,24 +224,6 @@ sap.ui.define([
             return Array.isArray(v) ? v : [v];
         },
 
-
-
-
-        formatCurrency: function (v) {
-            return new Intl.NumberFormat("it-IT", { style: "currency", currency: "EUR" })
-                .format(Number(v) || 0);
-        },
-
-
-        formatter: {
-            formatDate: function (sDate) {
-                if (!sDate) return "";
-                const oDate = new Date(sDate);
-                const oFormat = sap.ui.core.format.DateFormat.getDateInstance({ pattern: "dd/MM/yyyy" });
-                return oFormat.format(oDate);
-            }
-        },
-
         onBackToHome: function () {
 
             sap.ui.getCore().getEventBus().publish("fatture", "clearSelection");
@@ -278,9 +264,39 @@ sap.ui.define([
 
             const sFullUrl = window.location.origin + "/ui" + sHash + "&sap-app-origin-hint=&" + sEntityPath;
             window.open(sFullUrl, "_blank");
+        },
+        onOpenDialogAssignSAPDocument: async function (oEvent) {
+            const objSelectedFattura = oEvent.getSource().getBindingContext("fattura").getObject()
+            const objSelected = oEvent.getSource().getBindingContext().getObject()
+            if (!this._assegnaDocumentiSAP) {
+                this._assegnaDocumentiSAP = await this.loadFragment({
+                    name: "com.zeim.fatturazionepassiva.view.fragments.dialogAssegnaDocumentiSAP"
+                });
+                this.getView().addDependent(this._assegnaDocumentiSAP);
+            }
+            this.getView().setModel(new sap.ui.model.json.JSONModel({
+                objSelectedFattura,
+                objSelected,
+                info: []
+            }), "assignSAPDocument")
+            this._assegnaDocumentiSAP.open();
+
+        },
+        onCloseUploadDialog: function () {
+            this._assegnaDocumentiSAP.close();
+        },
+        onCreaFatturaDaSAP: async function (oEvent) {
+            if (!this._creaFattura) {
+                this._creaFattura = await this.loadFragment({
+                    name: "com.zeim.fatturazionepassiva.view.fragments.dialogCreaFattura"
+                });
+                this.getView().addDependent(this._creaFattura);
+            }
+            this.getView().setModel(new sap.ui.model.json.JSONModel({
+                info: []
+            }), "createInvoice")
+            this._creaFattura.open();
+
         }
-
-
-
     });
 });

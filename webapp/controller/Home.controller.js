@@ -504,9 +504,9 @@ sap.ui.define([
 
                 const oRouter = sap.ui.core.UIComponent.getRouterFor(this);
                 //SelectedSupplierCode
-                debugger
+
                 if (oRow) {
-                    oRouter.navTo("DettaglioDisplay", { invoiceId: String(oSelectedWithChoice.Id), supplierCode: oSelectedWithChoice?.SelectedSupplierCode });
+                    oRouter.navTo("DettaglioDisplay", { invoiceId: String(oSelectedWithChoice.Id) });
                 } else {
                     oRouter.navTo("Dettaglio", { invoiceId: String(oSelectedWithChoice.Id), supplierCode: oSelectedWithChoice?.SelectedSupplierCode });
                 }

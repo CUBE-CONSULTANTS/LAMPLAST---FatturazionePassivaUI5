@@ -1,0 +1,43 @@
+<core:FragmentDefinition xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:fb="sap.ui.comp.filterbar"
+    xmlns:u="sap.ui.unified">
+    <Dialog title="Assegna documenti SAP" draggable="true" resizable="true" contentWidth="90%" contentHeight="85%">
+        <content>
+            <VBox>
+                <!-- <fb:FilterBar persistencyKey="myPersKey" useToolbar="false" search=".onFilterBarSearch" showGoOnFB="true" showClearOnFB="true" clear=".onFilterBarClear" isRunningInValueHelpDialog="false">
+                    <fb:filterGroupItems>
+                    </fb:filterGroupItems>
+                </fb:FilterBar> -->
+                <ScrollContainer horizontal="true" vertical="false" width="100%">
+
+                    <Table inset="false" width="100%" mode="SingleSelectLeft" growing="true" sticky="ColumnHeaders" growingScrollToLoad="false" items="{ path: 'assignSAPDocument>/info' }">
+                        <columns>
+                            <Column width="10rem">
+                                <Text text="Col1" />
+                            </Column>
+                            <Column width="10rem">
+                                <Text text="Col2" />
+                            </Column>
+                        </columns>
+                        <items>
+                            <ColumnListItem>
+                                <cells>
+                                    <Text text="{assignSAPDocument>gjahr}" />
+                                    <Text text="{assignSAPDocument>gjahr}" />
+
+                                </cells>
+                            </ColumnListItem>
+                        </items>
+                    </Table>
+                </ScrollContainer>
+            </VBox>
+        </content>
+        <beginButton>
+            <Button text="Salva" type="Emphasized" press="onSaveAssignSapDocument" />
+        </beginButton>
+        <endButton>
+            <Button text="Chiudi" press="onCloseUploadDialog" />
+        </endButton>
+    </Dialog>
+</core:FragmentDefinition>
