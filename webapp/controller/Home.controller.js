@@ -139,7 +139,7 @@ sap.ui.define([
             });
         },
 
-        onFilterBarSearch: function () {
+        onFilterBarSearch: async function () {
             const aFilters = this._buildMainFiltersFromFilterBar();
 
             const oTable = this.byId("idTreeTable");
@@ -151,7 +151,29 @@ sap.ui.define([
             this.getView().getModel("viewModel").setProperty("/ui/canStorno", false);
             this.getView().getModel("viewModel").setProperty("/ui/enableAssignCompany", false);
 
-            this._bindTable(true, aFilters);
+            await this._bindTable(true, aFilters);
+            this.getIconTabFilterInfo()
+        },
+        getIconTabFilterInfo: function () {
+            const oITB = this.byId("idIconTabBar");
+            const sKey = oITB && oITB.getSelectedKey();
+            let aFilters = [];
+            switch (sKey) {
+                case "NotAllowed":
+                    aFilters.push(new sap.ui.model.Filter("StatoFattura", "EQ", "0"));
+                    break;
+                case "Working":
+                    aFilters.push(new sap.ui.model.Filter("StatoFattura", "EQ", "1"));
+                    break;
+                case "Parked":
+                    aFilters.push(new sap.ui.model.Filter("StatoFattura", "EQ", "2"))
+                    break;
+                case "Processed":
+                    aFilters.push(new sap.ui.model.Filter("StatoFattura", "EQ", "3"))
+                    break;
+
+            }
+            this.byId("idTreeTable").getBinding("rows").filter(aFilters);
         },
 
         _buildMainFiltersFromFilterBar: function () {
@@ -218,12 +240,12 @@ sap.ui.define([
             if (sNrInvio) aFilters.push(new Filter("NumeroSDI", FO.Contains, sNrInvio));
 
             // (opzionale ma consigliato) applica anche il filtro stato in base alla tab selezionata
-            const oITB = this.byId("idIconTabBar");
-            const sKey = oITB && oITB.getSelectedKey();
-            if (sKey === "NotAllowed") aFilters.push(new Filter("StatoFattura", FO.EQ, "0"));
-            if (sKey === "Working") aFilters.push(new Filter("StatoFattura", FO.EQ, "1"));
-            if (sKey === "Parked") aFilters.push(new Filter("StatoFattura", FO.EQ, "2"));
-            if (sKey === "Processed") aFilters.push(new Filter("StatoFattura", FO.EQ, "3"));
+            // const oITB = this.byId("idIconTabBar");
+            // const sKey = oITB && oITB.getSelectedKey();
+            // if (sKey === "NotAllowed") aFilters.push(new Filter("StatoFattura", FO.EQ, "0"));
+            // if (sKey === "Working") aFilters.push(new Filter("StatoFattura", FO.EQ, "1"));
+            // if (sKey === "Parked") aFilters.push(new Filter("StatoFattura", FO.EQ, "2"));
+            // if (sKey === "Processed") aFilters.push(new Filter("StatoFattura", FO.EQ, "3"));
 
             return aFilters;
         },
