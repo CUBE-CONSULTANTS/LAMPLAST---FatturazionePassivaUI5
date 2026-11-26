@@ -5,10 +5,10 @@
     <Dialog title="Assegna documenti SAP" draggable="true" resizable="true" contentWidth="90%" contentHeight="85%">
         <content>
             <VBox>
-                <!-- <fb:FilterBar persistencyKey="myPersKey" useToolbar="false" search=".onFilterBarSearch" showGoOnFB="true" showClearOnFB="true" clear=".onFilterBarClear" isRunningInValueHelpDialog="false">
+                <fb:FilterBar persistencyKey="myPersKey" useToolbar="false" search=".onFilterBarSearch" showGoOnFB="true" showClearOnFB="true" clear=".onFilterBarClear" isRunningInValueHelpDialog="false">
                     <fb:filterGroupItems>
                     </fb:filterGroupItems>
-                </fb:FilterBar> -->
+                </fb:FilterBar>
                 <ScrollContainer horizontal="true" vertical="false" width="100%">
 
                     <Table inset="false" width="100%" mode="SingleSelectLeft" growing="true" sticky="ColumnHeaders" growingScrollToLoad="false" items="{ path: 'assignSAPDocument>/info' }">
@@ -23,8 +23,8 @@
                         <items>
                             <ColumnListItem>
                                 <cells>
-                                    <Text text="{assignSAPDocument>gjahr}" />
-                                    <Text text="{assignSAPDocument>gjahr}" />
+                                    <Text text="{assignSAPDocument>}" />
+                                    <Text text="{assignSAPDocument>}" />
 
                                 </cells>
                             </ColumnListItem>

@@ -150,7 +150,18 @@
                     <uxap:ObjectPageSubSection>
                         <uxap:blocks>
                             <m:ScrollContainer horizontal="true" vertical="false" width="100%" focusable="true">
-                                <table:Table rows="{ordine>/items}" selectionMode="None" enableColumnReordering="false" width="100%">
+                                <table:Table rows="{
+                                            path: '/row',
+                                            sorter:{ path: 'positionsCount'}
+                                    }" selectionMode="None" enableColumnReordering="false" width="100%">
+                                    <table:extension>
+                                        <m:OverflowToolbar>
+                                            <m:ToolbarSpacer />
+                                            <m:Button icon="sap-icon://add" tooltip="Aggiunti" type="Emphasized" press=".onOpenDialogForAdd" />
+                                            <!-- <m:Button icon="sap-icon://add" tooltip="Cancella" type="Emphasized" press=".onOpenDialogForAdd" /> -->
+
+                                        </m:OverflowToolbar>
+                                    </table:extension>
                                     <table:rowMode>
                                         <rowmodes:Auto rowContentHeight="48" minRowCount="5"/>
                                     </table:rowMode>
@@ -161,7 +172,7 @@
                                                 <m:Label text="Posizione" />
                                             </table:label>
                                             <table:template>
-                                                <m:Text text="{ordine>position}" wrapping="false" />
+                                                <m:Text text="{positionsCount}" wrapping="false" />
                                             </table:template>
                                         </table:Column>
 
@@ -170,7 +181,7 @@
                                                 <m:Label text="Codice materiale" />
                                             </table:label>
                                             <table:template>
-                                                <m:Text text="{ordine>material}" wrapping="false" />
+                                                <m:Text text="{material}" wrapping="false" />
                                             </table:template>
                                         </table:Column>
 
@@ -179,7 +190,7 @@
                                                 <m:Label text="Descrizione materiale" />
                                             </table:label>
                                             <table:template>
-                                                <m:Text text="{ordine>description}" wrapping="true" wrappingType="Hyphenated"/>
+                                                <m:Text text="{description}" wrapping="true" wrappingType="Hyphenated"/>
                                             </table:template>
                                         </table:Column>
 
@@ -188,7 +199,7 @@
                                                 <m:Label text="UM" />
                                             </table:label>
                                             <table:template>
-                                                <m:Text text="{ordine>unit}" wrapping="false" />
+                                                <m:Text text="{unit}" wrapping="false" />
                                             </table:template>
                                         </table:Column>
 
@@ -197,7 +208,7 @@
                                                 <m:Label text="Qtà ordinata" />
                                             </table:label>
                                             <table:template>
-                                                <m:Text text="{path: 'ordine>qtyOrdered', type: 'sap.ui.model.type.Float', formatOptions: {minFractionDigits: 2, maxFractionDigits: 2}}" wrapping="false" />
+                                                <m:Text text="{path: 'qtyOrdered', type: 'sap.ui.model.type.Float', formatOptions: {minFractionDigits: 2, maxFractionDigits: 2}}" wrapping="false" />
                                             </table:template>
                                         </table:Column>
 
@@ -206,7 +217,7 @@
                                                 <m:Label text="Qtà ricevuta (EM)" />
                                             </table:label>
                                             <table:template>
-                                                <m:Text text="{path: 'ordine>qtyReceived', type: 'sap.ui.model.type.Float', formatOptions: {minFractionDigits: 2, maxFractionDigits: 2}}" wrapping="false" />
+                                                <m:Text text="{path: 'qtyReceived', type: 'sap.ui.model.type.Float', formatOptions: {minFractionDigits: 2, maxFractionDigits: 2}}" wrapping="false" />
                                             </table:template>
                                         </table:Column>
 
@@ -215,7 +226,7 @@
                                                 <m:Label text="Qtà già fatturata" />
                                             </table:label>
                                             <table:template>
-                                                <m:Text text="{path: 'ordine>qtyInvoiced', type: 'sap.ui.model.type.Float', formatOptions: {minFractionDigits: 2, maxFractionDigits: 2}}" wrapping="false" />
+                                                <m:Text text="{path: 'qtyInvoiced', type: 'sap.ui.model.type.Float', formatOptions: {minFractionDigits: 2, maxFractionDigits: 2}}" wrapping="false" />
                                             </table:template>
                                         </table:Column>
 
@@ -224,7 +235,7 @@
                                                 <m:Label text="Qtà residua" />
                                             </table:label>
                                             <table:template>
-                                                <m:ObjectNumber number="{path: 'ordine>qtyOpen', type: 'sap.ui.model.type.Float', formatOptions: {minFractionDigits: 2, maxFractionDigits: 2}}" emphasized="true" />
+                                                <m:ObjectNumber number="{path: 'qtyOpen', type: 'sap.ui.model.type.Float', formatOptions: {minFractionDigits: 2, maxFractionDigits: 2}}" emphasized="true" />
                                             </table:template>
                                         </table:Column>
 
@@ -233,7 +244,7 @@
                                                 <m:Label text="Prezzo unitario" />
                                             </table:label>
                                             <table:template>
-                                                <m:Text text="{path: 'ordine>unitPrice', type: 'sap.ui.model.type.Float', formatOptions: {minFractionDigits: 2, maxFractionDigits: 2}}" wrapping="false" />
+                                                <m:Text text="{path: 'unitPrice', type: 'sap.ui.model.type.Float', formatOptions: {minFractionDigits: 2, maxFractionDigits: 2}}" wrapping="false" />
                                             </table:template>
                                         </table:Column>
 
@@ -242,7 +253,7 @@
                                                 <m:Label text="Importo residuo" />
                                             </table:label>
                                             <table:template>
-                                                <m:Text text="{path: 'ordine>amountOpen', type: 'sap.ui.model.type.Float', formatOptions: {minFractionDigits: 2, maxFractionDigits: 2}}" wrapping="false" />
+                                                <m:Text text="{path: 'amountOpen', type: 'sap.ui.model.type.Float', formatOptions: {minFractionDigits: 2, maxFractionDigits: 2}}" wrapping="false" />
                                             </table:template>
                                         </table:Column>
 
@@ -251,7 +262,7 @@
                                                 <m:Label text="Cod. IVA" />
                                             </table:label>
                                             <table:template>
-                                                <m:Text text="{ordine>taxCode}" wrapping="false" />
+                                                <m:Text text="{taxCode}" wrapping="false" />
                                             </table:template>
                                         </table:Column>
 
@@ -261,7 +272,7 @@
                                                 <m:Label text="Pos. fattura XML" />
                                             </table:label>
                                             <table:template>
-                                                <m:Text text="{= ${ordine>matchedXmlPosition} ? ${ordine>matchedXmlPosition} : '-' }" wrapping="false" />
+                                                <m:Text text="{= ${matchedXmlPosition} ? ${matchedXmlPosition} : '-' }" wrapping="false" />
                                             </table:template>
                                         </table:Column>
 
@@ -270,7 +281,7 @@
                                                 <m:Label text="Prezzo XML" />
                                             </table:label>
                                             <table:template>
-                                                <m:Text text="{= ${ordine>prezzoXml} === null || ${ordine>prezzoXml} === undefined ? '-' : ${ordine>prezzoXml} }" wrapping="false" />
+                                                <m:Text text="{= ${prezzoXml} === null || ${prezzoXml} === undefined ? '-' : ${prezzoXml} }" wrapping="false" />
                                             </table:template>
                                         </table:Column>
 
@@ -279,7 +290,7 @@
                                                 <m:Label text="Delta prezzo" />
                                             </table:label>
                                             <table:template>
-                                                <m:ObjectStatus text="{= ${ordine>deltaPrezzo} === null || ${ordine>deltaPrezzo} === undefined ? '-' : ${ordine>deltaPrezzo} }" state="{= ${ordine>deltaPrezzo} ? 'Error' : 'None' }" />
+                                                <m:ObjectStatus text="{= ${deltaPrezzo} === null || ${deltaPrezzo} === undefined ? '-' : ${deltaPrezzo} }" state="{= ${deltaPrezzo} ? 'Error' : 'None' }" />
                                             </table:template>
                                         </table:Column>
 

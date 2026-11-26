@@ -20,6 +20,7 @@ sap.ui.define([
 
         _onObjectMatched: function (oEvent) {
             this._handleRoute(oEvent)
+            this.onOpenDialogForAdd()
         },
         _handleRoute: async function (oEvent) {
             const { invoiceId: sInvoiceId, supplierCode = '' } = oEvent.getParameter("arguments");
@@ -48,7 +49,7 @@ sap.ui.define([
 
                 }
 
-                this.getView().setModel(new sap.ui.model.json.JSONModel({ SelectedInvoice: data?.results?.[0], SupplierInfo: supplier }));
+                this.getView().setModel(new sap.ui.model.json.JSONModel({ SelectedInvoice: data?.results?.[0], SupplierInfo: supplier, row: [] }));
                 this.getView().bindElement({ path: "/SelectedInvoice" });
 
 
@@ -58,8 +59,30 @@ sap.ui.define([
             } finally {
                 sap.ui.core.BusyIndicator.hide(0);
             }
-
         },
+        onOpenDialogForAdd: async function () {
+            if (!this._addRowForCreateInvoice) {
+                this._addRowForCreateInvoice = await this.loadFragment({
+                    name: "com.zeim.fatturazionepassiva.view.fragments.dialogCreaFattura"
+                });
+                this.getView().addDependent(this._addRowForCreateInvoice);
+            }
+            this.getView().setModel(new sap.ui.model.json.JSONModel({
+                data: mockData.getMockDataCreateInvoiceSap()
+            }), "createInvoice")
+            this._addRowForCreateInvoice.open();
+        },
+        onChangeSelectionCreateInvoice: function (oEvent) {
+            const objSelected = oEvent.getSource().getSelectedItems().map(x => x.getBindingContext("createInvoice").getObject())
+            this.getView().getModel("createInvoice").setProperty("/objSelected", objSelected)
+        },
+        onAddRow: function () {
+            const objSelected = this.getView().getModel("createInvoice").getProperty("/objSelected")
+            this.getView().getModel().setProperty("/row", this.getView().getModel().getProperty("/row").concat(objSelected))
+            this.getView().getModel().updateBindings()
+            this._addRowForCreateInvoice.close();
+
+        }
 
     });
 });

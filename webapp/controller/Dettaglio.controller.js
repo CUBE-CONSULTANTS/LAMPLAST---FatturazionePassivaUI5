@@ -155,46 +155,86 @@ sap.ui.define([
             console.log('Modello:', oJsonModel);
         },
 
+        //gestione oDa come DDT
         _mapOrdineAcquisto: function (oFattura) {
-            const oBody = oFattura?.FatturaElettronicaBody;
-            if (!oBody) return;
+            const oBody = oFattura.FatturaElettronicaBody
+            const oBeniServizi = oBody?.DatiBeniServizi
 
-            const oGenerali = oBody.DatiGenerali;
-            const oBeni = oBody.DatiBeniServizi;
+            const oDa = !oBody?.DatiGenerali?.DatiOrdineAcquisto
+                ? []
+                : Array.isArray(oBody?.DatiGenerali?.DatiOrdineAcquisto)
+                    ? oBody?.DatiGenerali?.DatiDDT
+                    : [oBody?.DatiGenerali?.DatiOrdineAcquisto]
+            const toArray = (v) => (v == null ? [] : Array.isArray(v) ? v : [v]);
 
-            if (!oGenerali?.DatiOrdineAcquisto || !oBeni?.DettaglioLinee) return;
 
-            const aLinee = Array.isArray(oBeni.DettaglioLinee)
-                ? oBeni.DettaglioLinee
-                : [oBeni.DettaglioLinee];
+            const oDaInfo = toArray(oDa).flatMap((oDa) => {
+                const rif = toArray(oDa.RiferimentoNumeroLinea);
+                if (rif.length === 0) {
+                    return [{ ...oDa, RiferimentoNumeroLinea: null }];
+                }
+                return rif.map((n) => ({ ...oDa, RiferimentoNumeroLinea: Number(n) }));
+            });
+            if (oBeniServizi?.DettaglioLinee) {
+                oBeniServizi.DettaglioLinee = Array.isArray(oBeniServizi.DettaglioLinee)
+                    ? oBeniServizi.DettaglioLinee
+                    : [oBeniServizi.DettaglioLinee];
 
-            const aOrdini = Array.isArray(oGenerali.DatiOrdineAcquisto)
-                ? oGenerali.DatiOrdineAcquisto
-                : [oGenerali.DatiOrdineAcquisto];
-
-            // Caso 1: per numero linea
-            if (aOrdini[0].RiferimentoNumeroLinea) {
-                aLinee.forEach(l => {
-                    const oMatch = aOrdini.find(o =>
-                        String(o.RiferimentoNumeroLinea) === String(l.NumeroLinea)
-                    );
-
-                    if (oMatch) {
-                        l.odaIdDocumento = oMatch.IdDocumento || "";
-                        l.odaDataDoc = oMatch.Data || "";
+                oBeniServizi?.DettaglioLinee.forEach(x => {
+                    if (oDaInfo.length == 1 && !oDaInfo[0].hasOwnProperty("RiferimentoNumeroLinea")) {
+                        x['odaIdDocumento'] = oDaInfo?.[0]?.IdDocumento || ''
+                        x['odaDataDoc'] = oDaInfo?.[0]?.Data || ''
+                        // x['odaPosOda']
+                    } else {
+                        const oDaForLine = oDaInfo.find(y => y.RiferimentoNumeroLinea == x.NumeroLinea)
+                        x['odaIdDocumento'] = oDaForLine?.IdDocumento || ''
+                        x['odaDataDoc'] = oDaForLine?.Data || ''
+                        // x['odaPosOda']
                     }
-                });
-                return;
+                })
             }
 
-            // Caso 2: globale
-            const o = aOrdini[0];
-            aLinee.forEach(l => {
-                l.odaIdDocumento = o.IdDocumento || "";
-                l.odaDataDoc = o.Data || "";
-                l.odaPosOda = o.NumItem || "";
-            });
         },
+        // _mapOrdineAcquisto: function (oFattura) {
+        //     const oBody = oFattura?.FatturaElettronicaBody;
+        //     if (!oBody) return;
+
+        //     const oGenerali = oBody.DatiGenerali;
+        //     const oBeni = oBody.DatiBeniServizi;
+
+        //     if (!oGenerali?.DatiOrdineAcquisto || !oBeni?.DettaglioLinee) return;
+
+        //     const aLinee = Array.isArray(oBeni.DettaglioLinee)
+        //         ? oBeni.DettaglioLinee
+        //         : [oBeni.DettaglioLinee];
+
+        //     const aOrdini = Array.isArray(oGenerali.DatiOrdineAcquisto)
+        //         ? oGenerali.DatiOrdineAcquisto
+        //         : [oGenerali.DatiOrdineAcquisto];
+
+        //     // Caso 1: per numero linea
+        //     if (aOrdini[0].RiferimentoNumeroLinea) {
+        //         aLinee.forEach(l => {
+        //             const oMatch = aOrdini.find(o =>
+        //                 String(o.RiferimentoNumeroLinea) === String(l.NumeroLinea)
+        //             );
+
+        //             if (oMatch) {
+        //                 l.odaIdDocumento = oMatch.IdDocumento || "";
+        //                 l.odaDataDoc = oMatch.Data || "";
+        //             }
+        //         });
+        //         return;
+        //     }
+
+        //     // Caso 2: globale
+        //     const o = aOrdini[0];
+        //     aLinee.forEach(l => {
+        //         l.odaIdDocumento = o.IdDocumento || "";
+        //         l.odaDataDoc = o.Data || "";
+        //         l.odaPosOda = o.NumItem || "";
+        //     });
+        // },
 
 
         _updateTotal: function () {

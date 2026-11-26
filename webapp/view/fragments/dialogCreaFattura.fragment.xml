@@ -68,7 +68,7 @@
             </VBox>
         </content>
         <beginButton>
-            <Button text="Crea Fattura" type="Emphasized" press="onSavecreateInvoice" enabled="{= !!${createInvoice>/objSelected}}" />
+            <Button text="Aggiungi" tooltip="Aggiungi" type="Emphasized" press="onAddRow" enabled="{= !!${createInvoice>/objSelected} &amp;&amp; ${createInvoice>/objSelected}.length > 0}" />
         </beginButton>
         <endButton>
             <Button text="Chiudi" press="onCloseUploadDialog" />

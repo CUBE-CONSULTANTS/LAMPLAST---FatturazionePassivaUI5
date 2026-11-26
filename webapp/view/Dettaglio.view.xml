@@ -70,7 +70,7 @@
                                         </form:formElements>
                                     </form:FormContainer>
 
-                                    <form:FormContainer title="Fornitore" visible="{viewModel>/showSupplierInfo}">
+                                    <form:FormContainer title="Fornitore" visible="{= !!${SelectedSupplierCode}}">
                                         <form:formElements>
                                             <form:FormElement label="Codice">
                                                 <m:Link text="{= ${SelectedSupplierCode} ? ${SelectedSupplierCode} : ${SupplierCode} }" press="onNavToFornitore" />
@@ -241,7 +241,7 @@
                                                 <m:Label text="Cod. IVA (%)" wrapping="true"/>
                                             </table:label>
                                             <table:template>
-                                                <m:Text text="{fattura>AliquotaIVA}" wrapping="false" />
+                                                <m:Text text="{fattura>AliquotaIVA}" wrapping="false" visible="{= (parseFloat(${fattura>Quantita}) || 0) !== 0 &amp;&amp; (parseFloat(${fattura>PrezzoUnitario}) || 0) !== 0}"/>
                                             </table:template>
                                         </table:Column>
 
@@ -260,6 +260,14 @@
                                             </table:label>
                                             <table:template>
                                                 <m:Link text="{fattura>odaIdDocumento}" tooltip="{fattura>odaIdDocumento}" press="navToOrdineAcquisto" />
+                                            </table:template>
+                                        </table:Column>
+                                        <table:Column width="7rem">
+                                            <table:label>
+                                                <m:Label text="Data Doc." />
+                                            </table:label>
+                                            <table:template>
+                                                <m:Text text="{path:'fattura>odaDataDoc', formatter:'.formatter.formatDate'}" wrapping="false" />
                                             </table:template>
                                         </table:Column>
                                         <table:Column width="7rem" visible="{= ${viewModel>/ui/mode} === 'edit' }">
@@ -288,14 +296,7 @@
                                         </table:Column>
 
 
-                                        <table:Column width="7rem">
-                                            <table:label>
-                                                <m:Label text="Data Doc." />
-                                            </table:label>
-                                            <table:template>
-                                                <m:Text text="{fattura>odaDataDoc}" wrapping="false" />
-                                            </table:template>
-                                        </table:Column>
+
 
                                         <table:Column width="7rem" visible="{= ${viewModel>/ui/mode} === 'edit' }">
                                             <table:label>
