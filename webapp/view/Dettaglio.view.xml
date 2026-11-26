@@ -172,7 +172,7 @@
                                                 <m:Label text="M.For/CACC" />
                                             </table:label>
                                             <table:template>
-                                                <m:Text text="{matFornCcac}" wrapping="false" />
+                                                <m:Text text="{matFornCcac}" wrapping="false" visible="{= (parseFloat(${fattura>Quantita}) || 0) !== 0 &amp;&amp; (parseFloat(${fattura>PrezzoUnitario}) || 0) !== 0}"/>
                                             </table:template>
                                         </table:Column>
 
@@ -214,7 +214,7 @@
                                                 <m:Label text="Quantità" />
                                             </table:label>
                                             <table:template>
-                                                <m:Text text="{fattura>Quantita}" wrapping="false" />
+                                                <m:Text text="{fattura>Quantita}" wrapping="false" visible="{= (parseFloat(${fattura>Quantita}) || 0) !== 0 &amp;&amp; (parseFloat(${fattura>PrezzoUnitario}) || 0) !== 0}"/>
                                             </table:template>
                                         </table:Column>
 
@@ -259,7 +259,7 @@
                                                 <m:Label text="Doc. Acquisto" />
                                             </table:label>
                                             <table:template>
-                                                <m:Link text="{fattura>odaIdDocumento}" tooltip="{fattura>odaIdDocumento}" press="navToOrdineAcquisto" />
+                                                <m:Link text="{fattura>odaIdDocumento}" tooltip="{fattura>odaIdDocumento}" press="navToOrdineAcquisto" visible="{= (parseFloat(${fattura>Quantita}) || 0) !== 0 &amp;&amp; (parseFloat(${fattura>PrezzoUnitario}) || 0) !== 0}"/>
                                             </table:template>
                                         </table:Column>
                                         <table:Column width="7rem">
@@ -267,7 +267,7 @@
                                                 <m:Label text="Data Doc." />
                                             </table:label>
                                             <table:template>
-                                                <m:Text text="{path:'fattura>odaDataDoc', formatter:'.formatter.formatDate'}" wrapping="false" />
+                                                <m:Text text="{path:'fattura>odaDataDoc', formatter:'.formatter.formatDate'}" wrapping="false" visible="{= (parseFloat(${fattura>Quantita}) || 0) !== 0 &amp;&amp; (parseFloat(${fattura>PrezzoUnitario}) || 0) !== 0}"/>
                                             </table:template>
                                         </table:Column>
                                         <table:Column width="7rem" visible="{= ${viewModel>/ui/mode} === 'edit' }">
@@ -339,7 +339,7 @@
                                                 <m:Label text="CUP" />
                                             </table:label>
                                             <table:template>
-                                                <m:Text text="{cup}" wrapping="false" />
+                                                <m:Text text="{cup}" wrapping="false" visible="{= (parseFloat(${fattura>Quantita}) || 0) !== 0 &amp;&amp; (parseFloat(${fattura>PrezzoUnitario}) || 0) !== 0}"/>
                                             </table:template>
                                         </table:Column>
 
@@ -348,7 +348,7 @@
                                                 <m:Label text="CIG" />
                                             </table:label>
                                             <table:template>
-                                                <m:Text text="{cig}" wrapping="false" />
+                                                <m:Text text="{cig}" wrapping="false" visible="{= (parseFloat(${fattura>Quantita}) || 0) !== 0 &amp;&amp; (parseFloat(${fattura>PrezzoUnitario}) || 0) !== 0}"/>
                                             </table:template>
                                         </table:Column>
 
@@ -357,7 +357,7 @@
                                                 <m:Label text="Commessa" />
                                             </table:label>
                                             <table:template>
-                                                <m:Text text="{commessa}" wrapping="false" />
+                                                <m:Text text="{commessa}" wrapping="false" visible="{= (parseFloat(${fattura>Quantita}) || 0) !== 0 &amp;&amp; (parseFloat(${fattura>PrezzoUnitario}) || 0) !== 0}"/>
                                             </table:template>
                                         </table:Column>
 
@@ -366,7 +366,7 @@
                                                 <m:Label text="Bolla consegna" />
                                             </table:label>
                                             <table:template>
-                                                <m:Text text="{fattura>NumeroDDT}" wrapping="false" />
+                                                <m:Text text="{fattura>NumeroDDT}" wrapping="false" visible="{= (parseFloat(${fattura>Quantita}) || 0) !== 0 &amp;&amp; (parseFloat(${fattura>PrezzoUnitario}) || 0) !== 0}"/>
                                             </table:template>
                                         </table:Column>
 
@@ -375,7 +375,7 @@
                                                 <m:Label text="Data bolla consegna" wrapping="true"/>
                                             </table:label>
                                             <table:template>
-                                                <m:Text text="{path:'fattura>DataDDT',formatter:'.formatter.formatDate'}" wrapping="false" />
+                                                <m:Text text="{path:'fattura>DataDDT',formatter:'.formatter.formatDate'}" wrapping="false" visible="{= (parseFloat(${fattura>Quantita}) || 0) !== 0 &amp;&amp; (parseFloat(${fattura>PrezzoUnitario}) || 0) !== 0}"/>
                                             </table:template>
                                         </table:Column>
 
@@ -384,7 +384,7 @@
                                                 <m:Label text="Data di registrazione" wrapping="true"/>
                                             </table:label>
                                             <table:template>
-                                                <m:Text text="-" />
+                                                <m:Text text="-" visible="{= (parseFloat(${fattura>Quantita}) || 0) !== 0 &amp;&amp; (parseFloat(${fattura>PrezzoUnitario}) || 0) !== 0}"/>
                                             </table:template>
                                         </table:Column>
 
@@ -393,7 +393,7 @@
                                                 <m:Label text="N. Doc" />
                                             </table:label>
                                             <table:template>
-                                                <m:Text text="-" />
+                                                <m:Text text="-" visible="{= (parseFloat(${fattura>Quantita}) || 0) !== 0 &amp;&amp; (parseFloat(${fattura>PrezzoUnitario}) || 0) !== 0}"/>
                                             </table:template>
                                         </table:Column>
 
