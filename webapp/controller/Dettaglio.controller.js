@@ -120,13 +120,9 @@ sap.ui.define([
             const toArray = (v) => (v == null ? [] : Array.isArray(v) ? v : [v]);
             const DdtInfo = toArray(ddt).flatMap((ddt) => {
                 const rif = toArray(ddt.RiferimentoNumeroLinea);
-
-                // caso: numero linea assente -> un solo oggetto, senza riferimento
                 if (rif.length === 0) {
                     return [{ ...ddt, RiferimentoNumeroLinea: null }];
                 }
-
-                // caso: 1 o più numeri linea -> un oggetto per ciascuno
                 return rif.map((n) => ({ ...ddt, RiferimentoNumeroLinea: Number(n) }));
             });
 
@@ -163,7 +159,7 @@ sap.ui.define([
             const oDa = !oBody?.DatiGenerali?.DatiOrdineAcquisto
                 ? []
                 : Array.isArray(oBody?.DatiGenerali?.DatiOrdineAcquisto)
-                    ? oBody?.DatiGenerali?.DatiDDT
+                    ? oBody?.DatiGenerali?.DatiOrdineAcquisto
                     : [oBody?.DatiGenerali?.DatiOrdineAcquisto]
             const toArray = (v) => (v == null ? [] : Array.isArray(v) ? v : [v]);
 
@@ -171,7 +167,7 @@ sap.ui.define([
             const oDaInfo = toArray(oDa).flatMap((oDa) => {
                 const rif = toArray(oDa.RiferimentoNumeroLinea);
                 if (rif.length === 0) {
-                    return [{ ...oDa, RiferimentoNumeroLinea: null }];
+                    return [{ ...oDa }];
                 }
                 return rif.map((n) => ({ ...oDa, RiferimentoNumeroLinea: Number(n) }));
             });
