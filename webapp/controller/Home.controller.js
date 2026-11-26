@@ -462,14 +462,8 @@ sap.ui.define([
 
             this._oSelectedInvoiceForSupplier = oInvoice;
         },
-
-
-
-
         onFatturaLogisticaButtonPress: function (oEvent) {
-
             let oCtx = null;
-
             const oRow = oEvent?.getParameter && oEvent.getParameter("row");
             if (oRow) {
                 oCtx = oRow.getBindingContext("fattureModel");
@@ -846,136 +840,6 @@ sap.ui.define([
             // Applica filtro sulla tabella
             oBinding.filter(aFilters);
         },
-
-
-        // onVisualizzaXML: function (oEvent) {
-        //     const oCtx = oEvent.getSource().getBindingContext("fattureModel");
-        //     if (!oCtx) {
-        //         MessageToast.show("Impossibile determinare la riga selezionata.");
-        //         return;
-        //     }
-
-        //     const oRow = oCtx.getObject() || {};
-        //     const sFileName = oRow.FileName;
-
-        //     if (!sFileName) {
-        //         MessageToast.show("FileName mancante sulla riga.");
-        //         return;
-        //     }
-
-        //     this._openXmlDialog();
-        //     this._loadXmlIntoDialog(sFileName);
-        // },
-
-        // _openXmlDialog: function () {
-        //     if (this._oXmlDialog) {
-        //         this._oXmlDialog.open();
-        //         return;
-        //     }
-
-        //     this._oXmlEditor = new CodeEditor({
-        //         type: "xml",
-        //         height: "70vh",
-        //         width: "100%",
-        //         editable: false,
-        //         showLineNumbers: true,
-        //         value: ""
-        //     });
-
-        //     this._oXmlDialog = new Dialog({
-        //         title: "XML Fattura",
-        //         contentWidth: "80vw",
-        //         contentHeight: "80vh",
-        //         resizable: true,
-        //         draggable: true,
-        //         content: [
-        //             new VBox({
-        //                 width: "100%",
-        //                 height: "100%",
-        //                 items: [this._oXmlEditor]
-        //             })
-        //         ],
-        //         beginButton: new Button({
-        //             text: "Chiudi",
-        //             press: () => this._oXmlDialog.close(),
-        //             type: "Emphasized"
-        //         })
-        //     });
-
-        //     this.getView().addDependent(this._oXmlDialog);
-        //     this._oXmlDialog.open();
-        // },
-
-        // _loadXmlIntoDialog: function (sFileName) {
-        //     const oModel = this.getOwnerComponent().getModel("mainService");
-
-        //     const sPath = oModel.createKey("/ZEIM_DettaglioFattura", { FileName: sFileName });
-
-        //     this._oXmlEditor.setValue("Caricamento...");
-
-        //     oModel.read(sPath, {
-        //         success: (oData) => this._setDialogXmlFromJsonString(oData.Data),
-        //         error: () => {
-        //             this._oXmlEditor.setValue("");
-        //             MessageToast.show("Errore nel caricamento XML fattura");
-        //         }
-        //     });
-        // },
-
-        // _setDialogXmlFromJsonString: function (sData) {
-        //     let oJson;
-        //     try {
-        //         oJson = JSON.parse(sData);
-        //     } catch (e) {
-        //         this._oXmlEditor.setValue("");
-        //         MessageToast.show("Formato fattura non valido");
-        //         return;
-        //     }
-
-        //     const sXml = this._jsonToPrettyXml(oJson);
-        //     this._oXmlEditor.setValue(sXml);
-        // },
-
-        // _jsonToPrettyXml: function (oJson) {
-        //     const escapeXml = (v) => String(v)
-        //         .replace(/&/g, "&amp;")
-        //         .replace(/</g, "&lt;")
-        //         .replace(/>/g, "&gt;")
-        //         .replace(/"/g, "&quot;")
-        //         .replace(/'/g, "&apos;");
-
-        //     const indentStr = (n) => "  ".repeat(n);
-
-        //     const nodeToXml = (name, value, level) => {
-        //         if (value === null || value === undefined) return `${indentStr(level)}<${name}/>\n`;
-        //         if (Array.isArray(value)) return value.map(v => nodeToXml(name, v, level)).join("");
-        //         if (typeof value !== "object") return `${indentStr(level)}<${name}>${escapeXml(value)}</${name}>\n`;
-
-        //         const attrsObj = value.$ || null;
-        //         const attrText = attrsObj
-        //             ? " " + Object.keys(attrsObj).map(k => `${k}="${escapeXml(attrsObj[k])}"`).join(" ")
-        //             : "";
-
-        //         const keys = Object.keys(value).filter(k => k !== "$");
-        //         if (keys.length === 0) return `${indentStr(level)}<${name}${attrText}/>\n`;
-
-        //         let inner = "";
-        //         for (const k of keys) inner += nodeToXml(k, value[k], level + 1);
-
-        //         return `${indentStr(level)}<${name}${attrText}>\n${inner}${indentStr(level)}</${name}>\n`;
-        //     };
-
-        //     const versione = oJson["@versione"];
-        //     const payload = { ...oJson };
-        //     delete payload["@versione"];
-
-        //     const root = {};
-        //     if (versione) root.$ = { versione };
-        //     Object.keys(payload).forEach(k => root[k] = payload[k]);
-
-        //     return nodeToXml("FatturaElettronica", root, 0).trim() + "\n";
-        // },
-
         onBloccaFatturaButtonPress: async function () {
 
             const oTable = this.byId("idTreeTable");

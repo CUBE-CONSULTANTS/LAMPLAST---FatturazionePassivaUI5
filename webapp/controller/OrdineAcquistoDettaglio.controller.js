@@ -76,12 +76,33 @@ sap.ui.define([
             const objSelected = oEvent.getSource().getSelectedItems().map(x => x.getBindingContext("createInvoice").getObject())
             this.getView().getModel("createInvoice").setProperty("/objSelected", objSelected)
         },
+        //TODO da gestire
+        onDeleteRowDetail: function (oEvent) {
+            const oTable = this.getView().byId("rowTable");
+            const aIndices = oTable.getSelectedIndices();
+
+            if (aIndices.length === 0) {
+                sap.m.MessageToast.show("Seleziona almeno una riga");
+                return;
+            }
+            const oModel = this.getView().getModel();
+            const sPath = "/row";
+            const aData = oModel.getProperty(sPath);
+
+            const aNewData = aData.filter((oItem, i) => !aIndices.includes(i));
+
+            oModel.setProperty(sPath, aNewData);
+            oTable.clearSelection();
+        },
+
         onAddRow: function () {
             const objSelected = this.getView().getModel("createInvoice").getProperty("/objSelected")
             this.getView().getModel().setProperty("/row", this.getView().getModel().getProperty("/row").concat(objSelected))
             this.getView().getModel().updateBindings()
+            this.onCloseUploadDialog()
+        },
+        onCloseUploadDialog: function () {
             this._addRowForCreateInvoice.close();
-
         }
 
     });

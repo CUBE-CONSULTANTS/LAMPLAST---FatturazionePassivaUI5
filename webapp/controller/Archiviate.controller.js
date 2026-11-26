@@ -459,6 +459,9 @@ sap.ui.define([
                         )
                     }.bind(this)
                 )
+            },
+            onExportExcel: function (oEvent) {
+                debugger
             }
         }
     )

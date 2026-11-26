@@ -412,7 +412,7 @@
                 <m:Button text="Crea fattura da dati xml" tooltip="Crea fattura da dati xml" icon="sap-icon://attachment-html" type="Emphasized" press=".onPreAcquisireFile" visible="{= ${viewModel>/ui/mode} === 'edit' }" />
                 <m:Button text="Crea fattura da dati SAP" tooltip="Crea fattura da dati SAP" icon="sap-icon://download" type="Emphasized" press=".onCreaFatturaDaSAP" visible="{= ${viewModel>/ui/mode} === 'edit' }" />
 
-                <m:Button icon="sap-icon://decline" text="Annulla / Esci" press="onBackToHome" />
+                <!-- <m:Button icon="sap-icon://decline" text="Annulla / Esci" press="onBackToHome" /> -->
             </m:OverflowToolbar>
         </uxap:footer>
     </uxap:ObjectPageLayout>

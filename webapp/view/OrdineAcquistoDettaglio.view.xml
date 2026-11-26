@@ -150,16 +150,15 @@
                     <uxap:ObjectPageSubSection>
                         <uxap:blocks>
                             <m:ScrollContainer horizontal="true" vertical="false" width="100%" focusable="true">
-                                <table:Table rows="{
+                                <table:Table id="rowTable" rows="{
                                             path: '/row',
                                             sorter:{ path: 'positionsCount'}
-                                    }" selectionMode="None" enableColumnReordering="false" width="100%">
+                                    }" selectionMode="MultiToggle" enableColumnReordering="false" width="100%">
                                     <table:extension>
                                         <m:OverflowToolbar>
                                             <m:ToolbarSpacer />
-                                            <m:Button icon="sap-icon://add" tooltip="Aggiunti" type="Emphasized" press=".onOpenDialogForAdd" />
-                                            <!-- <m:Button icon="sap-icon://add" tooltip="Cancella" type="Emphasized" press=".onOpenDialogForAdd" /> -->
-
+                                            <m:Button icon="sap-icon://delete" tooltip="Elimina" text="Elimina" type="Reject" press=".onDeleteRowDetail" />
+                                            <m:Button icon="sap-icon://add" tooltip="Aggiungi" text="Aggiungi" type="Emphasized" press=".onOpenDialogForAdd" />
                                         </m:OverflowToolbar>
                                     </table:extension>
                                     <table:rowMode>
@@ -306,8 +305,8 @@
         <uxap:footer>
             <m:OverflowToolbar>
                 <m:ToolbarSpacer />
-                <!-- <m:Button text="Seleziona questo ordine" tooltip="Seleziona questo ordine" icon="sap-icon://accept" type="Emphasized" press=".onSelezionaOrdine" enabled="{ordine>/selectable}" /> -->
-                <m:Button text="Indietro" tooltip="Indietro" icon="sap-icon://nav-back" press=".onNavBack" />
+                <m:Button text="Salva" tooltip="Salva" icon="sap-icon://save" type="Emphasized" press=".onSelezionaOrdine" enabled="{ordine>/selectable}" />
+                <!-- <m:Button text="Indietro" tooltip="Indietro" icon="sap-icon://nav-back" press=".onNavBack" /> -->
             </m:OverflowToolbar>
         </uxap:footer>
     </uxap:ObjectPageLayout>
