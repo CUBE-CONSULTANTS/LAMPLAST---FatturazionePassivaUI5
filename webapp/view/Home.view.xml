@@ -273,7 +273,7 @@
                                 <Label text="Tipo Fatt" />
                             </table:label>
                             <table:template>
-                                <ObjectIdentifier title="{fattureModel>TipoDocAdE}" text="{fattureModel>TipoDocText}"/>
+                                <ObjectIdentifier title="{fattureModel>TipoDocAdE}" text="{fattureModel>TipoDocText}" />
                             </table:template>
                         </table:Column>
                         <!-- numero fattura fornitore. -->

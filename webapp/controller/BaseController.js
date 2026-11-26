@@ -237,7 +237,7 @@ sap.ui.define([
             if (oRow) {
                 oRouter.navTo("DettaglioDisplay", { invoiceId: String(oSelected.Id) });
             } else {
-                oRouter.navTo("Dettaglio", { invoiceId: String(oSelected.Id), supplierCode: oSelected?.SelectedSupplierCode });
+                oRouter.navTo("Dettaglio", { invoiceId: String(oSelected.Id), supplierCode: oSelected?.SelectedSupplierCode || oSelectedWithChoice.SupplierCode });
             }
         },
 
@@ -943,7 +943,7 @@ sap.ui.define([
                     Sorter: new SortController({
                         control: oTable
                     }),
-                    
+
                 }
             })
 

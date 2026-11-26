@@ -518,7 +518,7 @@ sap.ui.define([
                 if (oRow) {
                     oRouter.navTo("DettaglioDisplay", { invoiceId: String(oSelectedWithChoice.Id) });
                 } else {
-                    oRouter.navTo("Dettaglio", { invoiceId: String(oSelectedWithChoice.Id), supplierCode: oSelectedWithChoice?.SelectedSupplierCode });
+                    oRouter.navTo("Dettaglio", { invoiceId: String(oSelectedWithChoice.Id), supplierCode: oSelectedWithChoice?.SelectedSupplierCode || oSelectedWithChoice.SupplierCode });
                 }
             };
 
